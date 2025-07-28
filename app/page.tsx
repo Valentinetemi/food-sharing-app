@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
 import { comment } from "postcss"
+import { PostCard } from "@/components/ui/PostCard"
 
 export default function HomePage() {
   const posts = [
@@ -93,6 +94,9 @@ export default function HomePage() {
       {/* Main Feed */}
       <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding">
         <div className="space-y-6">
+          {posts.map(post => (
+        <PostCard key={post.id} {...post} />
+      ))}
           {posts.map((post) => (
             <Card key={post.id} className="bg-gray-900 border-gray-800 overflow-hidden">
               <CardHeader className="pb-3">
