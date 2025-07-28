@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "FoodShare - Share Your Culinary Journey",
   description:
     "A social platform for food enthusiasts to share, discover, and track their culinary adventures with calorie tracking and community features.",
+    icons: {
+      icon: "/favicon.ico",
+    },
 }
 
 export default function RootLayout({

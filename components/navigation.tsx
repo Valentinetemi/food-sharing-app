@@ -30,7 +30,7 @@ export function Navigation() {
               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">F</span>
               </div>
-              <span className="text-xl font-bold text-gray-100">FoodIG</span>
+              <span className="text-xl font-bold text-gray-100">FoodShare</span>
             </Link>
 
             {/* Navigation Links */}
@@ -74,7 +74,7 @@ export function Navigation() {
               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">F</span>
               </div>
-              <span className="text-xl font-bold text-gray-100">FoodIG</span>
+              <span className="text-xl font-bold text-gray-100">FoodShare</span>
             </Link>
 
             {/* Mobile Menu Button */}
