@@ -24,3 +24,14 @@
   --ring: 222.2 84% 4.9%;
   --radius: 2rem;
 }
+
+/* Mobile bottom padding*/
+.mobile-content-padding{
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 768px){
+  .mobile-content-padding{
+    padding-bottom:  1rem;
+  }
+}

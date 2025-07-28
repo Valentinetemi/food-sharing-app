@@ -62,7 +62,7 @@ export default function HomePage() {
   ]
 
   return (
-    <div className=" bg-gray-950 ">
+    <div className=" min-h-screen bg-gray-950 ">
       {/* Header Stats */}
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 left-0 right-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 pb-20">
@@ -91,7 +91,7 @@ export default function HomePage() {
       </div>
 
       {/* Main Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding">
         <div className="space-y-6">
           {posts.map((post) => (
             <Card key={post.id} className="bg-gray-900 border-gray-800 overflow-hidden">

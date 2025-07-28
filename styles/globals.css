@@ -12,8 +12,14 @@ body {
   }
 }
 
+main{
+  min-height: calc(var(--vh) * 200);
+  display: block;
+}
+
 @layer base {
   :root {
+    --vh: 100%;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -84,11 +90,28 @@ body {
   }
 }
 
+html, body{
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+*{
+  box-sizing: border-box;
+}
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@media (max-width: 768px){
+  :root {
+    --vh: 100vh;
   }
 }

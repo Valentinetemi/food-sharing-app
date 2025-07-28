@@ -52,7 +52,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 mobile-content-padding">
         {/* Profile Header */}
         <Card className="bg-gray-900 border-gray-800 mb-6">
           <CardContent className="p-6">
