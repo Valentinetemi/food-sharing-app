@@ -1,91 +1,151 @@
 "use client"
 
+import { MessageCircle, Share2, Heart } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
-import { Heart, MessageCircle, Share2,  } from "lucide-react"
 
-type PostProps = {
-    id: number;
-    user: {
-        name: string;
-        username: string;
-        avatar: string;
-    };
-    image: string;
-    title: string;
-    description: string;
-    calories: number;
-    tags: string[];
-    likes: number;
-    comments: number;
-    timeAgo: string;
-};
+type PostCardProps = {
+  id: number
+  title: string
+  description: string
+  image: string
+  user: {
+    name: string
+    username: string
+    avatar: string
+  }
+  likes: number
+  comments: number
+  tags: string[]
+  calories: number
+  timeAgo: string
+}
 
-export function PostCard({ image, title, description, calories, tags, likes, comments, timeAgo  }:  PostProps) {
-    const [liked, setLiked] = useState(false)
-    const [likeCount, setLikeCount] = useState(likes)
+const likeSound = typeof Audio !== "undefined" ? new Audio("/like-pop.mp3") : null
 
-    const handleLike = () => {
-        setLiked(!liked);
-        setLikeCount(prev => liked ? prev - 1 : prev + 1)
-    };
+export default function PostCard({
+  id, title, description, image, user,
+  likes: initialLikes, comments, tags, calories, timeAgo
+}: PostCardProps) {
+  const [liked, setLiked] = useState(false)
+  const [likes, setLikes] = useState(initialLikes || 0)
 
-    const handleComment = () => {
-        //This would open comment section or navigate to comments
-        console.log("Comment clicked");
-    };
+  type HeartBurst = { id: number; x : number; y: number }
+  const [hearts, setHearts] = useState<HeartBurst[]>([]);
 
-    const handleShare = () => {
-        //This would trigger share logic or modal
-       console.log ("Share Clicked")
-    };
+  const handleLike = () => {
+    const newLiked = !liked
+    setLiked(newLiked)
+    setLikes(prev => newLiked ? prev + 1 : prev - 1)
 
-return (
-    <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-md mb-6">
-      {/* User Info */}
-      <div className="flex items-center gap-3 mb-3">
-        <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+    if (newLiked && likeSound) likeSound.play().catch(() => {})
+  }
+
+ const handleDoubleClick = () => {
+  setLiked(true);
+  setLikes(prev => liked ? prev : prev + 1);
+
+  const heartBursts = [0, 1, 2];
+  heartBursts.forEach((_, i) => {
+    setTimeout(() => {
+        if (likeSound){
+      likeSound?.pause();
+      likeSound.currentTime = 0;
+      likeSound.play().catch(() => {});
+        }
+
+      const burst: HeartBurst = {
+        id: Date.now() + i,
+        x: Math.random() * 160 - 80, // random offset -50px to +50px
+        y: Math.random() * 160 - 80,
+      };
+     
+      setHearts(prev => [...prev, burst]);  // Unique key per heart
+
+      setTimeout(() => {
+        setHearts(prev => prev.filter(h => h.id !== burst.id));
+      }, 600);
+    }, i * 100);
+});
+ };
+
+  const handleComment = () => {
+    alert("Comment feature coming soon!")
+  }
+
+  const handleShare = async () => {
+    try {
+      await navigator.share({
+        title,
+        text: description,
+        url: window.location.href,
+      })
+    } catch {
+      alert("Sharing failed or was cancelled.")
+    }
+  }
+
+  return (
+    <div className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4">
+      <div className="flex items-center gap-3">
+        <img src={user.avatar} alt={user.name} className="h-10 w-10 rounded-full" />
         <div>
-          <p className="font-semibold text-sm">{user.name}</p>
-          <p className="text-xs text-gray-500">{user.username} • {timeAgo}</p>
+          <p className="text-white font-semibold">{user.name}</p>
+          <p className="text-sm text-gray-400">@{user.username}</p>
         </div>
+        <span className="ml-auto text-xs text-gray-500">{timeAgo}</span>
       </div>
 
-      {/* Image */}
-      <img src={image} alt={title} className="w-full h-60 object-cover rounded-xl mb-3" />
-
-      {/* Content */}
       <div>
-        <h3 className="font-bold text-lg">{title}</h3>
-        <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{description}</p>
-        <p className="text-xs text-gray-500 mt-1">Calories: {calories}</p>
-
-        <div className="flex gap-2 mt-2 flex-wrap">
-          {tags.map(tag => (
-            <span key={tag} className="text-xs bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
-              #{tag}
-            </span>
+        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <p className="text-gray-300">{description}</p>
+        <p className="text-sm text-gray-500 mt-1">Calories: {calories}</p>
+        <div className="flex gap-2 mt-2">
+          {tags.map((tag, i) => (
+            <span key={i} className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">#{tag}</span>
           ))}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between mt-4 px-2">
-        <button onClick={handleLike} className="flex items-center gap-1 text-sm">
+      <div onDoubleClick={handleDoubleClick} className="relative cursor-pointer">
+        <Image
+          src={image}
+          alt={title}
+          width={500}
+          height={400}
+          className="w-full h-auto rounded-md"
+        />
+
+        {hearts.map(({ id, x, y }) => (
+            <Heart
+            key={id}
+            className="absolute top-1/2 left-1/2 text-red-500 opacity-90 animate-heart-burst z-20 pointer-events-none"
+            size={100}
+            style={{
+                top: `50%`,
+                left: `50%`,
+                transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`, }}
+            fill="red"
+            />
+        ))}
+      </div>
+
+      <div className="flex items-center gap-4 mt-3 text-pink">
+        <button onClick={handleLike} className="flex items-center gap-1">
           <Heart className={`w-5 h-5 ${liked ? "text-red-500 fill-red-500" : ""}`} />
-          {likeCount}
+          {likes}
         </button>
 
-        <button onClick={handleComment} className="flex items-center gap-1 text-sm">
+        <button onClick={handleComment} className="flex items-center gap-1 hover:text-blue-400">
           <MessageCircle className="w-5 h-5" />
           {comments}
         </button>
 
-        <button onClick={handleShare} className="flex items-center gap-1 text-sm">
-          <Send className="w-5 h-5" />
+        <button onClick={handleShare} className="flex items-center gap-1 hover:text-green-400">
+          <Share2 className="w-5 h-5" />
           Share
         </button>
       </div>
     </div>
-  );
-};
+  )
+}

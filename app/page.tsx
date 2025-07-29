@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
 import { comment } from "postcss"
-import { PostCard } from "@/components/ui/PostCard"
+import PostCard  from "@/components/ui/PostCard"
 
 export default function HomePage() {
   const posts = [
@@ -25,7 +25,7 @@ export default function HomePage() {
     {
       id: 2,
       user: { name: "Mike Rodriguez", username: "@mikeats", avatar: "/cht.png?height=40&width=40" },
-      image: "/salad.jpg?height=400&width=400",
+      image: "/salad.jpg?height=100&width=200",
       title: "Grilled Salmon Bowl",
       description: "Fresh salmon with quinoa, roasted vegetables, and tahini dressing. Post-workout fuel!",
       calories: 485,

@@ -6,8 +6,7 @@ const config = {
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{ts,tsx,mdx}",
   ],
   prefix: "",
   theme: {
@@ -72,6 +71,10 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+       'heart-burst': {
+        '0%': { transform: 'scale(1) translateY(0) ' , opacity: '1' },
+        '100%': { transform: 'scale(2) translateY(-100px) ', opacity: '0' },
+       },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -84,6 +87,8 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'ping-fast': 'ping 0.4 cubic-bezier(0, 0, 0.2, 1) infinite',
+        'heart-burst': 'heart-burst 0.1s ease-out',
       },
     },
   },
