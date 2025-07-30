@@ -86,36 +86,32 @@ export default function PostCard({
   }
 
   return (
-    <div className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4">
+    <div className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4 w-full max-w-xl mx-auto">
       <div className="flex items-center gap-3">
         <img src={user.avatar} alt={user.name} className="h-10 w-10 rounded-full" />
         <div>
           <p className="text-white font-semibold">{user.name}</p>
-          <p className="text-sm text-gray-400">@{user.username}</p>
+          <span className="text-gray-400">@{user.username}</span>
+           <span className="ml-auto text-xs text-gray-500">. { timeAgo}</span>
         </div>
-        <span className="ml-auto text-xs text-gray-500">{timeAgo}</span>
-      </div>
+        
 
-      <div>
-        <h2 className="text-lg font-bold text-white">{title}</h2>
-        <p className="text-gray-300">{description}</p>
-        <p className="text-sm text-gray-500 mt-1">Calories: {calories}</p>
-        <div className="flex gap-2 mt-2">
-          {tags.map((tag, i) => (
-            <span key={i} className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">#{tag}</span>
-          ))}
+        <div className="ml-auto flex items-center gap-2">
+            <span className="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                {calories} cal
+            </span>
         </div>
       </div>
 
+{/* IMAGE WITH CALORIE BADGE*/}
       <div onDoubleClick={handleDoubleClick} className="relative cursor-pointer">
         <Image
           src={image}
           alt={title}
           width={500}
           height={400}
-          className="w-full h-auto rounded-md"
+          className="w-full h-[500px] object-cover rounded-md"
         />
-
         {hearts.map(({ id, x, y }) => (
             <Heart
             key={id}
@@ -129,6 +125,19 @@ export default function PostCard({
             />
         ))}
       </div>
+
+      {/* POST DETAILS*/}
+        <div>
+        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <p className="text-gray-300">{description}</p>
+        <div className="flex gap-2 mt-2 flex-wrap">
+          {tags.map((tag, i) => (
+            <span key={i} className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">#{tag}</span>
+          ))}
+        </div>
+      </div>
+
+{/* ACTION BUTTON*/}
 
       <div className="flex items-center gap-4 mt-3 text-pink">
         <button onClick={handleLike} className="flex items-center gap-1">
