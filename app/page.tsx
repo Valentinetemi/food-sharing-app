@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
 import { comment } from "postcss"
-import { Navigation } from "@/components/navigation"
 import PostCard  from "@/components/ui/PostCard"
 
 export default function HomePage() {
@@ -52,7 +51,7 @@ export default function HomePage() {
     {
       id: 4,
       user: { name: "Emma Wilson", username: "@emmaeats", avatar: "/placeholder.svg?height=40&width=40" },
-      image: "/placeholder.svg?height=400&width=400",
+      image: "/placeholder.svg?height=500&width=500",
       title: "Chocolate Lava Cake",
       description: "Indulgent dessert night! Sometimes you just need to treat yourself 🍫",
       calories: 420,
@@ -66,14 +65,13 @@ export default function HomePage() {
   return (
   <div className="min-h-screen bg-gray-950">
     {/* Header Stats */}
-    <Navigation/>
 
     {/* Main Content */}
     < main className="flex-1 ml-0 lg:ml-64">
 
       {/* Main Feed */}
-      <div className="border border-red 500">
-      <div className="max-w-2xl mx-auto px-4 pt-2 pb-6">
+      <div className="border border-red-500">
+      <div className="max-w-2xl mx-auto px-4 pt-2 pb-0">
         <div className="space-y-6">
           {posts.map(post => (
         <PostCard key={post.id} {...post} />

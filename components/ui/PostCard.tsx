@@ -89,9 +89,10 @@ export default function PostCard({
     <div className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4 w-full max-w-xl mx-auto">
       <div className="flex items-center gap-3">
         <img src={user.avatar} alt={user.name} className="h-10 w-10 rounded-full" />
+
         <div>
           <p className="text-white font-semibold">{user.name}</p>
-          <span className="text-gray-400">@{user.username}</span>
+          <span  className="text-gray-400">@{user.username}</span>
            <span className="ml-auto text-xs text-gray-500">. { timeAgo}</span>
         </div>
         
@@ -108,9 +109,9 @@ export default function PostCard({
         <Image
           src={image}
           alt={title}
-          width={500}
-          height={400}
-          className="w-full h-[500px] object-cover rounded-md"
+          width={600}
+          height={600}
+          className="w-[600px] h-[500px] object-cover rounded-md"
         />
         {hearts.map(({ id, x, y }) => (
             <Heart

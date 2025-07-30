@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     },
 }
 
+
 export default function RootLayout({
   children,
 }: {
@@ -29,10 +30,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientWrapper>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          <div className="min-h-screen bg-gray-950">
             <Navigation />
             <main>{children}</main>
-          </div>
+
         </ThemeProvider>
         </ClientWrapper>
       </body>
