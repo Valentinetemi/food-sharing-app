@@ -70,7 +70,7 @@ export default function HomePage() {
     < main className="flex-1 ml-0 lg:ml-64">
 
       {/* Main Feed */}
-      <div className="border border-red-500">
+
       <div className="max-w-2xl mx-auto px-4 pt-2 pb-0">
         <div className="space-y-6">
           {posts.map(post => (
@@ -84,7 +84,6 @@ export default function HomePage() {
             Load More Posts
           </Button>
         </div>
-      </div>
       </div>
       </main>
     </div>

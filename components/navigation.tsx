@@ -21,7 +21,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
   ]
 
   return (
-    <div className="flex min-screen flex-col lg:flex-row" >
+    <div className="flex-1" >
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col justify-between bg-gray-950 text-white px-6 z-50 border-r border-zinc-600">
         <div>
@@ -49,21 +49,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 <item.icon className="w-6 h-6" />
                 <span className="text-md font-bold">{item.label}</span>
               </Link>
-            ))}
-
-            {/* Search */}
-            <Link
-              href="/search"
-              className={cn(
-                "flex items-center gap-4 px-3 py-2 rounded-lg transition-all",
-                pathname === "/search"
-                  ? "bg-zinc-800 text-orange-500"
-                  : "hover:bg-zinc-800 hover:text-orange-500"
-              )}
-            >
-              <Search className="w-6 h-6" />
-              <span className="text-md font-bold">Search</span>
-            </Link>
+            ))} 
 
               {/* Messages */}
             <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 relative cursor-pointer">
@@ -97,8 +83,6 @@ export function Navigation({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </aside>
-
-      <main className="flex-1 overflow-auto">{children}</main>
 
       {/* Main Content Area */}
       <div className="flex-1 w-full lg:ml-64 flex flex-col">

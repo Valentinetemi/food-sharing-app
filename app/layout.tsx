@@ -30,9 +30,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientWrapper>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+      
             <Navigation />
-            <main>{children}</main>
-
+            <main className="flex-1 overflow-auto ">
+              {children}
+              </main>
+              
         </ThemeProvider>
         </ClientWrapper>
       </body>
