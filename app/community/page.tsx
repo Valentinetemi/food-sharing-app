@@ -75,21 +75,21 @@ export default function CommunityPage() {
   const community = [
     {
       id: 1,
-      title: "30-Day Healthy Eating",
-      description: "Share a healthy meal every day for 30 days",
-      members: 1247,
+      title: "🍳 Everyday Eats",
+      description: "For casual meals, what people are really eating daily.",
+      members: 127,
     },
     {
       id: 2,
-      title: "Colorful Plate Challenge",
-      description: "Create meals with at least 5 different colors",
-      members: 892,
+      title: "🥑 Healthy Plates",
+      description: "Focused on nutritious meals, clean eating, and wellness.",
+      members: 82,
     },
     {
       id: 3,
-      title: "Local Ingredients Only",
-      description: "Cook using only locally sourced ingredients",
-      members: 634,
+      title: "Naija Kitchen",
+      description: "For those who love bold or culturally rich meals.",
+      members: 34,
     },
   ]
 
@@ -167,17 +167,20 @@ export default function CommunityPage() {
         {/* Main Content */}
         <Tabs defaultValue="leaderboard" className="space-y-6">
           <TabsList className="bg-gray-900 border-gray-800">
+            <TabsTrigger value="community" className="data-[state=active]:bg-gray-200">
+              Join Communities
+            </TabsTrigger>
+            <TabsTrigger value="yours" className="data-[state=active]:bg-gray-200">
+              Your Communities
+            </TabsTrigger>
             <TabsTrigger value="leaderboard" className="data-[state=active]:bg-gray-200">
               Leaderboard
-            </TabsTrigger>
-            <TabsTrigger value="trending" className="data-[state=active]:bg-gray-200">
-              Challenges
             </TabsTrigger>
             <TabsTrigger value="discover" className="data-[state=active]:bg-gray-200">
               Discover
             </TabsTrigger>
-            <TabsTrigger value="community" className="data-[state=active]:bg-gray-200">
-              Join Communities
+            <TabsTrigger value="challenges" className="data-[state=active]:bg-gray-200">
+              Challenges
             </TabsTrigger>
           </TabsList>
 
@@ -251,6 +254,18 @@ export default function CommunityPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="challenges">
+              <CardHeader >
+                <CardTitle className="text-gray-100  flex items-center justify-center gap-2">
+                  🧪 Challenges Coming Soon
+                  </CardTitle>
+              <CardContent className="text-gray-300 flex items-center justify-center pt-4 gap-2 ">
+                Fun food challenges are on the way.  Stay tuned! 🚀
+                </CardContent>
+                </CardHeader>
+       
           </TabsContent>
 
           <TabsContent value="discover">
