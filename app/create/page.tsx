@@ -220,7 +220,7 @@ Button.displayName = "Button";
                   <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
                     <SelectValue placeholder="Select meal type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
                     <SelectItem value="breakfast">Breakfast</SelectItem>
                     <SelectItem value="lunch">Lunch</SelectItem>
                     <SelectItem value="dinner">Dinner</SelectItem>

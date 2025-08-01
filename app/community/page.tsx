@@ -72,30 +72,24 @@ export default function CommunityPage() {
     },
   ]
 
-  const challenges = [
+  const community = [
     {
       id: 1,
       title: "30-Day Healthy Eating",
       description: "Share a healthy meal every day for 30 days",
-      participants: 1247,
-      daysLeft: 12,
-      reward: "Healthy Eater Badge",
+      members: 1247,
     },
     {
       id: 2,
       title: "Colorful Plate Challenge",
       description: "Create meals with at least 5 different colors",
-      participants: 892,
-      daysLeft: 8,
-      reward: "Rainbow Chef Badge",
+      members: 892,
     },
     {
       id: 3,
       title: "Local Ingredients Only",
       description: "Cook using only locally sourced ingredients",
-      participants: 634,
-      daysLeft: 20,
-      reward: "Local Hero Badge",
+      members: 634,
     },
   ]
 
@@ -106,7 +100,7 @@ export default function CommunityPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-100">Community</h1>
-            <p className="text-gray-400">Connect with fellow food enthusiasts</p>
+            <p className="text-gray-400">Connect, grow, and share with others who love food just like you.</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -126,7 +120,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-3">
                 <Users className="h-8 w-8 text-blue-400" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-100">12.4k</div>
+                  <div className="text-2xl font-bold text-gray-100">20</div>
                   <div className="text-sm text-gray-400">Active Members</div>
                 </div>
               </div>
@@ -138,7 +132,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-3">
                 <MessageSquare className="h-8 w-8 text-green-400" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-100">2.1k</div>
+                  <div className="text-2xl font-bold text-gray-100">26</div>
                   <div className="text-sm text-gray-400">Posts Today</div>
                 </div>
               </div>
@@ -150,7 +144,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-8 w-8 text-orange-400" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-100">156</div>
+                  <div className="text-2xl font-bold text-gray-100">10</div>
                   <div className="text-sm text-gray-400">Trending Topics</div>
                 </div>
               </div>
@@ -162,7 +156,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-3">
                 <Award className="h-8 w-8 text-purple-400" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-100">43</div>
+                  <div className="text-2xl font-bold text-gray-100">0</div>
                   <div className="text-sm text-gray-400">Active Challenges</div>
                 </div>
               </div>
@@ -173,17 +167,17 @@ export default function CommunityPage() {
         {/* Main Content */}
         <Tabs defaultValue="leaderboard" className="space-y-6">
           <TabsList className="bg-gray-900 border-gray-800">
-            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-gray-800">
+            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-gray-200">
               Leaderboard
             </TabsTrigger>
-            <TabsTrigger value="trending" className="data-[state=active]:bg-gray-800">
-              Trending
+            <TabsTrigger value="trending" className="data-[state=active]:bg-gray-200">
+              Challenges
             </TabsTrigger>
-            <TabsTrigger value="discover" className="data-[state=active]:bg-gray-800">
+            <TabsTrigger value="discover" className="data-[state=active]:bg-gray-200">
               Discover
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="data-[state=active]:bg-gray-800">
-              Challenges
+            <TabsTrigger value="community" className="data-[state=active]:bg-gray-200">
+              Join Communities
             </TabsTrigger>
           </TabsList>
 
@@ -297,28 +291,24 @@ export default function CommunityPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="challenges">
+          <TabsContent value="community">
             <div className="space-y-4">
-              {challenges.map((challenge) => (
-                <Card key={challenge.id} className="bg-gray-900 border-gray-800">
+              {community.map((communityItem) => (
+                <Card key={communityItem.id} className="bg-gray-900 border-gray-800">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-100 mb-2">{challenge.title}</h3>
-                        <p className="text-gray-300 mb-3">{challenge.description}</p>
+                        <h3 className="text-lg font-semibold text-gray-100 mb-2">{communityItem.title}</h3>
+                        <p className="text-gray-300 mb-3">{communityItem.description}</p>
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <div className="flex items-center gap-1">
                             <Users className="h-4 w-4" />
-                            {challenge.participants} participants
+                            {communityItem.members} Members
                           </div>
-                          <div>{challenge.daysLeft} days left</div>
-                          <Badge variant="outline" className="border-purple-700 text-purple-400">
-                            {challenge.reward}
-                          </Badge>
-                        </div>
+                      </div>
                       </div>
                       <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                        Join Challenge
+                        Join Communities
                       </Button>
                     </div>
                   </CardContent>

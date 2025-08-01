@@ -30,12 +30,13 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientWrapper>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-      
             <Navigation />
-            <main className="flex-1 overflow-auto ">
+            <main className="flex-1 overflow-auto relative">
+              <div className="min-h-full"> 
               {children}
+              </div>
+              <div className="h-16 lg:hidden" aria-hidden="true"/>
               </main>
-              
         </ThemeProvider>
         </ClientWrapper>
       </body>

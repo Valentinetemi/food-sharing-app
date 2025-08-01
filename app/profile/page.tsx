@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 
 export default function ProfilePage() {
   const userPosts = [
@@ -49,6 +50,7 @@ export default function ProfilePage() {
     { name: "Community Star", description: "Received 1000+ likes", icon: "⭐" },
     { name: "Calorie Counter", description: "Tracked 30 days straight", icon: "📊" },
   ]
+
 
   return (
     <div className="min-h-screen bg-gray-950">

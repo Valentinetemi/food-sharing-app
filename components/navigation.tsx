@@ -4,14 +4,19 @@ import { Children, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, Camera, Users, User, Search, Bell, Menu, X, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+
+const mockUser = {
+  followedTags: ["healthy", "vegan"]
+}
 
 
 export function Navigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeFilter, setActiveFilter] = useState("recent")
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
@@ -20,18 +25,49 @@ export function Navigation({ children }: { children: React.ReactNode }) {
     { href: "/profile", icon: User, label: "Profile" },
   ]
 
+  const filters = [
+    { label: "🔥 Trending", value: "trending" },
+    { label: "🥗 Healthy", value: "healthy" },
+    { label: "🕒 Recent", value: "recent" },
+  // Optional: Only show if user has tags
+  ...(mockUser?.followedTags?.length > 0
+    ? [{ label: "❤️ My Tags", value: "mytags" }]
+    : []),
+  ]
   return (
     <div className="flex-1" >
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col justify-between bg-gray-950 text-white px-6 z-50 border-r border-zinc-600">
         <div>
+
+
           {/* Logo */}
-          <div className="flex items-center gap-2 px-3">
+          <div className="flex items-center gap-2 px-3 pt-6">
             <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold text-white">
               F
             </div>
             <span className="text-xl font-bold text-white">FoodShare</span>
           </div>
+
+{pathname === "/" && (
+          <div className="flex flex-wrap gap-3 px-8 justify-center items-center  py-4 bg-gray-950 ">
+  {filters.map((filter) => (
+    <button
+      key={filter.value}
+      onClick={() => setActiveFilter(filter.value)}
+      className={`px-3 py-1 rounded-full text-sm transition ${
+        activeFilter === filter.value
+          ? "bg-orange-500 text-white"
+          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+      }`}
+    >
+      {filter.label}
+    </button>
+  ))}
+</div>
+)}
+
+        
 
           {/* Navigation Links */}
           <nav className="flex flex-col space-y-4 mt-8">
@@ -86,6 +122,26 @@ export function Navigation({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 w-full lg:ml-64 flex flex-col">
+
+        {/* Filter Tabs for mobile*/}
+        {pathname === "/" && (
+        <div className="w-full flex justify-center items-center flex-wrap gap-2 bg-gray-950 pt-2 pb-2 lg:hidden">
+          {filters.map((filter) => (
+          <button
+          key={filter.value}
+        onClick={() => setActiveFilter(filter.value)}
+        className={`px-3 py-1 text-sm sm:text-base font-bold py-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all ${
+          activeFilter === filter.value
+          ? "bg-orange-500 text-white"
+          : "bg-gray-950 text-gray-300"
+        }`}
+        >
+          {filter.label}
+          </button>
+  ))}
+        </div>
+)}
+      
        
         {/* Mobile Bottom Nav */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 z-50">
@@ -96,7 +152,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "flex flex-col items-center gap-1 h-auto py-2 px-3 text-gray-400 hover:text-gray-100",
+                    "flex flex-col items-center gap-1 h-auto py-2 px-3 text-gray-400 hover:bg-zinc-800 hover:text-orange-500",
                     pathname === item.href && "text-orange-400"
                   )}
                 >

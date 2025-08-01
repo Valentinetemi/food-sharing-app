@@ -1,12 +1,8 @@
-import { Heart, MessageCircle, Share2, Users, TrendingUp, Camera, Search } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState } from "react";
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
-import { comment } from "postcss"
 import PostCard  from "@/components/ui/PostCard"
+
+
 
 export default function HomePage() {
   const posts = [
@@ -61,6 +57,8 @@ export default function HomePage() {
       timeAgo: "6h ago",
     },
   ]
+
+  
 
   return (
   <div className="min-h-screen bg-gray-950">
