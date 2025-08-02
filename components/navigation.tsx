@@ -163,7 +163,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             ))}
             <Button variant="ghost" size="sm" className="relative flex flex-col items-center gap-1 text-gray-400 hover:text-gray-100">
               <Bell className="h-5 w-5" />
-              <span className="text-xs">Alerts</span>
+              <span className="text-xs"></span>
               <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] bg-red-500">3</Badge>
             </Button>
           </div>
