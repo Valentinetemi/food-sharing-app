@@ -15,6 +15,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import CalorieDropdown from "@/components/ui/CalorieDropdown"
 
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -105,17 +106,7 @@ Button.displayName = "Button";
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
-  const suggestedFoods = [
-    { name: "Grilled Chicken Breast", calories: 165 },
-    { name: "Avocado Toast", calories: 320 },
-    { name: "Caesar Salad", calories: 280 },
-    { name: "Salmon Fillet", calories: 206 },
-    { name: "Greek Yogurt Bowl", calories: 150 },
-    {name: "Fried Egg(1 large)", calories: 90},
-    {name: "Pork Chop(100g)", calories: 250 },
-    {name: "Salmon Fillet(100g)", calories: 206},
-    {name: "Tuna(canned in water 100g)", calories: 132}
-  ]
+
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -233,50 +224,7 @@ Button.displayName = "Button";
             </CardContent>
           </Card>
 
-          {/* Calorie Calculator */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-gray-100 flex items-center gap-2">
-                <Search className="h-5 w-5" />
-                Calorie Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={calories}
-                  onChange={(e) => setCalories(e.target.value)}
-                  placeholder="Enter calories manually"
-                  className="bg-gray-800 border-gray-700 text-gray-100"
-                />
-                <Button variant="outline" className="border-gray-700 text-gray-300 bg-transparent">
-                  Calculate
-                </Button>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-400 mb-2">Quick suggestions:</p>
-                <div className="grid grid-cols-1 gap-2">
-                  {suggestedFoods.map((food) => (
-                    <Button
-                      key={food.name}
-                      variant="ghost"
-                      className="justify-between text-gray-300 hover:bg-gray-800"
-                      onClick={() => {
-                        setFoodName(food.name)
-                        setCalories(food.calories.toString())
-                      }}
-                    >
-                      <span>{food.name}</span>
-                      <Badge variant="secondary" className="bg-green-900/30 text-green-400">
-                        {food.calories} cal
-                      </Badge>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <CalorieDropdown/>
 
           {/* Tags */}
           <Card className="bg-gray-900 border-gray-800">
