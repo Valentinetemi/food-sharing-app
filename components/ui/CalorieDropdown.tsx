@@ -26,53 +26,41 @@ export default function CalorieSelector() {
   const totalCalories = selectedFoods.reduce((acc, item) => acc + item.calories, 0)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding bg-gray-900 border-gray-800 rounded text-white space-y-4">
-      <h2 className="text-xl font-semibold mb-4">🔎 Calorie Information</h2>
-
-      <div className="flex items-center gap-2 mb-4">
+    <div className="max-w-2xl mx-auto px-4 rounded-lg py-6 mobile-content-padding bg-gray-900 border-gray-800 round text-white space-y-4">
+      <h2 className="text-xl font-semibold mb-4"> Calorie Information</h2>
+ <div className="flex items-center gap-2 mb-4 ">
         <input
           type="text"
-          placeholder="Search for a food"
+          placeholder="Search for a food to check calories"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 p-2 rounded bg-zinc-800 text-white placeholder:text-gray-400"
+          className="flex-1 p-2 round bg-gray-800 rounded-lg  text-white placeholder:text-gray-500"
         />
-        
-        <select
-        onChange={(e) => {
-          const selectedValue = e.target.value
-          const food = foods.find(f => f.name === selectedValue)
-          if (food) handleAddFood(food)
-        }}
-        className="w-full p-2 mb-4 rounded bg-zinc-800 text-white"
-      >
-        <option value="">-- Add a food --</option>
-        {foods.map((food, index) => (
-          <option key={index} value={food.name}>
-            {food.name} — {food.calories} cal
-          </option>
-        ))}
-      </select>
-       </div>
+       
+      </div>
 
-      
-
-      {/* Selected Food List */}
-      <ul className="space-y-2">
-        {selectedFoods.map((item, index) => (
-          <li key={index} className="flex justify-between items-center bg-zinc-800 px-3 py-2 rounded">
-            <span>{item.name} — {item.calories} cal</span>
-            <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-600">✖</button>
+      <p className="mb-2 text-gray-300">Quick suggestions:</p>
+      <ul className="space-y-2 max-h-40 overflow-y-auto">
+        {filteredFoods.map((food, index) => (
+          <li
+            key={index}
+            onClick={() => handleAddFood(food)}
+            className="flex justify-between items-center bg-gray-900 hover:bg-gray-800 cursor-pointer px-4 py-2 rounded-lg "
+          >
+            <span>{food.name}</span>
+            <span className="bg-green-800 text-green-300 px-2 py-1 rounded-full text-sm">
+              {food.calories} cal
+            </span>
           </li>
         ))}
       </ul>
 
       {selectedFoods.length > 0 && (
         <>
-          <div className="mt-6 text-gray-300">Selected:</div>
+          <div className="mt-6 text-gray-200">Selected:</div>
           <ul className="space-y-2 mt-2">
             {selectedFoods.map((item, index) => (
-              <li key={index} className="flex justify-between items-center bg-zinc-800 px-3 py-2 rounded">
+              <li key={index} className="flex justify-between items-center bg-gray-900 px-3 py-2 rounded">
                 <span>{item.name} — {item.calories} cal</span>
                 <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-600 text-sm">✖</button>
               </li>

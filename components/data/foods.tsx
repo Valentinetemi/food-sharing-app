@@ -12,5 +12,6 @@ export const foods: Food[] = [
   { name: "Fried Egg (1 large)", calories: 90 },
   { name: "Pork Chop (100g)", calories: 250 },
   { name: "Tuna (100g)", calories: 132 },
+  {}
     
 ]
