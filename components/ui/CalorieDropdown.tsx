@@ -40,7 +40,7 @@ export default function CalorieSelector() {
       </div>
 
       <p className="mb-2 text-gray-300">Quick suggestions:</p>
-      <ul className="space-y-2 max-h-40 overflow-y-auto">
+      <ul className="space-y-2 max-h-60 overflow-y-auto">
         {filteredFoods.map((food, index) => (
           <li
             key={index}

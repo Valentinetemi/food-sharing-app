@@ -138,8 +138,8 @@ Button.displayName = "Button";
                   <div className="flex gap-2 justify-center">
                     <Button asChild className="bg-gradient-to-r from-orange-500 to-red-500">
                       <label htmlFor="image-upload" className="cursor-pointer">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Choose Photo
+                      <Upload className="w-4 h-4 mr-2"/>
+                      Choose photo
                       </label>
                     </Button>
                     <input
@@ -266,9 +266,9 @@ Button.displayName = "Button";
             onClick={() => alert("Post Shared Successfully!")}>
               Share with Community
             </Button>
-            <Button variant="outline" className="border-gray-700 text-gray-300 bg-transparent">
-              Save Draft
-            </Button>
+        <Button variant="outline" className="background-gray-700 text-gray-300 bg-transparent">
+          Save Draft
+        </Button>
           </div>
         </div>
       </div>
