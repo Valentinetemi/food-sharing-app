@@ -1,6 +1,6 @@
 "use client"
 
-// Inspired by react-hot-toast library
+//gotten from the host library https://github.com/craigmj/react-hot-toast/blob/main/src/index.tsx
 import * as React from "react"
 
 import type {

@@ -88,12 +88,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             ))} 
 
               {/* Messages */}
-            <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 relative cursor-pointer">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.3c0 4.6-4.3 8.4-9 8.4-1.6 0-3.1-.4-4.5-1.1L3 21l1.4-4.2C3.4 15.2 3 13.8 3 12.3 3 7.7 7.4 4 12 4s9 3.7 9 8.3z" />
-              </svg>
-              <span className="text-md font-bold">Messages</span>
-            </div>
+            
 
 
             {/* Notifications */}
