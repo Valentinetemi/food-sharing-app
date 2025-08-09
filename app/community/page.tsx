@@ -166,7 +166,7 @@ export default function CommunityPage() {
                 <Award className="h-8 w-8 text-purple-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-100">0</div>
-                  <div className="text-sm text-gray-400">Active Challenges</div>
+                  <div className="text-sm text-gray-400">Upcoming Challenges</div>
                 </div>
               </div>
             </CardContent>
@@ -324,7 +324,7 @@ export default function CommunityPage() {
               <CardHeader>
                 <CardTitle className="text-gray-100 flex items-center gap-2">
                   <UserPlus className="h-5 w-5 text-blue-400" />
-                  Suggested Users to Follow
+                  People You May Know
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -356,7 +356,7 @@ export default function CommunityPage() {
                         {user.specialty}
                       </p>
                       <p className="text-xs text-gray-400 mb-3">
-                        {user.mutualFollowers} mutual followers
+                        {user.mutualFollowers} Your followers
                       </p>
                       <Button
                         size="sm"
