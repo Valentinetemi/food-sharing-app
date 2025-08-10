@@ -44,18 +44,76 @@ export function Navigation({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex-1">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col justify-between bg-gray-950 text-white px-6 z-50 border-r border-zinc-600">
+      <aside
+        className="
+        hidden
+        lg:flex
+        fixed
+        top-0
+        left-0
+        h-full
+        w-64
+        flex-col
+        justify-between
+        bg-gray-950
+        text-white
+        px-6
+        z-50
+        border-r
+        border-zinc-600
+      "
+      >
         <div>
           {/* Logo */}
-          <div className="flex items-center gap-2 px-3 pt-6">
-            <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold text-white">
+          <div
+            className="
+            flex
+            items-center
+            gap-2
+            px-3
+            pt-6
+          "
+          >
+            <div
+              className="
+              w-9
+              h-9
+              rounded-full
+              bg-orange-500
+              flex
+              items-center
+              justify-center
+              text-lg
+              font-bold
+              text-white
+            "
+            >
               F
             </div>
-            <span className="text-xl font-bold text-white">FoodShare</span>
+            <span
+              className="
+              text-xl
+              font-bold
+              text-white
+            "
+            >
+              FoodShare
+            </span>
           </div>
 
           {pathname === "/" && (
-            <div className="flex flex-wrap gap-3 px-8 justify-center items-center  py-4 bg-gray-950 ">
+            <div
+              className="
+              flex
+              flex-wrap
+              gap-3
+              px-8
+              justify-center
+              items-center
+              py-4
+              bg-gray-950
+            "
+            >
               {filters.map((filter) => (
                 <button
                   key={filter.value}
@@ -73,7 +131,14 @@ export function Navigation({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Navigation Links */}
-          <nav className="flex flex-col space-y-4 mt-8">
+          <nav
+            className="
+            flex
+            flex-col
+            space-y-4
+            mt-8
+          "
+          >
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -86,17 +151,54 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <item.icon className="w-6 h-6" />
-                <span className="text-md font-bold">{item.label}</span>
+                <span
+                  className="
+                  text-md
+                  font-bold
+                "
+                >
+                  {item.label}
+                </span>
               </Link>
             ))}
 
             {/* Messages */}
 
             {/* Notifications */}
-            <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 relative cursor-pointer">
+            <div
+              className="
+              flex
+              items-center
+              gap-4
+              px-3
+              py-2
+              rounded-lg
+              hover:bg-zinc-800
+              hover:text-orange-500
+              relative
+              cursor-pointer
+            "
+            >
               <BellIcon className="w-6 h-6" />
-              <span className="text-md font-bold">Notifications</span>
-              <Badge className="absolute left-5 top-0 -translate-y-1/2 text-[10px] bg-red-500 px-1">
+              <span
+                className="
+                text-md
+                font-bold
+              "
+              >
+                Notifications
+              </span>
+              <Badge
+                className="
+                absolute
+                left-5
+                top-0
+                -translate-y-1/2
+                text-[10px]
+                bg-red-500
+                px-1
+              "
+              >
                 5
               </Badge>
             </div>
@@ -104,24 +206,90 @@ export function Navigation({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col space-y-4 mb-4">
-          <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 cursor-pointer ">
+        <div
+          className="
+          flex
+          flex-col
+          space-y-4
+          mb-4
+        "
+        >
+          <div
+            className="
+            flex
+            items-center
+            gap-4
+            px-3
+            py-2
+            rounded-lg
+            hover:bg-zinc-800
+            hover:text-orange-500
+            cursor-pointer
+          "
+          >
             <StarIcon className="w-6 h-6" />
-            <span className="text-md font-bold">Stats</span>
+            <span
+              className="
+              text-md
+              font-bold
+            "
+            >
+              Stats
+            </span>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 cursor-pointer">
+          <div
+            className="
+            flex
+            items-center
+            gap-4
+            px-3
+            py-2
+            rounded-lg
+            hover:bg-zinc-800
+            hover:text-orange-500
+            cursor-pointer
+          "
+          >
             <Bars3Icon className="w-6 h-6" />
-            <span className="text-md font-bold">More</span>
+            <span
+              className="
+              text-md
+              font-bold
+            "
+            >
+              More
+            </span>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 w-full lg:ml-64 flex flex-col">
+      <div
+        className="
+        flex-1
+        w-full
+        lg:ml-64
+        flex
+        flex-col
+      "
+      >
         {/* Filter Tabs for mobile*/}
         {pathname === "/" && (
-          <div className="w-full flex justify-center items-center flex-wrap gap-2 bg-gray-950 pt-2 pb-2 lg:hidden">
+          <div
+            className="
+            w-full
+            flex
+            justify-center
+            items-center
+            flex-wrap
+            gap-2
+            bg-gray-950
+            pt-2
+            pb-2
+            lg:hidden
+          "
+          >
             {filters.map((filter) => (
               <button
                 key={filter.value}
@@ -139,8 +307,28 @@ export function Navigation({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Mobile Bottom Nav */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 z-50">
-          <div className="flex items-center justify-around py-2">
+        <div
+          className="
+          lg:hidden
+          fixed
+          bottom-0
+          left-0
+          right-0
+          bg-gray-900/95
+          backdrop-blur-sm
+          border-t
+          border-gray-800
+          z-50
+        "
+        >
+          <div
+            className="
+            flex
+            items-center
+            justify-around
+            py-2
+          "
+          >
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
@@ -159,11 +347,30 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               size="sm"
-              className="relative flex flex-col items-center gap-1 text-gray-400 hover:text-gray-100"
+              className="
+                relative
+                flex
+                flex-col
+                items-center
+                gap-1
+                text-gray-400
+                hover:text-gray-100
+              "
             >
               <BellIcon className="h-5 w-5" />
               <span className="text-xs"></span>
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] bg-red-500">
+              <Badge
+                className="
+                absolute
+                -top-1
+                -right-1
+                h-4
+                w-4
+                p-0
+                text-[10px]
+                bg-red-500
+              "
+              >
                 3
               </Badge>
             </Button>
