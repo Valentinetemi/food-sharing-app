@@ -1,46 +1,51 @@
-"use client"
+"use client";
 
-import { Children, useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Camera, Users, User, Search, Bell, Menu, X, Star } from "lucide-react"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { Children, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  HomeIcon,
+  CameraIcon,
+  UsersIcon,
+  UserIcon,
+  BellIcon,
+  Bars3Icon,
+  StarIcon,
+} from "@heroicons/react/24/solid";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const mockUser = {
-  followedTags: ["healthy", "vegan"]
-}
-
+  followedTags: ["healthy", "vegan"],
+};
 
 export function Navigation({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [activeFilter, setActiveFilter] = useState("recent")
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("recent");
 
   const navItems = [
-    { href: "/", icon: Home, label: "Home" },
-    { href: "/create", icon: Camera, label: "Share Food" },
-    { href: "/community", icon: Users, label: "Community" },
-    { href: "/profile", icon: User, label: "Profile" },
-  ]
+    { href: "/", icon: HomeIcon, label: "Home" },
+    { href: "/create", icon: CameraIcon, label: "Share Food" },
+    { href: "/community", icon: UsersIcon, label: "Community" },
+    { href: "/profile", icon: UserIcon, label: "Profile" },
+  ];
 
   const filters = [
     { label: "🔥 Trending", value: "trending" },
     { label: "🥗 Healthy", value: "healthy" },
     { label: "🕒 Recent", value: "recent" },
-  // Optional: Only show if user has tags
-  ...(mockUser?.followedTags?.length > 0
-    ? [{ label: "❤️ My Tags", value: "mytags" }]
-    : []),
-  ]
+    // Optional: Only show if user has tags
+    ...(mockUser?.followedTags?.length > 0
+      ? [{ label: "❤️ My Tags", value: "mytags" }]
+      : []),
+  ];
   return (
-    <div className="flex-1" >
+    <div className="flex-1">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col justify-between bg-gray-950 text-white px-6 z-50 border-r border-zinc-600">
         <div>
-
-
           {/* Logo */}
           <div className="flex items-center gap-2 px-3 pt-6">
             <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold text-white">
@@ -49,25 +54,23 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             <span className="text-xl font-bold text-white">FoodShare</span>
           </div>
 
-{pathname === "/" && (
-          <div className="flex flex-wrap gap-3 px-8 justify-center items-center  py-4 bg-gray-950 ">
-  {filters.map((filter) => (
-    <button
-      key={filter.value}
-      onClick={() => setActiveFilter(filter.value)}
-      className={`px-3 py-1 rounded-full text-sm transition ${
-        activeFilter === filter.value
-          ? "bg-orange-500 text-white"
-          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-      }`}
-    >
-      {filter.label}
-    </button>
-  ))}
-</div>
-)}
-
-        
+          {pathname === "/" && (
+            <div className="flex flex-wrap gap-3 px-8 justify-center items-center  py-4 bg-gray-950 ">
+              {filters.map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setActiveFilter(filter.value)}
+                  className={`px-3 py-1 rounded-full text-sm transition ${
+                    activeFilter === filter.value
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Navigation Links */}
           <nav className="flex flex-col space-y-4 mt-8">
@@ -85,31 +88,30 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 <item.icon className="w-6 h-6" />
                 <span className="text-md font-bold">{item.label}</span>
               </Link>
-            ))} 
+            ))}
 
-              {/* Messages */}
-            
-
+            {/* Messages */}
 
             {/* Notifications */}
             <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 relative cursor-pointer">
-              <Bell className="w-6 h-6" />
+              <BellIcon className="w-6 h-6" />
               <span className="text-md font-bold">Notifications</span>
-              <Badge className="absolute left-5 top-0 -translate-y-1/2 text-[10px] bg-red-500 px-1">5</Badge>
+              <Badge className="absolute left-5 top-0 -translate-y-1/2 text-[10px] bg-red-500 px-1">
+                5
+              </Badge>
             </div>
           </nav>
         </div>
 
         {/* Bottom Section */}
         <div className="flex flex-col space-y-4 mb-4">
-      
-            <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 cursor-pointer ">
-            <Star className="w-6 h-6" />
+          <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 cursor-pointer ">
+            <StarIcon className="w-6 h-6" />
             <span className="text-md font-bold">Stats</span>
-            </div>
-        
+          </div>
+
           <div className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800 hover:text-orange-500 cursor-pointer">
-            <Menu className="w-6 h-6" />
+            <Bars3Icon className="w-6 h-6" />
             <span className="text-md font-bold">More</span>
           </div>
         </div>
@@ -117,27 +119,25 @@ export function Navigation({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 w-full lg:ml-64 flex flex-col">
-
         {/* Filter Tabs for mobile*/}
         {pathname === "/" && (
-        <div className="w-full flex justify-center items-center flex-wrap gap-2 bg-gray-950 pt-2 pb-2 lg:hidden">
-          {filters.map((filter) => (
-          <button
-          key={filter.value}
-        onClick={() => setActiveFilter(filter.value)}
-        className={`px-3 py-1 text-sm sm:text-base font-bold py-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all ${
-          activeFilter === filter.value
-          ? "bg-orange-500 text-white"
-          : "bg-gray-950 text-gray-300"
-        }`}
-        >
-          {filter.label}
-          </button>
-  ))}
-        </div>
-)}
-      
-       
+          <div className="w-full flex justify-center items-center flex-wrap gap-2 bg-gray-950 pt-2 pb-2 lg:hidden">
+            {filters.map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => setActiveFilter(filter.value)}
+                className={`px-3 py-1 text-sm sm:text-base font-bold py-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all ${
+                  activeFilter === filter.value
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-950 text-gray-300"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Mobile Bottom Nav */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 z-50">
           <div className="flex items-center justify-around py-2">
@@ -156,14 +156,20 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             ))}
-            <Button variant="ghost" size="sm" className="relative flex flex-col items-center gap-1 text-gray-400 hover:text-gray-100">
-              <Bell className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative flex flex-col items-center gap-1 text-gray-400 hover:text-gray-100"
+            >
+              <BellIcon className="h-5 w-5" />
               <span className="text-xs"></span>
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] bg-red-500">3</Badge>
+              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] bg-red-500">
+                3
+              </Badge>
             </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

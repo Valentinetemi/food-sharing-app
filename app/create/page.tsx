@@ -1,63 +1,73 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useState } from "react"
-import { Camera, Upload, Search, Plus, X } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import {
+  CameraIcon,
+  ArrowUpTrayIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import Link from "next/link"
-import CalorieDropdown from "@/components/ui/CalorieDropdown"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Link from "next/link";
+import CalorieDropdown from "@/components/ui/CalorieDropdown";
 
 export default function CreatePostPage() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [tags, setTags] = useState<string[]>([])
-  const [newTag, setNewTag] = useState("")
-  const [calories, setCalories] = useState("")
-  const [foodName, setFoodName] = useState("")
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const [calories, setCalories] = useState("");
+  const [foodName, setFoodName] = useState("");
   const [description, setDescription] = useState("");
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "underline-offset-4 hover:underline text-primary",
+  const buttonVariants = cva(
+    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background",
+    {
+      variants: {
+        variant: {
+          default: "bg-primary text-primary-foreground hover:bg-primary/90",
+          outline:
+            "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          ghost: "hover:bg-accent hover:text-accent-foreground",
+          link: "underline-offset-4 hover:underline text-primary",
+        },
+        size: {
+          default: "h-10 px-4 py-2",
+          sm: "h-9 px-3 rounded-md",
+          lg: "h-11 px-8 rounded-md",
+          icon: "h-10 w-10",
+        },
       },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3 rounded-md",
-        lg: "h-11 px-8 rounded-md",
-        icon: "h-10 w-10",
+      defaultVariants: {
+        variant: "default",
+        size: "default",
       },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    }
+  );
+
+  interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: "default" | "outline" | "ghost" | "link";
+    size?: "default" | "sm" | "lg" | "icon";
+    asChild?: boolean;
   }
-);
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "outline" | "ghost" | "link";
-  size?: "default" | "sm" | "lg" | "icon";
-  asChild?: boolean;
-}
-
-
-
-Button.displayName = "Button";
+  Button.displayName = "Button";
 
   async function handleShare() {
     if (!foodName || !description || !calories) {
@@ -67,8 +77,8 @@ Button.displayName = "Button";
 
     const res = await fetch("/api/posts", {
       method: "POST",
-      headers: {"Content-Type" : "application/json" },
-      body: JSON.stringify({foodName, description, calories}),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ foodName, description, calories }),
     });
 
     if (res.ok) {
@@ -79,34 +89,32 @@ Button.displayName = "Button";
       setFoodName("");
       setDescription("");
       setCalories("");
-    } else{
-      alert("Failed to share post.")
+    } else {
+      alert("Failed to share post.");
     }
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setSelectedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()])
-      setNewTag("")
+      setTags([...tags, newTag.trim()]);
+      setNewTag("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove))
-  }
-
-
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -114,12 +122,16 @@ Button.displayName = "Button";
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-100">Share Your Food</h1>
-            <p className="text-gray-400">Show the community what you're eating!</p>
+            <h1 className="text-2xl font-bold text-gray-100">
+              Share Your Food
+            </h1>
+            <p className="text-gray-400">
+              Show the community what you're eating!
+            </p>
           </div>
           <Link href="/">
             <Button variant="ghost" className="text-gray-400">
-              <X className="h-4 w-4" />
+              <XMarkIcon className="h-4 w-4" />
             </Button>
           </Link>
         </div>
@@ -133,13 +145,18 @@ Button.displayName = "Button";
             <CardContent>
               {!selectedImage ? (
                 <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center">
-                  <Camera className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">Upload a photo of your food</p>
+                  <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-4">
+                    Upload a photo of your food
+                  </p>
                   <div className="flex gap-2 justify-center">
-                    <Button asChild className="bg-gradient-to-r from-orange-500 to-red-500">
+                    <Button
+                      asChild
+                      className="bg-gradient-to-r from-orange-500 to-red-500"
+                    >
                       <label htmlFor="image-upload" className="cursor-pointer">
-                      <Upload className="w-4 h-4 mr-2"/>
-                      Choose photo
+                        <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                        Choose photo
                       </label>
                     </Button>
                     <input
@@ -164,7 +181,7 @@ Button.displayName = "Button";
                     className="absolute top-2 right-2"
                     onClick={() => setSelectedImage(null)}
                   >
-                    <X className="h-4 w-4" />
+                    <XMarkIcon className="h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -224,7 +241,7 @@ Button.displayName = "Button";
             </CardContent>
           </Card>
 
-        <CalorieDropdown/>
+          <CalorieDropdown />
 
           {/* Tags */}
           <Card className="bg-gray-900 border-gray-800">
@@ -240,18 +257,31 @@ Button.displayName = "Button";
                   className="bg-gray-800 border-gray-700 text-gray-100"
                   onKeyPress={(e) => e.key === "Enter" && addTag()}
                 />
-                <Button onClick={addTag} size="icon" variant="outline" className="border-gray-700 bg-transparent">
-                  <Plus className="h-4 w-4" />
+                <Button
+                  onClick={addTag}
+                  size="icon"
+                  variant="outline"
+                  className="border-gray-700 bg-transparent"
+                >
+                  <PlusIcon className="h-4 w-4" />
                 </Button>
               </div>
 
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-blue-900/30 text-blue-400 border-blue-800">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="bg-blue-900/30 text-blue-400 border-blue-800"
+                    >
                       #{tag}
-                      <button onClick={() => removeTag(tag)} className="ml-1 hover:text-blue-300">
-                        <X className="h-3 w-3" />
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:text-blue-300"
+                        aria-label={`Remove tag ${tag}`}
+                      >
+                        <XMarkIcon className="h-3 w-3" />
                       </button>
                     </Badge>
                   ))}
@@ -262,16 +292,21 @@ Button.displayName = "Button";
 
           {/* Submit */}
           <div className="flex gap-3">
-            <Button className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-            onClick={() => alert("Post Shared Successfully!")}>
+            <Button
+              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              onClick={() => alert("Post Shared Successfully!")}
+            >
               Share with Community
             </Button>
-        <Button variant="outline" className="background-gray-700 text-gray-300 bg-transparent">
-          Save Draft
-        </Button>
+            <Button
+              variant="outline"
+              className="background-gray-700 text-gray-300 bg-transparent"
+            >
+              Save Draft
+            </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

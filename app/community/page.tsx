@@ -1,11 +1,8 @@
-import {
-  Users,
-  TrendingUp,
-  Award,
-  MessageSquare,
-  UserPlus,
-  Search,
-} from "lucide-react";
+import { UserPlusIcon, UsersIcon } from "@heroicons/react/24/solid";
+import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
+import { TrophyIcon } from "@heroicons/react/24/solid";
+import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,7 +110,7 @@ export default function CommunityPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search users, topics..."
                 className="pl-10 bg-gray-900 border-gray-700 text-gray-100 w-64"
@@ -127,7 +124,7 @@ export default function CommunityPage() {
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-blue-400" />
+                <UsersIcon className="h-8 w-8 text-blue-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-100">20</div>
                   <div className="text-sm text-gray-400">Active Members</div>
@@ -139,7 +136,7 @@ export default function CommunityPage() {
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <MessageSquare className="h-8 w-8 text-green-400" />
+                <ChatBubbleLeftIcon className="h-8 w-8 text-green-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-100">26</div>
                   <div className="text-sm text-gray-400">Posts Today</div>
@@ -151,7 +148,7 @@ export default function CommunityPage() {
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-8 w-8 text-orange-400" />
+                <ArrowTrendingUpIcon className="h-8 w-8 text-orange-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-100">10</div>
                   <div className="text-sm text-gray-400">Trending Topics</div>
@@ -163,10 +160,12 @@ export default function CommunityPage() {
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Award className="h-8 w-8 text-purple-400" />
+                <TrophyIcon className="h-8 w-8 text-purple-400" />
                 <div>
                   <div className="text-2xl font-bold text-gray-100">0</div>
-                  <div className="text-sm text-gray-400">Upcoming Challenges</div>
+                  <div className="text-sm text-gray-400">
+                    Upcoming Challenges
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -202,7 +201,7 @@ export default function CommunityPage() {
             </TabsTrigger>
             <TabsTrigger
               value="challenges"
-              className="data-[state=active]:bg-gray-200" 
+              className="data-[state=active]:bg-gray-200"
             >
               Challenges
             </TabsTrigger>
@@ -213,7 +212,7 @@ export default function CommunityPage() {
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-gray-100 flex items-center gap-2">
-                    <Award className="h-5 w-5 text-yellow-400" />
+                    <TrophyIcon className="h-5 w-5 text-yellow-400" />
                     Top Contributors
                   </CardTitle>
                 </CardHeader>
@@ -272,7 +271,7 @@ export default function CommunityPage() {
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-gray-100 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-400" />
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-green-400" />
                     Trending Topics
                   </CardTitle>
                 </CardHeader>
@@ -323,7 +322,7 @@ export default function CommunityPage() {
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="text-gray-100 flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-blue-400" />
+                  <UserPlusIcon className="h-5 w-5 text-blue-400" />
                   People You May Know
                 </CardTitle>
               </CardHeader>
@@ -389,7 +388,7 @@ export default function CommunityPage() {
                         </p>
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
+                            <UsersIcon className="h-4 w-4" />
                             {communityItem.members} Members
                           </div>
                         </div>
