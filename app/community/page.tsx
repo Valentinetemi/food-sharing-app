@@ -1,16 +1,29 @@
+"use client"
 import { UserPlusIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
 import { TrophyIcon } from "@heroicons/react/24/solid";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { CheckIcon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { title } from "process";
+import { Description } from "@radix-ui/react-toast";
+import { useState } from "react";
 
 export default function CommunityPage() {
+
+  type Community = {
+    id: number;
+    title: string;
+    description: string;
+    members: number;
+  };
+
   const topUsers = [
     {
       id: 1,
@@ -76,7 +89,12 @@ export default function CommunityPage() {
     },
   ];
 
-  const community = [
+  const [activeTab, setActiveTab] = useState ("join");
+  const [usercommuinty, setUserCommunity] = useState<Community[]>([]);
+  const [joinedIds, setJoinedIds] = useState<number[]>([]);
+
+//communityList is an array of community
+  const communityList: Community[] = [
     {
       id: 1,
       title: "🍳 Everyday Eats",
@@ -96,6 +114,37 @@ export default function CommunityPage() {
       members: 34,
     },
   ];
+
+    const usercommunity = [
+      {
+        id: 1,
+        title: "Everday Eats",
+        description: "For casual meals, what people are really eating daily",
+        members: 222,
+      },
+      {
+        id: 2,
+        title: "Rice family",
+        description: "Focus on foods with rice in it",
+        members: 100,
+      },
+      {
+        id: 3,
+        title: "Naija Kitchen",
+        description: "Focus on Naija cuisines",
+        members: 200,
+      },  
+    ];
+
+   
+    const handleJoin = (community: Community) => {
+      if (!joinedIds.includes(community.id)) {
+        setJoinedIds((prev) => [...prev, community.id]);
+        setUserCommunity((prev) => [...prev, community]);
+      }
+      setActiveTab("usercommunity")
+    }
+  
 
   return (
     <div
@@ -374,15 +423,20 @@ export default function CommunityPage() {
             >
               Join Communities
             </TabsTrigger>
+
             <TabsTrigger
-              value="yours"
-              className="data-[state=active]:bg-gray-200"
+              value="usercommunity"
+              className="
+              data-[state=active]:bg-slate-200
+              "
             >
               Your Communities
+
             </TabsTrigger>
             <TabsTrigger
               value="leaderboard"
-              className="data-[state=active]:bg-gray-200"
+              className="
+              data-[state=active]:bg-slate-200"
             >
               Leaderboard
             </TabsTrigger>
@@ -390,14 +444,14 @@ export default function CommunityPage() {
               value="discover"
               className="
                 data-[state=active]:bg-slate-200
-                data-[state=active]:text-white
               "
             >
               Discover
             </TabsTrigger>
             <TabsTrigger
               value="challenges"
-              className="data-[state=active]:bg-gray-200"
+              className="
+              data-[state=active]:bg-slate-200"
             >
               Challenges
             </TabsTrigger>
@@ -735,7 +789,7 @@ export default function CommunityPage() {
 
           <TabsContent value="community">
             <div className="space-y-4">
-              {community.map((communityItem) => (
+              {communityList.map((communityItem: Community) => (
                 <Card
                   key={communityItem.id}
                   className="bg-gray-900
@@ -764,8 +818,63 @@ export default function CommunityPage() {
                           </div>
                         </div>
                       </div>
+                      <Button
+                      onClick={() => handleJoin(communityItem)}
+                       className={
+                       joinedIds.includes(communityItem.id) 
+                       ? "bg-green-500 hover:bg-green-600 text-white"
+                       : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                       }
+                       >
+                        {joinedIds.includes(communityItem.id) ? (
+                        < span className="flex items-center gap-2">
+                        < CheckIcon className="w-4 h-4 text-white"/>
+                        Joined
+                        </span>
+                        ) : ( "Join Communities")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="usercommunity">
+            <div className="space-y-4">
+              {usercommunity.map((usercommunityItem: Community) => (
+                <Card
+                  key={usercommunityItem.id}
+                  className="bg-gray-900
+                   border-gray-800"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex
+                     flex-col
+                      md:flex-row 
+                      md:items-center
+                       md:justify-between 
+                       gap-4">
+                      <div className="flex-1">
+
+                        <h3 className="text-lg
+                         font-semibold
+                          text-gray-100 
+                         mb-2">
+                          {usercommunityItem.title}
+                        </h3>
+                        <p className="text-gray-300 mb-3">
+                          {usercommunityItem.description}
+                        </p>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <UsersIcon className="h-4 w-4" />
+                            {usercommunityItem.members} Members
+                          </div>
+                        </div>
+                      </div>
                       <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                        Join Communities
+                        View Community
                       </Button>
                     </div>
                   </CardContent>
