@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { title } from "process";
 import { Description } from "@radix-ui/react-toast";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function CommunityPage() {
 
@@ -136,11 +137,18 @@ export default function CommunityPage() {
       },  
     ];
 
+    const { toast } = useToast();
    
     const handleJoin = (community: Community) => {
       if (!joinedIds.includes(community.id)) {
         setJoinedIds((prev) => [...prev, community.id]);
         setUserCommunity((prev) => [...prev, community]);
+
+        toast({
+          title: "Community Joined",
+          description: `You have Joined ${community.title}`,
+          duration: 3000,
+        });
       }
       setActiveTab("usercommunity")
     }
