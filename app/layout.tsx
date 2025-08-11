@@ -6,7 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navigation } from "@/components/navigation";
 import  ClientWrapper from "@/components/ClientWrapper";
-
+import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -34,6 +34,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-auto relative">
               <div className="min-h-full"> 
               {children}
+              <Toaster/>
               </div>
               <div className="h-16 lg:hidden" aria-hidden="true"/>
               </main>
@@ -41,5 +42,5 @@ export default function RootLayout({
         </ClientWrapper>
       </body>
     </html>
-  )
+  );
 }

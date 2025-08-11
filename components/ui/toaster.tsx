@@ -31,5 +31,5 @@ export function Toaster() {
       })}
       <ToastViewport />
     </ToastProvider>
-  )
+  );
 }
