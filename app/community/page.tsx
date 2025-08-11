@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { UserPlusIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
 import { TrophyIcon } from "@heroicons/react/24/solid";
@@ -17,7 +17,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CommunityPage() {
-
   const { toast } = useToast();
 
   type Community = {
@@ -92,12 +91,11 @@ export default function CommunityPage() {
     },
   ];
 
-  const [activeTab, setActiveTab] = useState ("join");
+  const [activeTab, setActiveTab] = useState("join");
   const [joinedIds, setJoinedIds] = useState<number[]>([]);
-  const [usercommuinty, setUserCommunity] = useState<Community[]>([]);
- 
+  const [userCommunities, setUserCommunities] = useState<Community[]>([]);
 
-//communityList is an array of community
+  //communityList is an array of community
   const communityList: Community[] = [
     {
       id: 1,
@@ -119,47 +117,33 @@ export default function CommunityPage() {
     },
   ];
 
-    const usercommunity = [
-      {
-        id: 1,
-        title: "Everday Eats",
-        description: "For casual meals, what people are really eating daily",
-        members: 222,
-      },
-      {
-        id: 2,
-        title: "Rice family",
-        description: "Focus on foods with rice in it",
-        members: 100,
-      },
-      {
-        id: 3,
-        title: "Naija Kitchen",
-        description: "Focus on Naija cuisines",
-        members: 200,
-      },  
-    ];
-   
-    const handleJoin = (community: Community) => {
-     setUserCommunity((prev) =>
-    prev.some((com) => com.id === community.id)
-    ? prev
-  : [...prev, { ...community}]);
-
-      if (!joinedIds.includes(community.id)) {
-        setJoinedIds((prev) => [...prev, community.id]);
-        setUserCommunity((prev) => [...prev, community]);
-
-        toast({
-          title: "Community Joined",
-          description: `You have Joined ${community.title}`,
-          duration: 3000,
-        });
-      };
-
-      setActiveTab("usercommunity"); // this swtich the tabs
+  const handleJoin = (community: Community) => {
+    // Check if community is already joined
+    if (joinedIds.includes(community.id)) {
+      return;
     }
-  
+
+    // Add to joined IDs
+    setJoinedIds((prev) => [...prev, community.id]);
+
+    // Add to user communities
+    setUserCommunities((prev) => {
+      if (prev.some((com) => com.id === community.id)) {
+        return prev;
+      }
+      return [...prev, { ...community }];
+    });
+
+    // Show toast notification
+    toast({
+      title: "Community Joined",
+      description: `You have joined ${community.title}`,
+      duration: 3000,
+    });
+
+    // Switch to user communities tab
+    setActiveTab("usercommunity");
+  };
 
   return (
     <div
@@ -425,7 +409,11 @@ export default function CommunityPage() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList
             className="
             bg-gray-900
@@ -446,7 +434,6 @@ export default function CommunityPage() {
               "
             >
               Your Communities
-
             </TabsTrigger>
             <TabsTrigger
               value="leaderboard"
@@ -717,46 +704,56 @@ export default function CommunityPage() {
 
           <TabsContent value="challenges">
             <CardHeader>
-              <CardTitle className="
+              <CardTitle
+                className="
               text-gray-100
                 flex
                  items-center
                   justify-center
-                   gap-2">
+                   gap-2"
+              >
                 🧪 Challenges Coming Soon
               </CardTitle>
-              <CardContent className="
+              <CardContent
+                className="
               text-gray-300 
               flex
                items-center
                 justify-center
                  pt-4 
-                 gap-2 ">
+                 gap-2 "
+              >
                 Fun food challenges are on the way. Stay tuned! 🚀
               </CardContent>
             </CardHeader>
           </TabsContent>
 
           <TabsContent value="discover">
-            <Card className="
+            <Card
+              className="
             bg-gray-900
-             border-gray-800">
+             border-gray-800"
+            >
               <CardHeader>
-                <CardTitle className="
+                <CardTitle
+                  className="
                 text-gray-100 
                 flex
                  items-center
-                 gap-2">
+                 gap-2"
+                >
                   <UserPlusIcon className="h-5 w-5 text-blue-400" />
                   People You May Know
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid
+                <div
+                  className="grid
                  grid-cols-1
                   md:grid-cols-2 
                   lg:grid-cols-3
-                   gap-4">
+                   gap-4"
+                >
                   {suggestedUsers.map((user) => (
                     <div
                       key={user.id}
@@ -811,16 +808,20 @@ export default function CommunityPage() {
                    border-gray-800"
                 >
                   <CardContent className="p-6">
-                    <div className="flex
+                    <div
+                      className="flex
                      flex-col
                       md:flex-row md:items-center
                        md:justify-between 
-                       gap-4">
+                       gap-4"
+                    >
                       <div className="flex-1">
-                        <h3 className="text-lg
+                        <h3
+                          className="text-lg
                          font-semibold
                           text-gray-100 
-                         mb-2">
+                         mb-2"
+                        >
                           {communityItem.title}
                         </h3>
                         <p className="text-gray-300 mb-3">
@@ -834,19 +835,21 @@ export default function CommunityPage() {
                         </div>
                       </div>
                       <Button
-                      onClick={() => handleJoin(communityItem)}
-                       className={
-                       joinedIds.includes(communityItem.id) 
-                       ? "bg-green-500 hover:bg-green-600 text-white"
-                       : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                       }
-                       >
+                        onClick={() => handleJoin(communityItem)}
+                        className={
+                          joinedIds.includes(communityItem.id)
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                        }
+                      >
                         {joinedIds.includes(communityItem.id) ? (
-                        < span className="flex items-center gap-2">
-                        < CheckIcon className="w-4 h-4 text-white"/>
-                        Joined
-                        </span>
-                        ) : ( "Join Communities")}
+                          <span className="flex items-center gap-2">
+                            <CheckIcon className="w-4 h-4 text-white" />
+                            Joined
+                          </span>
+                        ) : (
+                          "Join Communities"
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -855,60 +858,63 @@ export default function CommunityPage() {
             </div>
           </TabsContent>
 
-
-
           <TabsContent value="usercommunity">
             <div className="space-y-4">
-              {usercommuinty.length === 0 ? (
+              {userCommunities.length === 0 ? (
                 <CardContent
-                className=" flex
+                  className=" flex
                  mt-4
                   justify-center
                    items-center
                     gap-2
                      text-gray-200 
-                     font-semibold">You haven't Joined any community yet 😢
+                     font-semibold"
+                >
+                  You haven't joined any community yet 😢
                 </CardContent>
               ) : (
-              usercommunity.map((usercommunityItem: Community) => (
-                <Card
-                  key={usercommunityItem.id}
-                  className="bg-gray-900
+                userCommunities.map((usercommunityItem: Community) => (
+                  <Card
+                    key={usercommunityItem.id}
+                    className="bg-gray-900
                    border-gray-800"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex
+                  >
+                    <CardContent className="p-6">
+                      <div
+                        className="flex
                      flex-col
                       md:flex-row 
                       md:items-center
                        md:justify-between 
-                       gap-4">
-                      <div className="flex-1">
-
-                        <h3 className="text-lg
+                       gap-4"
+                      >
+                        <div className="flex-1">
+                          <h3
+                            className="text-lg
                          font-semibold
                           text-gray-100 
-                         mb-2">
-                          {usercommunityItem.title}
-                        </h3>
-                        <p className="text-gray-300 mb-3">
-                          {usercommunityItem.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <UsersIcon className="h-4 w-4" />
-                            {usercommunityItem.members} Members
+                         mb-2"
+                          >
+                            {usercommunityItem.title}
+                          </h3>
+                          <p className="text-gray-300 mb-3">
+                            {usercommunityItem.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <UsersIcon className="h-4 w-4" />
+                              {usercommunityItem.members} Members
+                            </div>
                           </div>
                         </div>
+                        <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                          View Community
+                        </Button>
                       </div>
-                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                        View Community
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
         </Tabs>
