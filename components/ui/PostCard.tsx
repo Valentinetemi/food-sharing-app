@@ -8,6 +8,18 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 
+type Comment = {
+  id: number;
+  user: {
+    name: string;
+    username: string;
+    avatar: string;
+  };
+  content: string;
+  timestamp: string;
+  timeAgo: string;
+};
+
 type PostCardProps = {
   id: number;
   title: string;
@@ -28,6 +40,44 @@ type PostCardProps = {
 const likeSound =
   typeof Audio !== "undefined" ? new Audio("/like-pop.mp3") : null;
 
+// Static comments data
+const staticComments: Comment[] = [
+  {
+    id: 1,
+    user: {
+      name: "Sarah Johnson",
+      username: "sarahj",
+      avatar: "/placeholder-user.jpg",
+    },
+    content: "This looks amazing! Would love to try this recipe.",
+    timestamp: "2024-01-15T10:30:00Z",
+    timeAgo: "2 hours ago",
+  },
+  {
+    id: 2,
+    user: {
+      name: "Mike Chen",
+      username: "mikec",
+      avatar: "/placeholder-user.jpg",
+    },
+    content:
+      "How many servings does this make? Planning to cook for family dinner.",
+    timestamp: "2024-01-15T09:15:00Z",
+    timeAgo: "3 hours ago",
+  },
+  {
+    id: 3,
+    user: {
+      name: "Emma Wilson",
+      username: "emmaw",
+      avatar: "/placeholder-user.jpg",
+    },
+    content: "Love the presentation! The colors are so vibrant.",
+    timestamp: "2024-01-15T08:45:00Z",
+    timeAgo: "4 hours ago",
+  },
+];
+
 export default function PostCard({
   id,
   title,
@@ -42,6 +92,10 @@ export default function PostCard({
 }: PostCardProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(initialLikes || 0);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [postComments, setPostComments] = useState<Comment[]>(staticComments);
+  const [commentCount, setCommentCount] = useState(comments || 0);
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
@@ -69,11 +123,11 @@ export default function PostCard({
 
         const burst: HeartBurst = {
           id: Date.now() + i,
-          x: Math.random() * 160 - 80, // random offset -50px to +50px
+          x: Math.random() * 160 - 80,
           y: Math.random() * 160 - 80,
         };
 
-        setHearts((prev) => [...prev, burst]); // Unique key per heart
+        setHearts((prev) => [...prev, burst]);
 
         setTimeout(() => {
           setHearts((prev) => prev.filter((h) => h.id !== burst.id));
@@ -83,7 +137,27 @@ export default function PostCard({
   };
 
   const handleComment = () => {
-    alert("Comment feature coming soon!");
+    setShowComments(!showComments);
+  };
+
+  const handleAddComment = () => {
+    if (commentText.trim()) {
+      const newComment: Comment = {
+        id: Date.now(),
+        user: {
+          name: "Current User",
+          username: "currentuser",
+          avatar: "/placeholder-user.jpg",
+        },
+        content: commentText,
+        timestamp: new Date().toISOString(),
+        timeAgo: "just now",
+      };
+
+      setPostComments([newComment, ...postComments]);
+      setCommentCount(commentCount + 1);
+      setCommentText("");
+    }
   };
 
   const handleShare = async () => {
@@ -120,7 +194,7 @@ export default function PostCard({
         </div>
       </div>
 
-      {/* IMAGE WITH CALORIE BADGE*/}
+      {/* IMAGE */}
       <div
         onDoubleClick={handleDoubleClick}
         className="relative cursor-pointer"
@@ -147,7 +221,7 @@ export default function PostCard({
         ))}
       </div>
 
-      {/* POST DETAILS*/}
+      {/* POST DETAILS */}
       <div>
         <h2 className="text-lg font-bold text-white">{title}</h2>
         <p className="text-gray-300">{description}</p>
@@ -163,8 +237,7 @@ export default function PostCard({
         </div>
       </div>
 
-      {/* ACTION BUTTON*/}
-
+      {/* ACTION BUTTONS */}
       <div className="flex items-center gap-4 mt-3 text-pink">
         <button onClick={handleLike} className="flex items-center gap-1">
           <HeartIcon
@@ -178,7 +251,7 @@ export default function PostCard({
           className="flex items-center gap-1 hover:text-blue-400"
         >
           <ChatBubbleLeftIcon className="w-5 h-5" />
-          {comments}
+          {commentCount}
         </button>
 
         <button
@@ -189,6 +262,71 @@ export default function PostCard({
           Share
         </button>
       </div>
+
+      {/* COMMENTS SECTION */}
+      {showComments && (
+        <div className="border-t border-gray-700 pt-4 space-y-4">
+          <h3 className="text-white font-semibold">Comments</h3>
+
+          {/* Add new comment */}
+          <div className="space-y-2">
+            <div className="flex gap-3">
+              <img
+                src="/placeholder-user.jpg"
+                alt="Current User"
+                className="h-8 w-8 rounded-full"
+              />
+              <div className="flex-1 space-y-2">
+                <textarea
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white resize-none w-full p-2 rounded-md"
+                  rows={2}
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleAddComment}
+                    disabled={!commentText.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Comments list */}
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {postComments.map((comment) => (
+              <div key={comment.id} className="flex gap-3">
+                <img
+                  src={comment.user.avatar}
+                  alt={comment.user.name}
+                  className="h-8 w-8 rounded-full"
+                />
+                <div className="flex-1">
+                  <div className="bg-gray-800 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-white text-sm">
+                        {comment.user.name}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        @{comment.user.username}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        · {comment.timeAgo}
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-sm">{comment.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,13 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { title } from "process";
-import { Description } from "@radix-ui/react-toast";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function CommunityPage() {
   const { toast } = useToast();
+  const router = useRouter();
 
   type Community = {
     id: number;
@@ -708,9 +708,9 @@ export default function CommunityPage() {
                 className="
               text-gray-100
                 flex
-                 items-center
+                items-center
                   justify-center
-                   gap-2"
+                  gap-2"
               >
                 🧪 Challenges Coming Soon
               </CardTitle>
@@ -907,7 +907,12 @@ export default function CommunityPage() {
                             </div>
                           </div>
                         </div>
-                        <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                        <Button
+                          onClick={() =>
+                            router.push(`/community/${usercommunityItem.id}`)
+                          }
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                        >
                           View Community
                         </Button>
                       </div>
