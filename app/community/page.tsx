@@ -93,8 +93,9 @@ export default function CommunityPage() {
   ];
 
   const [activeTab, setActiveTab] = useState ("join");
-  const [usercommuinty, setUserCommunity] = useState<Community[]>([]);
   const [joinedIds, setJoinedIds] = useState<number[]>([]);
+  const [usercommuinty, setUserCommunity] = useState<Community[]>([]);
+ 
 
 //communityList is an array of community
   const communityList: Community[] = [
@@ -140,6 +141,11 @@ export default function CommunityPage() {
     ];
    
     const handleJoin = (community: Community) => {
+     setUserCommunity((prev) =>
+    prev.some((com) => com.id === community.id)
+    ? prev
+  : [...prev, { ...community}]);
+
       if (!joinedIds.includes(community.id)) {
         setJoinedIds((prev) => [...prev, community.id]);
         setUserCommunity((prev) => [...prev, community]);
@@ -151,7 +157,7 @@ export default function CommunityPage() {
         });
       };
 
-      setActiveTab("usercommunity")
+      setActiveTab("usercommunity"); // this swtich the tabs
     }
   
 
@@ -419,7 +425,7 @@ export default function CommunityPage() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="community" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList
             className="
             bg-gray-900
@@ -427,7 +433,7 @@ export default function CommunityPage() {
           "
           >
             <TabsTrigger
-              value="community"
+              value="join"
               className="data-[state=active]:bg-gray-200"
             >
               Join Communities
@@ -796,7 +802,7 @@ export default function CommunityPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="community">
+          <TabsContent value="join">
             <div className="space-y-4">
               {communityList.map((communityItem: Community) => (
                 <Card
@@ -849,9 +855,22 @@ export default function CommunityPage() {
             </div>
           </TabsContent>
 
+
+
           <TabsContent value="usercommunity">
             <div className="space-y-4">
-              {usercommunity.map((usercommunityItem: Community) => (
+              {usercommuinty.length === 0 ? (
+                <CardContent
+                className=" flex
+                 mt-4
+                  justify-center
+                   items-center
+                    gap-2
+                     text-gray-200 
+                     font-semibold">You haven't Joined any community yet 😢
+                </CardContent>
+              ) : (
+              usercommunity.map((usercommunityItem: Community) => (
                 <Card
                   key={usercommunityItem.id}
                   className="bg-gray-900
@@ -888,7 +907,8 @@ export default function CommunityPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ))
+            )}
             </div>
           </TabsContent>
         </Tabs>
