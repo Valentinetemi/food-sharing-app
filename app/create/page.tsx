@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
-
-import { useState } from "react";
+import React, { useState, useRef, FormEvent } from "react";
 import {
   CameraIcon,
   ArrowUpTrayIcon,
   PlusIcon,
   XMarkIcon,
+  CheckIcon,
 } from "@heroicons/react/24/solid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,9 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Slot } from "@radix-ui/react-slot";
-import { cva } from "class-variance-authority";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -27,87 +23,96 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import CalorieDropdown from "@/components/ui/CalorieDropdown";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Animation variants for smooth transitions
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4 },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+type MealType =
+  | "breakfast"
+  | "lunch"
+  | "dinner"
+  | "snack"
+  | "sweet"
+  | "dessert"
+  | "";
+type CalorieRange = "under-200" | "200-500" | "500-800" | "over-800" | "";
 
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   const [tags, setTags] = useState<string[]>([]);
+
   const [newTag, setNewTag] = useState("");
-  const [calories, setCalories] = useState("");
+
   const [foodName, setFoodName] = useState("");
+
   const [description, setDescription] = useState("");
 
-  const buttonVariants = cva(
-    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background",
-    {
-      variants: {
-        variant: {
-          default: "bg-primary text-primary-foreground hover:bg-primary/90",
-          outline:
-            "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-          ghost: "hover:bg-accent hover:text-accent-foreground",
-          link: "underline-offset-4 hover:underline text-primary",
-        },
-        size: {
-          default: "h-10 px-4 py-2",
-          sm: "h-9 px-3 rounded-md",
-          lg: "h-11 px-8 rounded-md",
-          icon: "h-10 w-10",
-        },
-      },
-      defaultVariants: {
-        variant: "default",
-        size: "default",
-      },
-    }
-  );
+  const [mealType, setMealType] = useState<MealType>("");
 
-  interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "default" | "outline" | "ghost" | "link";
-    size?: "default" | "sm" | "lg" | "icon";
-    asChild?: boolean;
-  }
+  const [isSharing, setIsSharing] = useState(false);
 
-  Button.displayName = "Button";
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleShare() {
-    if (!foodName || !description || !calories) {
-      alert("Please fill all fields! ");
-      return;
-    }
+  // Validate form fields
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-    const res = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ foodName, description, calories }),
-    });
+    if (!selectedImage) newErrors.image = "Please upload a food photo.";
+    if (!foodName.trim()) newErrors.foodName = "Food name is required.";
+    if (!description.trim()) newErrors.description = "Description is required.";
+    if (!calories) newErrors.calories = "Please select a calorie range.";
+    if (!mealType) newErrors.mealType = "Please select a meal type.";
 
-    if (res.ok) {
-      const newPost = await res.json();
-      console.log("Post shared successfully: ", newPost);
-      alert("Shared Successfully! ");
-      //optional clear the form
-      setFoodName("");
-      setDescription("");
-      setCalories("");
-    } else {
-      alert("Failed to share post.");
-    }
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && file.type.startsWith("image/")) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size should be less than 5MB.");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
+        setImageFile(file);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImageFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    const trimmedTag = newTag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
+      setTags([...tags, trimmedTag]);
       setNewTag("");
     }
   };
@@ -116,11 +121,35 @@ export default function CreatePostPage() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (validateForm()) {
+      setIsSharing(true);
+      // Simulate API call
+      setTimeout(() => {
+        console.log("Submitting post data:", {
+          foodName,
+          description,
+          mealType,
+          calories,
+          tags,
+          imageFile,
+        });
+        alert("Post shared successfully!");
+        setIsSharing(false);
+        // You could clear the form here if needed
+      }, 1500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-950">
       <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <motion.div
+          {...fadeInUp}
+          className="flex items-center justify-between mb-6"
+        >
           <div>
             <h1 className="text-2xl font-bold text-gray-100">
               Share Your Food
@@ -134,178 +163,238 @@ export default function CreatePostPage() {
               <XMarkIcon className="h-4 w-4" />
             </Button>
           </Link>
-        </div>
+        </motion.div>
 
-        <div className="space-y-6">
+        <motion.form
+          onSubmit={handleSubmit}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="space-y-6"
+        >
           {/* Image Upload */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Food Photo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!selectedImage ? (
-                <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center">
-                  <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">
-                    Upload a photo of your food
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    <Button
-                      asChild
-                      className="bg-gradient-to-r from-orange-500 to-red-500"
-                    >
-                      <label htmlFor="image-upload" className="cursor-pointer">
-                        <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
-                        Choose photo
-                      </label>
-                    </Button>
-                    <input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
+          <motion.div variants={fadeInUp}>
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-100">Food Photo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!selectedImage ? (
+                  <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center relative">
+                    <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                    <p className="text-gray-400 mb-4">
+                      Upload a photo of your food
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        asChild
+                        className="bg-gradient-to-r from-orange-500 to-red-500"
+                      >
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer"
+                        >
+                          <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                          Choose photo
+                        </label>
+                      </Button>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        ref={fileInputRef}
+                      />
+                    </div>
+                    {errors.image && (
+                      <p className="text-red-500 text-sm absolute -bottom-6 left-0 right-0">
+                        {errors.image}
+                      </p>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <div className="relative">
-                  <img
-                    src={selectedImage || "/placeholder.svg"}
-                    alt="Selected food"
-                    className="w-full aspect-square object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => setSelectedImage(null)}
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={selectedImage}
+                      alt="Selected food"
+                      className="w-full aspect-square object-cover rounded-lg"
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Food Details */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Food Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="food-name" className="text-gray-200">
-                  Food Name
-                </Label>
-                <Input
-                  id="food-name"
-                  value={foodName}
-                  onChange={(e) => setFoodName(e.target.value)}
-                  placeholder="e.g., Grilled Salmon with Vegetables"
-                  className="bg-gray-800 border-gray-700 text-gray-100"
-                />
-              </div>
+          <motion.div variants={fadeInUp}>
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-100">Food Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="food-name" className="text-gray-200">
+                    Food Name
+                  </Label>
+                  <Input
+                    id="food-name"
+                    value={foodName}
+                    onChange={(e) => setFoodName(e.target.value)}
+                    placeholder="e.g., Grilled Salmon with Vegetables"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                  />
+                  {errors.foodName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.foodName}
+                    </p>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="description" className="text-gray-200">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tell us about your meal, ingredients, cooking method..."
-                  className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="description" className="text-gray-200">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Tell us about your meal, ingredients, cooking method..."
+                    className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]"
+                  />
+                  {errors.description && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="meal-type" className="text-gray-200">
-                  Meal Type
-                </Label>
-                <Select>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
-                    <SelectValue placeholder="Select meal type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
-                    <SelectItem value="breakfast">Breakfast</SelectItem>
-                    <SelectItem value="lunch">Lunch</SelectItem>
-                    <SelectItem value="dinner">Dinner</SelectItem>
-                    <SelectItem value="snack">Snack</SelectItem>
-                    <SelectItem value="Sweet">Sweet</SelectItem>
-                    <SelectItem value="dessert">Dessert</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <Label htmlFor="meal-type" className="text-gray-200">
+                    Meal Type
+                  </Label>
+                  <Select
+                    value={mealType}
+                    onValueChange={(value: MealType) => setMealType(value)}
+                  >
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
+                      <SelectValue placeholder="Select meal type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                      <SelectItem value="sweet">Sweet</SelectItem>
+                      <SelectItem value="dessert">Dessert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.mealType && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.mealType}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <CalorieDropdown />
+          {/* Calorie Dropdown */}
+          <motion.div variants={fadeInUp}>
+            <CalorieDropdown />
+          </motion.div>
 
           {/* Tags */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Tags</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add a tag..."
-                  className="bg-gray-800 border-gray-700 text-gray-100"
-                  onKeyPress={(e) => e.key === "Enter" && addTag()}
-                />
-                <Button
-                  onClick={addTag}
-                  size="icon"
-                  variant="outline"
-                  className="border-gray-700 bg-transparent"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="bg-blue-900/30 text-blue-400 border-blue-800"
-                    >
-                      #{tag}
-                      <button
-                        onClick={() => removeTag(tag)}
-                        className="ml-1 hover:text-blue-300"
-                        aria-label={`Remove tag ${tag}`}
-                      >
-                        <XMarkIcon className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
+          <motion.div variants={fadeInUp}>
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-100">Tags</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    placeholder="Add a tag..."
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                    onKeyDown={(e) => e.key === "Enter" && addTag()}
+                  />
+                  <Button
+                    onClick={addTag}
+                    size="icon"
+                    variant="outline"
+                    className="border-gray-700 bg-transparent"
+                    type="button" // Important to prevent form submission
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                {tags.length > 0 && (
+                  <AnimatePresence>
+                    <motion.div
+                      className="flex flex-wrap gap-2"
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      {tags.map((tag) => (
+                        <motion.div key={tag} variants={fadeInUp}>
+                          <Badge
+                            variant="secondary"
+                            className="bg-blue-900/30 text-blue-400 border-blue-800"
+                          >
+                            #{tag}
+                            <button
+                              onClick={() => removeTag(tag)}
+                              className="ml-1 hover:text-blue-300"
+                              aria-label={`Remove tag ${tag}`}
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Submit */}
-          <div className="flex gap-3">
+          <motion.div variants={fadeInUp} className="flex gap-3">
             <Button
+              type="submit"
               className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-              onClick={() => alert("Post Shared Successfully!")}
+              disabled={isSharing}
             >
-              Share with Community
+              {isSharing ? (
+                <>
+                  <CheckIcon className="h-4 w-4 animate-pulse mr-2" />
+                  Sharing...
+                </>
+              ) : (
+                "Share with Community"
+              )}
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="background-gray-700 text-gray-300 bg-transparent"
             >
               Save Draft
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.form>
       </div>
     </div>
   );

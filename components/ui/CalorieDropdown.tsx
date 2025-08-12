@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { foods, Food } from "@/components/data/foods"
+import { Dispatch, SetStateAction } from "react"
 
 export default function CalorieSelector() {
   const [selectedFoods, setSelectedFoods] = useState<Food[]>([])
