@@ -65,6 +65,8 @@ export default function CreatePostPage() {
 
   const [mealType, setMealType] = useState<MealType>("");
 
+  const [calories, setCalories] = useState<number>(0);
+
   const [isSharing, setIsSharing] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -74,11 +76,13 @@ export default function CreatePostPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!selectedImage) newErrors.image = "Please upload a food photo.";
-    if (!foodName.trim()) newErrors.foodName = "Food name is required.";
-    if (!description.trim()) newErrors.description = "Description is required.";
-    if (!calories) newErrors.calories = "Please select a calorie range.";
-    if (!mealType) newErrors.mealType = "Please select a meal type.";
+    if (!selectedImage) {newErrors.image = "Please upload a food photo.";}
+    if (!foodName.trim()) {newErrors.foodName = "Food name is required.";}
+    if (!description.trim()){ newErrors.description = "Description is required.";}
+    if (calories <= 0){
+      newErrors.calories =
+        "Please select at least one food item for calorie information.";}
+    if (!mealType) {newErrors.mealType = "Please select a meal type.";}
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -121,6 +125,21 @@ export default function CreatePostPage() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const resetForm = () => {
+    setSelectedImage(null);
+    setImageFile(null);
+    setFoodName("");
+    setDescription("");
+    setMealType("");
+    setCalories(0);
+    setTags([]);
+    setNewTag("");
+    setErrors({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
@@ -137,7 +156,7 @@ export default function CreatePostPage() {
         });
         alert("Post shared successfully!");
         setIsSharing(false);
-        // You could clear the form here if needed
+        resetForm(); // Reset the form after successful submission
       }, 1500);
     }
   };
@@ -309,7 +328,10 @@ export default function CreatePostPage() {
 
           {/* Calorie Dropdown */}
           <motion.div variants={fadeInUp}>
-            <CalorieDropdown />
+            <CalorieDropdown onCalorieChange={setCalories} />
+            {errors.calories && (
+              <p className="text-red-500 text-sm mt-1">{errors.calories}</p>
+            )}
           </motion.div>
 
           {/* Tags */}
