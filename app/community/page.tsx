@@ -29,39 +29,37 @@ export default function CommunityPage() {
   const topUsers = [
     {
       id: 1,
-      name: "John Killin",
-      username: "@emmaeats",
-      avatar: "/placeholder.svg?height=40&width=40",
-      posts: 156,
-      followers: 3200,
+      name: "Joseph Joy",
+      username: "@jjl",
+      avatar: "/jjl1.jpg?height=40&width=40",
+      posts: 26,
+      followers: 200,
       badge: "Top Chef",
     },
     {
       id: 2,
-      name: "Mike Rodriguez",
-      username: "@mikeats",
-      avatar: "/placeholder.svg?height=40&width=40",
-      posts: 142,
-      followers: 2800,
+      name: "Benson John",
+      username: "@benson",
+      avatar: "/ben.jpg?height=40&width=40",
+      posts: 42,
+      followers: 150,
       badge: "Fitness Guru",
     },
     {
       id: 3,
-      name: "Sarah Chen",
-      username: "@sarahc",
-      avatar: "/placeholder.svg?height=40&width=40",
-      posts: 127,
-      followers: 2400,
+      name: "Grace Willson",
+      username: "@gracewillson",
+      avatar: "/grace.jpg?height=40&width=40",
+      posts: 37,
+      followers: 109,
       badge: "Healthy Living",
     },
   ];
 
   const trendingTopics = [
-    { name: "Meal Prep Sunday", posts: 234, trend: "+12%" },
-    { name: "Keto Recipes", posts: 189, trend: "+8%" },
-    { name: "Plant Based", posts: 167, trend: "+15%" },
-    { name: "Quick Breakfast", posts: 145, trend: "+5%" },
-    { name: "Dessert Goals", posts: 123, trend: "+20%" },
+    { name: "Keto Recipes", posts: 49, trend: "+8%" },
+    { name: "Quick Breakfast", posts: 50, trend: "+5%" },
+    { name: "Dessert Goals", posts: 95, trend: "+20%" },
   ];
 
   const suggestedUsers = [
