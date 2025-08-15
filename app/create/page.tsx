@@ -24,6 +24,8 @@ import {
 import Link from "next/link";
 import CalorieDropdown from "@/components/ui/CalorieDropdown";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePosts } from "@/context/PostsContext";
+import { useRouter } from "next/navigation";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -51,37 +53,74 @@ type MealType =
 
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
   const [imageFile, setImageFile] = useState<File | null>(null);
-
   const [tags, setTags] = useState<string[]>([]);
-
   const [newTag, setNewTag] = useState("");
-
   const [foodName, setFoodName] = useState("");
-
   const [description, setDescription] = useState("");
-
   const [mealType, setMealType] = useState<MealType>("");
-
   const [calories, setCalories] = useState<number>(0);
-
   const [isSharing, setIsSharing] = useState(false);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get the addPost function from context
+  const { addPost } = usePosts();
+  const router = useRouter();
+
+  // Function to save draft to localStorage
+  const saveDraft = () => {
+    const draft = {
+      foodName,
+      description,
+      mealType,
+      calories,
+      tags,
+      imageDataUrl: selectedImage,
+    };
+
+    localStorage.setItem("foodShareDraft", JSON.stringify(draft));
+    alert("Draft saved successfully!");
+  };
+
+  // Load draft from localStorage on component mount
+  React.useEffect(() => {
+    const savedDraft = localStorage.getItem("foodShareDraft");
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setFoodName(draft.foodName || "");
+        setDescription(draft.description || "");
+        setMealType(draft.mealType || "");
+        setCalories(draft.calories || 0);
+        setTags(draft.tags || []);
+        setSelectedImage(draft.imageDataUrl || null);
+      } catch (error) {
+        console.error("Error loading draft:", error);
+      }
+    }
+  }, []);
 
   // Validate form fields
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!selectedImage) {newErrors.image = "Please upload a food photo.";}
-    if (!foodName.trim()) {newErrors.foodName = "Food name is required.";}
-    if (!description.trim()){ newErrors.description = "Description is required.";}
-    if (calories <= 0){
+    if (!selectedImage) {
+      newErrors.image = "Please upload a food photo.";
+    }
+    if (!foodName.trim()) {
+      newErrors.foodName = "Food name is required.";
+    }
+    if (!description.trim()) {
+      newErrors.description = "Description is required.";
+    }
+    if (calories <= 0) {
       newErrors.calories =
-        "Please select at least one food item for calorie information.";}
-    if (!mealType) {newErrors.mealType = "Please select a meal type.";}
+        "Please select at least one food item for calorie information.";
+    }
+    if (!mealType) {
+      newErrors.mealType = "Please select a meal type.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -137,25 +176,49 @@ export default function CreatePostPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+
+    // Clear the draft from localStorage
+    localStorage.removeItem("foodShareDraft");
   };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
       setIsSharing(true);
-      // Simulate API call
+
+      // In a real app, you would upload the image to a server/cloud storage
+      // and get back a URL. For now, we'll use the data URL or a placeholder
+      const imageUrl = selectedImage || "/placeholder.svg?height=500&width=500";
+
+      // Create the new post object
+      const newPost = {
+        title: foodName,
+        description,
+        image: imageUrl,
+        calories,
+        tags,
+        user: {
+          name: "Current User", // In a real app, this would come from authentication
+          username: "@currentuser",
+          avatar: "/cht.png?height=40&width=40",
+        },
+        mealType,
+      };
+
+      // Simulate API call delay
       setTimeout(() => {
-        console.log("Submitting post data:", {
-          foodName,
-          description,
-          mealType,
-          calories,
-          tags,
-          imageFile,
-        });
+        // Add the post to the global state
+        addPost(newPost);
+
+        // Show success message
         alert("Post shared successfully!");
+
+        // Reset form and state
         setIsSharing(false);
-        resetForm(); // Reset the form after successful submission
+        resetForm();
+
+        // Navigate to the home page to see the new post
+        router.push("/");
       }, 1500);
     }
   };
@@ -411,6 +474,7 @@ export default function CreatePostPage() {
               type="button"
               variant="outline"
               className="background-gray-700 text-gray-300 bg-transparent"
+              onClick={saveDraft}
             >
               Save Draft
             </Button>

@@ -1,90 +1,69 @@
+"use client";
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button"
-import PostCard  from "@/components/ui/PostCard"
-
-
+import { Button } from "@/components/ui/button";
+import PostCard from "@/components/ui/PostCard";
+import { usePosts } from "@/context/PostsContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomePage() {
-  const posts = [
-    {
-      id: 1,
-      user: { name: "Temiloluwa", username: "@temiloluwa", avatar: "/cht.png?height=60&width=60" },
-      image: "/salad.jpg?height=400&width=400",
-      title: "Homemade Avocado Toast",
-      description: "Perfect breakfast with sourdough, avocado, cherry tomatoes, and a poached egg!",
-      calories: 320,
-      tags: ["breakfast", "healthy", "vegetarian"],
-      likes: 38,
-      comments: 29,
-      timeAgo: "2h ago",
-    },
-    {
-      id: 2,
-      user: { name: "Mike Rodriguez", username: "@mikeats", avatar: "/cht.png?height=40&width=40" },
-      image: "/salad.jpg?height=100&width=200",
-      title: "Grilled Salmon Bowl",
-      description: "Fresh salmon with quinoa, roasted vegetables, and tahini dressing. Post-workout fuel!",
-      calories: 485,
-      tags: ["dinner", "protein", "healthy"],
-      likes: 42,
-      comments: 12,
-      timeAgo: "4h ago",
-    },
+  const { posts, isLoading } = usePosts();
+  const [visiblePosts, setVisiblePosts] = useState(4);
 
-    {
-      id: 3,
-      user: {name: "Joy Wilson", username: "@joywilson", avatar: ""},
-      image: "/salad.jpg?height=400&width=400",
-      title: "Cake",
-      description: "Vanilla cake with orange juice",
-      calories : 300,
-      tags: ["dessert", "sweet"],
-      likes: 87,
-      comments: 23,
-      timeAgo: "12h Ago",
-    },
-
-    {
-      id: 4,
-      user: { name: "Emma Wilson", username: "@emmaeats", avatar: "/placeholder.svg?height=40&width=40" },
-      image: "/placeholder.svg?height=500&width=500",
-      title: "Chocolate Lava Cake",
-      description: "Indulgent dessert night! Sometimes you just need to treat yourself 🍫",
-      calories: 420,
-      tags: ["dessert", "chocolate", "indulgent"],
-      likes: 67,
-      comments: 15,
-      timeAgo: "6h ago",
-    },
-  ]
-
-  
+  const loadMorePosts = () => {
+    setVisiblePosts((prev) => Math.min(prev + 4, posts.length));
+  };
 
   return (
-  <div className="min-h-screen bg-gray-950">
-    {/* Header Stats */}
+    <div className="min-h-screen bg-gray-950">
+      {/* Main Content */}
+      <main className="flex-1 ml-0 lg:ml-64">
+        {/* Main Feed */}
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-0">
+          <div className="space-y-6">
+            {isLoading
+              ? // Loading skeletons
+                Array(2)
+                  .fill(0)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-[300px] w-full rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    </div>
+                  ))
+              : // Actual posts
+                posts
+                  .slice(0, visiblePosts)
+                  .map((post) => <PostCard key={post.id} {...post} />)}
+          </div>
 
-    {/* Main Content */}
-    < main className="flex-1 ml-0 lg:ml-64">
-
-      {/* Main Feed */}
-
-      <div className="max-w-2xl mx-auto px-4 pt-2 pb-0">
-        <div className="space-y-6">
-          {posts.map(post => (
-        <PostCard key={post.id} {...post} />
-      ))}
-      </div>
-
-        {/* Load More */}
-        <div className="text-center mt-8">
-          <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-300 text-gray-100 bg-transparent">
-            Load More Posts
-          </Button>
+          {/* Load More */}
+          {visiblePosts < posts.length && (
+            <div className="text-center mt-8">
+              <Button
+                variant="outline"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+                onClick={loadMorePosts}
+              >
+                Load More Posts
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
       </main>
     </div>
-  
-  )
+  );
 }

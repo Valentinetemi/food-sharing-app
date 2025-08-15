@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useState } from "react";
+import { Children, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -15,6 +15,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/context/NotificationsContext";
 
 const mockUser = {
   followedTags: ["healthy", "vegan"],
@@ -24,6 +25,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("recent");
+  const { unreadCount } = useNotifications();
 
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Home" },
@@ -165,43 +167,33 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             {/* Messages */}
 
             {/* Notifications */}
-            <div
-              className="
-              flex
-              items-center
-              gap-4
-              px-3
-              py-2
-              rounded-lg
-              hover:bg-zinc-800
-              hover:text-orange-500
-              relative
-              cursor-pointer
-            "
+            <Link
+              href="/notifications"
+              className={cn(
+                "flex items-center gap-4 px-3 py-2 rounded-lg transition-all relative",
+                pathname === "/notifications"
+                  ? "bg-zinc-800 text-orange-500"
+                  : "hover:bg-zinc-800 hover:text-orange-500"
+              )}
             >
               <BellIcon className="w-6 h-6" />
-              <span
-                className="
-                text-md
-                font-bold
-              "
-              >
-                Notifications
-              </span>
-              <Badge
-                className="
-                absolute
-                left-5
-                top-0
-                -translate-y-1/2
-                text-[10px]
-                bg-red-500
-                px-1
-              "
-              >
-                5
-              </Badge>
-            </div>
+              <span className="text-md font-bold">Notifications</span>
+              {unreadCount > 0 && (
+                <Badge
+                  className="
+                  absolute
+                  left-5
+                  top-0
+                  -translate-y-1/2
+                  text-[10px]
+                  bg-red-500
+                  px-1
+                "
+                >
+                  {unreadCount}
+                </Badge>
+              )}
+            </Link>
           </nav>
         </div>
 
@@ -344,36 +336,35 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="
-                relative
-                flex
-                flex-col
-                items-center
-                gap-1
-                text-gray-400
-                hover:text-gray-100
-              "
-            >
-              <BellIcon className="h-5 w-5" />
-              <span className="text-xs"></span>
-              <Badge
-                className="
-                absolute
-                -top-1
-                -right-1
-                h-4
-                w-4
-                p-0
-                text-[10px]
-                bg-red-500
-              "
+            <Link href="/notifications">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "relative flex flex-col items-center gap-1 h-auto py-2 px-3 text-gray-400 hover:bg-zinc-800 hover:text-orange-500",
+                  pathname === "/notifications" && "text-orange-400"
+                )}
               >
-                3
-              </Badge>
-            </Button>
+                <BellIcon className="h-5 w-5" />
+                <span className="text-xs">Notifications</span>
+                {unreadCount > 0 && (
+                  <Badge
+                    className="
+                    absolute
+                    -top-1
+                    -right-1
+                    h-4
+                    w-4
+                    p-0
+                    text-[10px]
+                    bg-red-500
+                  "
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

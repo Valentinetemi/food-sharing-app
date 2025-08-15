@@ -42,7 +42,8 @@ export default function CommunityPage() {
       username: "@benson",
       avatar: "/ben.jpg?height=40&width=40",
       posts: 42,
-      followers: 150,
+      followers: 1.5,
+      amount: "k",
       badge: "Fitness Guru",
     },
     {
@@ -599,7 +600,7 @@ export default function CommunityPage() {
                           text-gray-400
                         "
                         >
-                          {user.followers} followers
+                          {user.followers} followers  
                         </div>
                       </div>
                     </div>
