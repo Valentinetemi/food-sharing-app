@@ -48,7 +48,6 @@ type MealType =
   | "sweet"
   | "dessert"
   | "";
-type CalorieRange = "under-200" | "200-500" | "500-800" | "over-800" | "";
 
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
