@@ -77,6 +77,7 @@ export default function ProfilePage() {
       bg-gray-950
     "
     >
+      <div className="flex-1 ml-0 lg:ml-64">
       <div
         className="
         max-w-4xl
@@ -674,6 +675,7 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
+    </div>
     </div>
   );
 }

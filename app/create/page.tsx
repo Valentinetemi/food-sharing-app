@@ -186,8 +186,7 @@ export default function CreatePostPage() {
     if (validateForm()) {
       setIsSharing(true);
 
-      // In a real app, you would upload the image to a server/cloud storage
-      // and get back a URL. For now, we'll use the data URL or a placeholder
+      
       const imageUrl = selectedImage || "/placeholder.svg?height=500&width=500";
 
       // Create the new post object
@@ -225,6 +224,9 @@ export default function CreatePostPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
+     < div className ="
+      .flex-1 ml-0 lg:ml-64">
+
       <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding">
         {/* Header */}
         <motion.div
@@ -481,6 +483,7 @@ export default function CreatePostPage() {
           </motion.div>
         </motion.form>
       </div>
+    </div>
     </div>
   );
 }

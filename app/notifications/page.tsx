@@ -154,6 +154,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
+      <div className="flex-1 ml-0 lg:ml-64">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -331,6 +332,7 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
       : []),
   ];
   return (
-    <div className="flex-1">
+    <div className="flex-1 ml-0 lg:ml-64">
       {/* Desktop Sidebar */}
       <aside
         className="

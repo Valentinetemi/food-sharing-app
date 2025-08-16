@@ -14,10 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useNotifications } from "@/context/NotificationsContext";
 
 export default function CommunityPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { addNotification } = useNotifications();
 
   type Community = {
     id: number;
@@ -140,6 +142,12 @@ export default function CommunityPage() {
       duration: 3000,
     });
 
+    // Add a notification
+    addNotification({
+      type: "system",
+      message: `You have joined the ${community.title} community. Start connecting with other members!`,
+    });
+
     // Switch to user communities tab
     setActiveTab("usercommunity");
   };
@@ -151,6 +159,7 @@ export default function CommunityPage() {
       bg-gray-950
     "
     >
+      <div className="flex-1 ml-0 lg:ml-64">
       <div
         className="
         max-w-6xl
@@ -408,20 +417,35 @@ export default function CommunityPage() {
         </div>
 
         {/* Main Content */}
+        <div className="w-full">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="space-y-6"
+          className="space-y-3"
         >
+          {/* 
+            Added responsive classes:
+            - flex-col for small screens to stack vertically
+            - sm:flex-row for larger screens to display horizontally
+            - w-full to ensure full width
+            - flex-wrap to allow wrapping if needed
+            - h-auto to override the fixed height
+          */}
           <TabsList
             className="
             bg-gray-900
             border-gray-800
+            flex flex-col sm:flex-col
+            w-full
+            h-auto
+            flex-wrap
+            gap-2
+            p-2
           "
           >
             <TabsTrigger
               value="join"
-              className="data-[state=active]:bg-gray-200"
+              className="data-[state=active]:bg-gray-200 w-full sm:w-auto"
             >
               Join Communities
             </TabsTrigger>
@@ -430,6 +454,7 @@ export default function CommunityPage() {
               value="usercommunity"
               className="
               data-[state=active]:bg-slate-200
+              w-full sm:w-auto
               "
             >
               Your Communities
@@ -437,14 +462,17 @@ export default function CommunityPage() {
             <TabsTrigger
               value="leaderboard"
               className="
-              data-[state=active]:bg-slate-200"
+              data-[state=active]:bg-slate-200
+              w-full sm:w-auto
+              "
             >
               Leaderboard
             </TabsTrigger>
             <TabsTrigger
               value="discover"
               className="
-                data-[state=active]:bg-slate-200
+              data-[state=active]:bg-slate-200
+              w-full sm:w-auto
               "
             >
               Discover
@@ -452,11 +480,15 @@ export default function CommunityPage() {
             <TabsTrigger
               value="challenges"
               className="
-              data-[state=active]:bg-slate-200"
+              data-[state=active]:bg-slate-200
+              w-full sm:w-auto
+              "
             >
               Challenges
             </TabsTrigger>
           </TabsList>
+          
+          
 
           <TabsContent value="leaderboard">
             <div
@@ -922,7 +954,9 @@ export default function CommunityPage() {
             </div>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
+    </div>
     </div>
   );
 }
