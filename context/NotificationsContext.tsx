@@ -138,7 +138,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
     // Play notification sound if available
     if (typeof window !== "undefined") {
-      const notificationSound = new Audio("/notification-sound.mp3");
+      const notificationSound = new Audio("/notification-ound.mp3");
       notificationSound
         .play()
         .catch((err) => console.log("Error playing notification sound:", err));

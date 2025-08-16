@@ -78,26 +78,27 @@ export default function ProfilePage() {
     "
     >
       <div className="flex-1 ml-0 lg:ml-64">
-      <div
-        className="
+        <div
+          className="
         max-w-4xl
         mx-auto
         px-4
         py-6
+        pb-20 lg:pb-6
         mobile-content-padding
       "
-      >
-        {/* Profile Header */}
-        <Card
-          className="
+        >
+          {/* Profile Header */}
+          <Card
+            className="
           bg-gray-900
           border-gray-800
           mb-6
         "
-        >
-          <CardContent className="p-6">
-            <div
-              className="
+          >
+            <CardContent className="p-6">
+              <div
+                className="
               flex
               flex-col
               md:flex-row
@@ -105,34 +106,34 @@ export default function ProfilePage() {
               md:items-center
               gap-6
             "
-            >
-              <div className="relative">
-                <Avatar
-                  className="
+              >
+                <div className="relative">
+                  <Avatar
+                    className="
                   h-24
                   w-24
                   ring-4
                   ring-gray-700
                 "
-                >
-                  <AvatarImage
-                    src="/cht.png?height=96&width=96"
-                    alt="Profile"
-                  />
-                  <AvatarFallback
-                    className="
+                  >
+                    <AvatarImage
+                      src="/cht.png?height=96&width=96"
+                      alt="Profile"
+                    />
+                    <AvatarFallback
+                      className="
                     bg-gray-700
                     text-gray-200
                     text-2xl
                   "
-                  >
-                    SC
-                  </AvatarFallback>
-                </Avatar>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="
+                    >
+                      SC
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="
                     absolute
                     -bottom-2
                     -right-2
@@ -143,14 +144,14 @@ export default function ProfilePage() {
                     border-2
                     border-gray-900
                   "
-                >
-                  <CameraIcon className="h-4 w-4" />
-                </Button>
-              </div>
+                  >
+                    <CameraIcon className="h-4 w-4" />
+                  </Button>
+                </div>
 
-              <div className="flex-1">
-                <div
-                  className="
+                <div className="flex-1">
+                  <div
+                    className="
                   flex
                   flex-col
                   md:flex-row
@@ -158,20 +159,20 @@ export default function ProfilePage() {
                   md:justify-between
                   gap-4
                 "
-                >
-                  <div>
-                    <h1
-                      className="
+                  >
+                    <div>
+                      <h1
+                        className="
                       text-2xl
                       font-bold
                       text-gray-100
                     "
-                    >
-                      Blessing Joshua
-                    </h1>
-                    <p className="text-gray-400">@bj</p>
-                    <div
-                      className="
+                      >
+                        Blessing Joshua
+                      </h1>
+                      <p className="text-gray-400">@bj</p>
+                      <div
+                        className="
                       flex
                       items-center
                       gap-4
@@ -179,72 +180,72 @@ export default function ProfilePage() {
                       text-sm
                       text-gray-400
                     "
-                    >
-                      <div
-                        className="
+                      >
+                        <div
+                          className="
                         flex
                         items-center
                         gap-1
                       "
-                      >
-                        <MapPinIcon className="h-4 w-4" />
-                        Abuja, Nigeria
-                      </div>
-                      <div
-                        className="
+                        >
+                          <MapPinIcon className="h-4 w-4" />
+                          Abuja, Nigeria
+                        </div>
+                        <div
+                          className="
                         flex
                         items-center
                         gap-1
                       "
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                        Joined July 2025
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                          Joined July 2025
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="
                         border-gray-700
                         text-gray-300
                         bg-transparent
                       "
-                    >
-                      <Cog6ToothIcon className="h-4 w-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Link href="/create">
-                      <Button
-                        className="
+                      >
+                        <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                      <Link href="/create">
+                        <Button
+                          className="
                         bg-gradient-to-r
                         from-orange-500
                         to-red-500
                       "
-                      >
-                        <CameraIcon className="h-4 w-4 mr-2" />
-                        New Post
-                      </Button>
-                    </Link>
+                        >
+                          <CameraIcon className="h-4 w-4 mr-2" />
+                          New Post
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
 
-                <p
-                  className="
+                  <p
+                    className="
                   text-gray-300
                   mt-4
                 "
-                >
-                  Food enthusiast 🍽️ | Healthy living advocate | Sharing my
-                  culinary adventures one meal at a time ✨
-                </p>
+                  >
+                    Food enthusiast 🍽️ | Healthy living advocate | Sharing my
+                    culinary adventures one meal at a time ✨
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Stats */}
-            <div
-              className="
+              {/* Stats */}
+              <div
+                className="
               grid
               grid-cols-4
               gap-4
@@ -253,129 +254,129 @@ export default function ProfilePage() {
               border-t
               border-gray-800
             "
-            >
-              <div className="text-center">
-                <div
-                  className="
+              >
+                <div className="text-center">
+                  <div
+                    className="
                   text-2xl
                   font-bold
                   text-gray-100
                 "
-                >
-                  30
-                </div>
-                <div
-                  className="
+                  >
+                    30
+                  </div>
+                  <div
+                    className="
                   text-sm
                   text-gray-400
                 "
-                >
-                  Posts
+                  >
+                    Posts
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div
-                  className="
+                <div className="text-center">
+                  <div
+                    className="
                   text-2xl
                   font-bold
                   text-gray-100
                 "
-                >
-                  250
-                </div>
-                <div
-                  className="
+                  >
+                    250
+                  </div>
+                  <div
+                    className="
                   text-sm
                   text-gray-400
                 "
-                >
-                  Followers
+                  >
+                    Followers
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div
-                  className="
+                <div className="text-center">
+                  <div
+                    className="
                   text-2xl
                   font-bold
                   text-gray-100
                 "
-                >
-                  230
-                </div>
-                <div
-                  className="
+                  >
+                    230
+                  </div>
+                  <div
+                    className="
                   text-sm
                   text-gray-400
                 "
-                >
-                  Following
+                  >
+                    Following
+                  </div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div
-                  className="
+                <div className="text-center">
+                  <div
+                    className="
                   text-2xl
                   font-bold
                   text-green-400
                 "
-                >
-                  4200
-                </div>
-                <div
-                  className="
+                  >
+                    4200
+                  </div>
+                  <div
+                    className="
                   text-sm
                   text-gray-400
                 "
-                >
-                  Avg Calories
+                  >
+                    Avg Calories
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Content Tabs */}
-        <Tabs defaultValue="posts" className="space-y-6">
-          <TabsList
-            className="
+          {/* Content Tabs */}
+          <Tabs defaultValue="posts" className="space-y-6">
+            <TabsList
+              className="
             bg-gray-900
             border-gray-800
           "
-          >
-            <TabsTrigger
-              value="posts"
-              className="data-[state=active]:bg-gray-100"
             >
-              Posts
-            </TabsTrigger>
-            <TabsTrigger
-              value="achievements"
-              className="data-[state=active]:bg-gray-100"
-            >
-              Achievements
-            </TabsTrigger>
-            <TabsTrigger
-              value="stats"
-              className="data-[state=active]:bg-gray-100"
-            >
-              Statistics
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger
+                value="posts"
+                className="data-[state=active]:bg-gray-100"
+              >
+                Posts
+              </TabsTrigger>
+              <TabsTrigger
+                value="achievements"
+                className="data-[state=active]:bg-gray-100"
+              >
+                Achievements
+              </TabsTrigger>
+              <TabsTrigger
+                value="stats"
+                className="data-[state=active]:bg-gray-100"
+              >
+                Statistics
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="posts">
-            <div
-              className="
+            <TabsContent value="posts">
+              <div
+                className="
               grid
               grid-cols-1
               md:grid-cols-2
               lg:grid-cols-3
               gap-4
             "
-            >
-              {userPosts.map((post) => (
-                <Card
-                  key={post.id}
-                  className="
+              >
+                {userPosts.map((post) => (
+                  <Card
+                    key={post.id}
+                    className="
                     bg-gray-900
                     border-gray-800
                     overflow-hidden
@@ -385,21 +386,21 @@ export default function ProfilePage() {
                     hover:ring-orange-500/50
                     transition-all
                   "
-                >
-                  <div className="relative">
-                    <Image
-                      src={post.image || "/img.jpeg"}
-                      alt={post.title}
-                      width={300}
-                      height={300}
-                      className="
+                  >
+                    <div className="relative">
+                      <Image
+                        src={post.image || "/img.jpeg"}
+                        alt={post.title}
+                        width={300}
+                        height={300}
+                        className="
                         w-full
                         aspect-square
                         object-cover
                       "
-                    />
-                    <div
-                      className="
+                      />
+                      <div
+                        className="
                       absolute
                       inset-0
                       bg-black/60
@@ -410,272 +411,272 @@ export default function ProfilePage() {
                       items-center
                       justify-center
                     "
-                    >
-                      <div
-                        className="
+                      >
+                        <div
+                          className="
                         flex
                         items-center
                         gap-4
                         text-white
                       "
-                      >
-                        <div
-                          className="
+                        >
+                          <div
+                            className="
                           flex
                           items-center
                           gap-1
                         "
-                        >
-                          <HeartIcon className="h-4 w-4" />
-                          {post.likes}
-                        </div>
-                        <div
-                          className="
+                          >
+                            <HeartIcon className="h-4 w-4" />
+                            {post.likes}
+                          </div>
+                          <div
+                            className="
                           flex
                           items-center
                           gap-1
                         "
-                        >
-                          <ChatBubbleLeftIcon className="h-4 w-4" />
-                          {post.comments}
+                          >
+                            <ChatBubbleLeftIcon className="h-4 w-4" />
+                            {post.comments}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <CardContent className="p-3">
-                    <div
-                      className="
+                    <CardContent className="p-3">
+                      <div
+                        className="
                       flex
                       items-center
                       justify-between
                     "
-                    >
-                      <h3
-                        className="
+                      >
+                        <h3
+                          className="
                         font-medium
                         text-gray-100
                         truncate
                       "
-                      >
-                        {post.title}
-                      </h3>
-                      <Badge
-                        variant="secondary"
-                        className="
+                        >
+                          {post.title}
+                        </h3>
+                        <Badge
+                          variant="secondary"
+                          className="
                           bg-green-900/30
                           text-green-400
                           text-xs
                         "
-                      >
-                        {post.calories} cal
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                        >
+                          {post.calories} cal
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
 
-          <TabsContent value="achievements">
-            <div
-              className="
+            <TabsContent value="achievements">
+              <div
+                className="
               grid
               grid-cols-1
               md:grid-cols-2
               gap-4
             "
-            >
-              {achievements.map((achievement) => (
-                <Card
-                  key={achievement.name}
-                  className="
+              >
+                {achievements.map((achievement) => (
+                  <Card
+                    key={achievement.name}
+                    className="
                     bg-gray-900
                     border-gray-800
                   "
-                >
-                  <CardContent className="p-4">
-                    <div
-                      className="
+                  >
+                    <CardContent className="p-4">
+                      <div
+                        className="
                       flex
                       items-center
                       gap-3
                     "
-                    >
-                      <div className="text-2xl">{achievement.icon}</div>
-                      <div>
-                        <h3
-                          className="
+                      >
+                        <div className="text-2xl">{achievement.icon}</div>
+                        <div>
+                          <h3
+                            className="
                           font-semibold
                           text-gray-100
                         "
-                        >
-                          {achievement.name}
-                        </h3>
-                        <p
-                          className="
+                          >
+                            {achievement.name}
+                          </h3>
+                          <p
+                            className="
                           text-sm
                           text-gray-400
                         "
-                        >
-                          {achievement.description}
-                        </p>
+                          >
+                            {achievement.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
 
-          <TabsContent value="stats">
-            <div
-              className="
+            <TabsContent value="stats">
+              <div
+                className="
               grid
               grid-cols-1
               md:grid-cols-2
               gap-6
             "
-            >
-              <Card
-                className="
+              >
+                <Card
+                  className="
                 bg-gray-900
                 border-gray-800
               "
-              >
-                <CardHeader>
-                  <h3
-                    className="
+                >
+                  <CardHeader>
+                    <h3
+                      className="
                     font-semibold
                     text-gray-100
                   "
-                  >
-                    Weekly Calorie Intake
-                  </h3>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                      (day, index) => {
-                        const calories = [
-                          1800, 2100, 1950, 2200, 1750, 2400, 2000,
-                        ][index];
-                        const percentage = (calories / 2400) * 100;
-                        return (
-                          <div
-                            key={day}
-                            className="
+                    >
+                      Weekly Calorie Intake
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                        (day, index) => {
+                          const calories = [
+                            1800, 2100, 1950, 2200, 1750, 2400, 2000,
+                          ][index];
+                          const percentage = (calories / 2400) * 100;
+                          return (
+                            <div
+                              key={day}
+                              className="
                             flex
                             items-center
                             gap-3
                           "
-                          >
-                            <div
-                              className="
+                            >
+                              <div
+                                className="
                               w-8
                               text-sm
                               text-gray-400
                             "
-                            >
-                              {day}
-                            </div>
-                            <div
-                              className="
+                              >
+                                {day}
+                              </div>
+                              <div
+                                className="
                               flex-1
                               bg-gray-800
                               rounded-full
                               h-2
                             "
-                            >
-                              <div
-                                className="
+                              >
+                                <div
+                                  className="
                                   bg-gradient-to-r
                                   from-orange-500
                                   to-red-500
                                   h-2
                                   rounded-full
                                 "
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                            <div
-                              className="
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <div
+                                className="
                               w-16
                               text-sm
                               text-gray-300
                               text-right
                             "
-                            >
-                              {calories}
+                              >
+                                {calories}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                          );
+                        }
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card
-                className="
+                <Card
+                  className="
                 bg-gray-900
                 border-gray-800
               "
-              >
-                <CardHeader>
-                  <h3
-                    className="
+                >
+                  <CardHeader>
+                    <h3
+                      className="
                     font-semibold
                     text-gray-100
                   "
-                  >
-                    Favorite Cuisines
-                  </h3>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { name: "Italian", count: 23, color: "bg-red-500" },
-                      { name: "Asian", count: 19, color: "bg-yellow-500" },
-                      {
-                        name: "Mediterranean",
-                        count: 15,
-                        color: "bg-blue-500",
-                      },
-                      { name: "Mexican", count: 12, color: "bg-green-500" },
-                      { name: "American", count: 8, color: "bg-purple-500" },
-                    ].map((cuisine) => (
-                      <div
-                        key={cuisine.name}
-                        className="
+                    >
+                      Favorite Cuisines
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[
+                        { name: "Italian", count: 23, color: "bg-red-500" },
+                        { name: "Asian", count: 19, color: "bg-yellow-500" },
+                        {
+                          name: "Mediterranean",
+                          count: 15,
+                          color: "bg-blue-500",
+                        },
+                        { name: "Mexican", count: 12, color: "bg-green-500" },
+                        { name: "American", count: 8, color: "bg-purple-500" },
+                      ].map((cuisine) => (
+                        <div
+                          key={cuisine.name}
+                          className="
                           flex
                           items-center
                           gap-3
                         "
-                      >
-                        <div
-                          className={`w-3 h-3 rounded-full ${cuisine.color}`}
-                        />
-                        <div
-                          className="
+                        >
+                          <div
+                            className={`w-3 h-3 rounded-full ${cuisine.color}`}
+                          />
+                          <div
+                            className="
                           flex-1
                           text-gray-300
                         "
-                        >
-                          {cuisine.name}
+                          >
+                            {cuisine.name}
+                          </div>
+                          <div className="text-gray-400">
+                            {cuisine.count} posts
+                          </div>
                         </div>
-                        <div className="text-gray-400">
-                          {cuisine.count} posts
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

@@ -155,184 +155,188 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gray-950">
       <div className="flex-1 ml-0 lg:ml-64">
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-100">Notifications</h1>
-            <p className="text-gray-400">
-              Stay updated with your food community
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            className="text-gray-300 border-gray-700"
-            onClick={handleMarkAllAsRead}
-          >
-            <CheckIcon className="h-4 w-4 mr-2" />
-            Mark all as read
-          </Button>
-        </div>
-
-        <div className="flex gap-2 mb-6">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            className={
-              filter === "all" ? "bg-blue-600" : "text-gray-300 border-gray-700"
-            }
-            onClick={() => setFilter("all")}
-          >
-            All
-          </Button>
-          <Button
-            variant={filter === "unread" ? "default" : "outline"}
-            className={
-              filter === "unread"
-                ? "bg-blue-600"
-                : "text-gray-300 border-gray-700"
-            }
-            onClick={() => setFilter("unread")}
-          >
-            Unread
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {isLoading ? (
-            // Loading skeletons
-            Array(3)
-              .fill(0)
-              .map((_, index) => (
-                <Card key={index} className="bg-gray-900 border-gray-800 p-4">
-                  <div className="flex gap-3">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                </Card>
-              ))
-          ) : filteredNotifications.length === 0 ? (
-            <Card className="bg-gray-900 border-gray-800 p-8 text-center">
-              <BellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-300 mb-2">
-                No notifications yet
-              </h3>
-              <p className="text-gray-500">
-                When you get notifications, they'll show up here
+        <div className="max-w-2xl mx-auto px-4 py-6 pb-20 lg:pb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-100">
+                Notifications
+              </h1>
+              <p className="text-gray-400">
+                Stay updated with your food community
               </p>
-            </Card>
-          ) : (
-            <AnimatePresence>
-              {filteredNotifications
-                .slice(0, visibleNotifications)
-                .map((notification) => (
-                  <motion.div
-                    key={notification.id}
-                    {...(animateNew.includes(notification.id)
-                      ? slideIn
-                      : fadeIn)}
-                    className={`relative ${
-                      !notification.read ? "bg-gray-800/50" : "bg-gray-900"
-                    } border ${
-                      !notification.read
-                        ? "border-blue-900/50"
-                        : "border-gray-800"
-                    } rounded-lg p-4 transition-colors duration-200`}
-                  >
-                    {!notification.read && (
-                      <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-blue-500"></div>
-                    )}
-                    <div className="flex items-start gap-3">
-                      {notification.fromUser ? (
-                        <div className="relative">
-                          <img
-                            src={
-                              notification.fromUser.avatar ||
-                              "/placeholder.svg?height=40&width=40"
-                            }
-                            alt={notification.fromUser.name}
-                            className="h-10 w-10 rounded-full"
-                          />
-                          <div className="absolute -bottom-1 -right-1">
-                            {getNotificationIcon(notification.type)}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="h-10 w-10 flex items-center justify-center">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                      )}
+            </div>
+            <Button
+              variant="outline"
+              className="text-gray-300 border-gray-700"
+              onClick={handleMarkAllAsRead}
+            >
+              <CheckIcon className="h-4 w-4 mr-2" />
+              Mark all as read
+            </Button>
+          </div>
 
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
-                          <div>
-                            {notification.fromUser && (
-                              <span className="font-semibold text-white">
-                                {notification.fromUser.name}{" "}
-                              </span>
-                            )}
-                            <span className="text-gray-300">
-                              {notification.message}
-                            </span>
-                            {notification.postTitle && (
-                              <span className="font-medium text-white">
-                                {" "}
-                                "{notification.postTitle}"
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-gray-500 text-sm mt-1 sm:mt-0">
-                            {notification.timeAgo}
-                          </span>
-                        </div>
+          <div className="flex gap-2 mb-6">
+            <Button
+              variant={filter === "all" ? "default" : "outline"}
+              className={
+                filter === "all"
+                  ? "bg-blue-600"
+                  : "text-gray-300 border-gray-700"
+              }
+              onClick={() => setFilter("all")}
+            >
+              All
+            </Button>
+            <Button
+              variant={filter === "unread" ? "default" : "outline"}
+              className={
+                filter === "unread"
+                  ? "bg-blue-600"
+                  : "text-gray-300 border-gray-700"
+              }
+              onClick={() => setFilter("unread")}
+            >
+              Unread
+            </Button>
+          </div>
 
-                        {notification.postImage && notification.postId && (
-                          <Link href={`/post/${notification.postId}`}>
-                            <div className="mt-2 flex items-center gap-3 p-2 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors">
-                              <img
-                                src={notification.postImage}
-                                alt={notification.postTitle || "Post"}
-                                className="h-12 w-12 object-cover rounded"
-                              />
-                              <span className="text-sm text-gray-300 truncate">
-                                {notification.postTitle}
-                              </span>
-                            </div>
-                          </Link>
-                        )}
-
-                        {!notification.read && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="mt-2 text-blue-400 hover:text-blue-300 p-0 h-auto"
-                            onClick={() => handleMarkAsRead(notification.id)}
-                          >
-                            Mark as read
-                          </Button>
-                        )}
+          <div className="space-y-4">
+            {isLoading ? (
+              // Loading skeletons
+              Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <Card key={index} className="bg-gray-900 border-gray-800 p-4">
+                    <div className="flex gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-            </AnimatePresence>
-          )}
+                  </Card>
+                ))
+            ) : filteredNotifications.length === 0 ? (
+              <Card className="bg-gray-900 border-gray-800 p-8 text-center">
+                <BellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-300 mb-2">
+                  No notifications yet
+                </h3>
+                <p className="text-gray-500">
+                  When you get notifications, they'll show up here
+                </p>
+              </Card>
+            ) : (
+              <AnimatePresence>
+                {filteredNotifications
+                  .slice(0, visibleNotifications)
+                  .map((notification) => (
+                    <motion.div
+                      key={notification.id}
+                      {...(animateNew.includes(notification.id)
+                        ? slideIn
+                        : fadeIn)}
+                      className={`relative ${
+                        !notification.read ? "bg-gray-800/50" : "bg-gray-900"
+                      } border ${
+                        !notification.read
+                          ? "border-blue-900/50"
+                          : "border-gray-800"
+                      } rounded-lg p-4 transition-colors duration-200`}
+                    >
+                      {!notification.read && (
+                        <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-blue-500"></div>
+                      )}
+                      <div className="flex items-start gap-3">
+                        {notification.fromUser ? (
+                          <div className="relative">
+                            <img
+                              src={
+                                notification.fromUser.avatar ||
+                                "/placeholder.svg?height=40&width=40"
+                              }
+                              alt={notification.fromUser.name}
+                              className="h-10 w-10 rounded-full"
+                            />
+                            <div className="absolute -bottom-1 -right-1">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-10 w-10 flex items-center justify-center">
+                            {getNotificationIcon(notification.type)}
+                          </div>
+                        )}
 
-          {filteredNotifications.length > visibleNotifications && (
-            <div className="text-center mt-6">
-              <Button
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
-                onClick={loadMore}
-              >
-                Load More
-              </Button>
-            </div>
-          )}
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
+                            <div>
+                              {notification.fromUser && (
+                                <span className="font-semibold text-white">
+                                  {notification.fromUser.name}{" "}
+                                </span>
+                              )}
+                              <span className="text-gray-300">
+                                {notification.message}
+                              </span>
+                              {notification.postTitle && (
+                                <span className="font-medium text-white">
+                                  {" "}
+                                  "{notification.postTitle}"
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-gray-500 text-sm mt-1 sm:mt-0">
+                              {notification.timeAgo}
+                            </span>
+                          </div>
+
+                          {notification.postImage && notification.postId && (
+                            <Link href={`/post/${notification.postId}`}>
+                              <div className="mt-2 flex items-center gap-3 p-2 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors">
+                                <img
+                                  src={notification.postImage}
+                                  alt={notification.postTitle || "Post"}
+                                  className="h-12 w-12 object-cover rounded"
+                                />
+                                <span className="text-sm text-gray-300 truncate">
+                                  {notification.postTitle}
+                                </span>
+                              </div>
+                            </Link>
+                          )}
+
+                          {!notification.read && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 text-blue-400 hover:text-blue-300 p-0 h-auto"
+                              onClick={() => handleMarkAsRead(notification.id)}
+                            >
+                              Mark as read
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+              </AnimatePresence>
+            )}
+
+            {filteredNotifications.length > visibleNotifications && (
+              <div className="text-center mt-6">
+                <Button
+                  variant="outline"
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+                  onClick={loadMore}
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

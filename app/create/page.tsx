@@ -186,7 +186,6 @@ export default function CreatePostPage() {
     if (validateForm()) {
       setIsSharing(true);
 
-      
       const imageUrl = selectedImage || "/placeholder.svg?height=500&width=500";
 
       // Create the new post object
@@ -224,266 +223,267 @@ export default function CreatePostPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
-     < div className ="
-      .flex-1 ml-0 lg:ml-64">
+      <div
+        className="
+      .flex-1 ml-0 lg:ml-64"
+      >
+        <div className="max-w-2xl mx-auto px-4 py-6 pb-20 lg:pb-6 mobile-content-padding">
+          {/* Header */}
+          <motion.div
+            {...fadeInUp}
+            className="flex items-center justify-between mb-6"
+          >
+            <div>
+              <h1 className="text-2xl font-bold text-gray-100">
+                Share Your Food
+              </h1>
+              <p className="text-gray-400">
+                Show the community what you're eating!
+              </p>
+            </div>
+            <Link href="/">
+              <Button variant="ghost" className="text-gray-400">
+                <XMarkIcon className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 mobile-content-padding">
-        {/* Header */}
-        <motion.div
-          {...fadeInUp}
-          className="flex items-center justify-between mb-6"
-        >
-          <div>
-            <h1 className="text-2xl font-bold text-gray-100">
-              Share Your Food
-            </h1>
-            <p className="text-gray-400">
-              Show the community what you're eating!
-            </p>
-          </div>
-          <Link href="/">
-            <Button variant="ghost" className="text-gray-400">
-              <XMarkIcon className="h-4 w-4" />
-            </Button>
-          </Link>
-        </motion.div>
-
-        <motion.form
-          onSubmit={handleSubmit}
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="space-y-6"
-        >
-          {/* Image Upload */}
-          <motion.div variants={fadeInUp}>
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-gray-100">Food Photo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!selectedImage ? (
-                  <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center relative">
-                    <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                    <p className="text-gray-400 mb-4">
-                      Upload a photo of your food
-                    </p>
-                    <div className="flex gap-2 justify-center">
-                      <Button
-                        asChild
-                        className="bg-gradient-to-r from-orange-500 to-red-500"
-                      >
-                        <label
-                          htmlFor="image-upload"
-                          className="cursor-pointer"
+          <motion.form
+            onSubmit={handleSubmit}
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="space-y-6"
+          >
+            {/* Image Upload */}
+            <motion.div variants={fadeInUp}>
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-gray-100">Food Photo</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!selectedImage ? (
+                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center relative">
+                      <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400 mb-4">
+                        Upload a photo of your food
+                      </p>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          asChild
+                          className="bg-gradient-to-r from-orange-500 to-red-500"
                         >
-                          <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
-                          Choose photo
-                        </label>
-                      </Button>
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        ref={fileInputRef}
-                      />
+                          <label
+                            htmlFor="image-upload"
+                            className="cursor-pointer"
+                          >
+                            <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                            Choose photo
+                          </label>
+                        </Button>
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          ref={fileInputRef}
+                        />
+                      </div>
+                      {errors.image && (
+                        <p className="text-red-500 text-sm absolute -bottom-6 left-0 right-0">
+                          {errors.image}
+                        </p>
+                      )}
                     </div>
-                    {errors.image && (
-                      <p className="text-red-500 text-sm absolute -bottom-6 left-0 right-0">
-                        {errors.image}
+                  ) : (
+                    <div className="relative">
+                      <img
+                        src={selectedImage}
+                        alt="Selected food"
+                        className="w-full aspect-square object-cover rounded-lg"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={removeImage}
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Food Details */}
+            <motion.div variants={fadeInUp}>
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-gray-100">Food Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="food-name" className="text-gray-200">
+                      Food Name
+                    </Label>
+                    <Input
+                      id="food-name"
+                      value={foodName}
+                      onChange={(e) => setFoodName(e.target.value)}
+                      placeholder="e.g., Grilled Salmon with Vegetables"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                    {errors.foodName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.foodName}
                       </p>
                     )}
                   </div>
-                ) : (
-                  <div className="relative">
-                    <img
-                      src={selectedImage}
-                      alt="Selected food"
-                      className="w-full aspect-square object-cover rounded-lg"
+
+                  <div>
+                    <Label htmlFor="description" className="text-gray-200">
+                      Description
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Tell us about your meal, ingredients, cooking method..."
+                      className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]"
+                    />
+                    {errors.description && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="meal-type" className="text-gray-200">
+                      Meal Type
+                    </Label>
+                    <Select
+                      value={mealType}
+                      onValueChange={(value: MealType) => setMealType(value)}
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
+                        <SelectValue placeholder="Select meal type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
+                        <SelectItem value="breakfast">Breakfast</SelectItem>
+                        <SelectItem value="lunch">Lunch</SelectItem>
+                        <SelectItem value="dinner">Dinner</SelectItem>
+                        <SelectItem value="snack">Snack</SelectItem>
+                        <SelectItem value="sweet">Sweet</SelectItem>
+                        <SelectItem value="dessert">Dessert</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.mealType && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.mealType}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Calorie Dropdown */}
+            <motion.div variants={fadeInUp}>
+              <CalorieDropdown onCalorieChange={setCalories} />
+              {errors.calories && (
+                <p className="text-red-500 text-sm mt-1">{errors.calories}</p>
+              )}
+            </motion.div>
+
+            {/* Tags */}
+            <motion.div variants={fadeInUp}>
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-gray-100">Tags</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Add a tag..."
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                      onKeyDown={(e) => e.key === "Enter" && addTag()}
                     />
                     <Button
-                      variant="secondary"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={removeImage}
+                      onClick={addTag}
+                      size="icon"
+                      variant="outline"
+                      className="border-gray-700 bg-transparent"
+                      type="button" // Important to prevent form submission
                     >
-                      <XMarkIcon className="h-4 w-4" />
+                      <PlusIcon className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {/* Food Details */}
-          <motion.div variants={fadeInUp}>
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-gray-100">Food Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="food-name" className="text-gray-200">
-                    Food Name
-                  </Label>
-                  <Input
-                    id="food-name"
-                    value={foodName}
-                    onChange={(e) => setFoodName(e.target.value)}
-                    placeholder="e.g., Grilled Salmon with Vegetables"
-                    className="bg-gray-800 border-gray-700 text-gray-100"
-                  />
-                  {errors.foodName && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.foodName}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="description" className="text-gray-200">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Tell us about your meal, ingredients, cooking method..."
-                    className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]"
-                  />
-                  {errors.description && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.description}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="meal-type" className="text-gray-200">
-                    Meal Type
-                  </Label>
-                  <Select
-                    value={mealType}
-                    onValueChange={(value: MealType) => setMealType(value)}
-                  >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
-                      <SelectValue placeholder="Select meal type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
-                      <SelectItem value="breakfast">Breakfast</SelectItem>
-                      <SelectItem value="lunch">Lunch</SelectItem>
-                      <SelectItem value="dinner">Dinner</SelectItem>
-                      <SelectItem value="snack">Snack</SelectItem>
-                      <SelectItem value="sweet">Sweet</SelectItem>
-                      <SelectItem value="dessert">Dessert</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.mealType && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.mealType}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Calorie Dropdown */}
-          <motion.div variants={fadeInUp}>
-            <CalorieDropdown onCalorieChange={setCalories} />
-            {errors.calories && (
-              <p className="text-red-500 text-sm mt-1">{errors.calories}</p>
-            )}
-          </motion.div>
-
-          {/* Tags */}
-          <motion.div variants={fadeInUp}>
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-gray-100">Tags</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="Add a tag..."
-                    className="bg-gray-800 border-gray-700 text-gray-100"
-                    onKeyDown={(e) => e.key === "Enter" && addTag()}
-                  />
-                  <Button
-                    onClick={addTag}
-                    size="icon"
-                    variant="outline"
-                    className="border-gray-700 bg-transparent"
-                    type="button" // Important to prevent form submission
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {tags.length > 0 && (
-                  <AnimatePresence>
-                    <motion.div
-                      className="flex flex-wrap gap-2"
-                      variants={staggerContainer}
-                      initial="initial"
-                      animate="animate"
-                    >
-                      {tags.map((tag) => (
-                        <motion.div key={tag} variants={fadeInUp}>
-                          <Badge
-                            variant="secondary"
-                            className="bg-blue-900/30 text-blue-400 border-blue-800"
-                          >
-                            #{tag}
-                            <button
-                              onClick={() => removeTag(tag)}
-                              className="ml-1 hover:text-blue-300"
-                              aria-label={`Remove tag ${tag}`}
+                  {tags.length > 0 && (
+                    <AnimatePresence>
+                      <motion.div
+                        className="flex flex-wrap gap-2"
+                        variants={staggerContainer}
+                        initial="initial"
+                        animate="animate"
+                      >
+                        {tags.map((tag) => (
+                          <motion.div key={tag} variants={fadeInUp}>
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-900/30 text-blue-400 border-blue-800"
                             >
-                              <XMarkIcon className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+                              #{tag}
+                              <button
+                                onClick={() => removeTag(tag)}
+                                className="ml-1 hover:text-blue-300"
+                                aria-label={`Remove tag ${tag}`}
+                              >
+                                <XMarkIcon className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
-          {/* Submit */}
-          <motion.div variants={fadeInUp} className="flex gap-3">
-            <Button
-              type="submit"
-              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-              disabled={isSharing}
-            >
-              {isSharing ? (
-                <>
-                  <CheckIcon className="h-4 w-4 animate-pulse mr-2" />
-                  Sharing...
-                </>
-              ) : (
-                "Share with Community"
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="background-gray-700 text-gray-300 bg-transparent"
-              onClick={saveDraft}
-            >
-              Save Draft
-            </Button>
-          </motion.div>
-        </motion.form>
+            {/* Submit */}
+            <motion.div variants={fadeInUp} className="flex gap-3">
+              <Button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                disabled={isSharing}
+              >
+                {isSharing ? (
+                  <>
+                    <CheckIcon className="h-4 w-4 animate-pulse mr-2" />
+                    Sharing...
+                  </>
+                ) : (
+                  "Share with Community"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="background-gray-700 text-gray-300 bg-transparent"
+                onClick={saveDraft}
+              >
+                Save Draft
+              </Button>
+            </motion.div>
+          </motion.form>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

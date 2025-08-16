@@ -160,18 +160,19 @@ export default function CommunityPage() {
     "
     >
       <div className="flex-1 ml-0 lg:ml-64">
-      <div
-        className="
+        <div
+          className="
         max-w-6xl
         mx-auto
         px-4
         py-6
+        pb-20 lg:pb-6
         mobile-content-padding
       "
-      >
-        {/* Header */}
-        <div
-          className="
+        >
+          {/* Header */}
+          <div
+            className="
           flex
           flex-col
           md:flex-row
@@ -180,31 +181,32 @@ export default function CommunityPage() {
           gap-6
           mb-4
         "
-        >
-          <div>
-            <h1
-              className="
+          >
+            <div>
+              <h1
+                className="
               text-3xl
               font-bold
               text-gray-100
             "
-            >
-              Community
-            </h1>
-            <p className="text-gray-400">
-              Connect, grow, and share with others who love food just like you.
-            </p>
-          </div>
-          <div
-            className="
+              >
+                Community
+              </h1>
+              <p className="text-gray-400">
+                Connect, grow, and share with others who love food just like
+                you.
+              </p>
+            </div>
+            <div
+              className="
             flex
             items-center
             gap-3
           "
-          >
-            <div className="relative">
-              <MagnifyingGlassIcon
-                className="
+            >
+              <div className="relative">
+                <MagnifyingGlassIcon
+                  className="
                 absolute
                 left-3
                 top-1/2
@@ -214,216 +216,216 @@ export default function CommunityPage() {
                 w-4
                 text-gray-400
               "
-              />
-              <Input
-                placeholder="Search users, topics..."
-                className="
+                />
+                <Input
+                  placeholder="Search users, topics..."
+                  className="
                   pl-10
                   bg-gray-900
                   border-gray-700
                   text-gray-100
                   w-64
                 "
-              />
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div
-          className="
+          {/* Stats Cards */}
+          <div
+            className="
           grid
           grid-cols-1
           md:grid-cols-4
           gap-4
           mb-6
         "
-        >
-          <Card
-            className="
+          >
+            <Card
+              className="
             bg-gray-900
             border-gray-800
           "
-          >
-            <CardContent className="p-4">
-              <div
-                className="
+            >
+              <CardContent className="p-4">
+                <div
+                  className="
                 flex
                 items-center
                 gap-3
               "
-              >
-                <UsersIcon
-                  className="
+                >
+                  <UsersIcon
+                    className="
                   h-8
                   w-8
                   text-blue-400
                 "
-                />
-                <div>
-                  <div
-                    className="
+                  />
+                  <div>
+                    <div
+                      className="
                     text-2xl
                     font-bold
                     text-gray-100
                   "
-                  >
-                    20
-                  </div>
-                  <div
-                    className="
+                    >
+                      20
+                    </div>
+                    <div
+                      className="
                     text-sm
                     text-gray-400
                   "
-                  >
-                    Active Members
+                    >
+                      Active Members
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card
-            className="
+            <Card
+              className="
             bg-gray-900
             border-gray-800
           "
-          >
-            <CardContent className="p-4">
-              <div
-                className="
+            >
+              <CardContent className="p-4">
+                <div
+                  className="
                 flex
                 items-center
                 gap-3
               "
-              >
-                <ChatBubbleLeftIcon
-                  className="
+                >
+                  <ChatBubbleLeftIcon
+                    className="
                   h-8
                   w-8
                   text-green-400
                 "
-                />
-                <div>
-                  <div
-                    className="
+                  />
+                  <div>
+                    <div
+                      className="
                     text-2xl
                     font-bold
                     text-gray-100
                   "
-                  >
-                    26
-                  </div>
-                  <div
-                    className="
+                    >
+                      26
+                    </div>
+                    <div
+                      className="
                     text-sm
                     text-gray-400
                   "
-                  >
-                    Posts Today
+                    >
+                      Posts Today
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card
-            className="
+            <Card
+              className="
             bg-gray-900
             border-gray-800
           "
-          >
-            <CardContent className="p-4">
-              <div
-                className="
+            >
+              <CardContent className="p-4">
+                <div
+                  className="
                 flex
                 items-center
                 gap-3
               "
-              >
-                <ArrowTrendingUpIcon
-                  className="
+                >
+                  <ArrowTrendingUpIcon
+                    className="
                   h-8
                   w-8
                   text-orange-400
                 "
-                />
-                <div>
-                  <div
-                    className="
+                  />
+                  <div>
+                    <div
+                      className="
                     text-2xl
                     font-bold
                     text-gray-100
                   "
-                  >
-                    10
-                  </div>
-                  <div
-                    className="
+                    >
+                      10
+                    </div>
+                    <div
+                      className="
                     text-sm
                     text-gray-400
                   "
-                  >
-                    Trending Topics
+                    >
+                      Trending Topics
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card
-            className="
+            <Card
+              className="
             bg-gray-900
             border-gray-800
           "
-          >
-            <CardContent className="p-4">
-              <div
-                className="
+            >
+              <CardContent className="p-4">
+                <div
+                  className="
                 flex
                 items-center
                 gap-3
               "
-              >
-                <TrophyIcon
-                  className="
+                >
+                  <TrophyIcon
+                    className="
                   h-8
                   w-8
                   text-purple-400
                 "
-                />
-                <div>
-                  <div
-                    className="
+                  />
+                  <div>
+                    <div
+                      className="
                     text-2xl
                     font-bold
                     text-gray-100
                   "
-                  >
-                    0
-                  </div>
-                  <div
-                    className="
+                    >
+                      0
+                    </div>
+                    <div
+                      className="
                     text-sm
                     text-gray-400
                   "
-                  >
-                    Upcoming Challenges
+                    >
+                      Upcoming Challenges
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Main Content */}
-        <div className="w-full">
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-3"
-        >
-          {/* 
+          {/* Main Content */}
+          <div className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-3"
+            >
+              {/* 
             Added responsive classes:
             - flex-col for small screens to stack vertically
             - sm:flex-row for larger screens to display horizontally
@@ -431,8 +433,8 @@ export default function CommunityPage() {
             - flex-wrap to allow wrapping if needed
             - h-auto to override the fixed height
           */}
-          <TabsList
-            className="
+              <TabsList
+                className="
             bg-gray-900
             border-gray-800
             flex flex-col sm:flex-row
@@ -442,93 +444,91 @@ export default function CommunityPage() {
             gap-2
             p-2
           "
-          >
-            <TabsTrigger
-              value="join"
-              className="data-[state=active]:bg-gray-200 w-full sm:w-auto"
-            >
-              Join Communities
-            </TabsTrigger>
+              >
+                <TabsTrigger
+                  value="join"
+                  className="data-[state=active]:bg-gray-200 w-full sm:w-auto"
+                >
+                  Join Communities
+                </TabsTrigger>
 
-            <TabsTrigger
-              value="usercommunity"
-              className="
+                <TabsTrigger
+                  value="usercommunity"
+                  className="
               data-[state=active]:bg-slate-200
               w-full sm:w-auto
               "
-            >
-              Your Communities
-            </TabsTrigger>
-            <TabsTrigger
-              value="leaderboard"
-              className="
+                >
+                  Your Communities
+                </TabsTrigger>
+                <TabsTrigger
+                  value="leaderboard"
+                  className="
               data-[state=active]:bg-slate-200
               w-full sm:w-auto
               "
-            >
-              Leaderboard
-            </TabsTrigger>
-            <TabsTrigger
-              value="discover"
-              className="
+                >
+                  Leaderboard
+                </TabsTrigger>
+                <TabsTrigger
+                  value="discover"
+                  className="
               data-[state=active]:bg-slate-200
               w-full sm:w-auto
               "
-            >
-              Discover
-            </TabsTrigger>
-            <TabsTrigger
-              value="challenges"
-              className="
+                >
+                  Discover
+                </TabsTrigger>
+                <TabsTrigger
+                  value="challenges"
+                  className="
               data-[state=active]:bg-slate-200
               w-full sm:w-auto
               "
-            >
-              Challenges
-            </TabsTrigger>
-          </TabsList>
-          
-          
+                >
+                  Challenges
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="leaderboard">
-            <div
-              className="
+              <TabsContent value="leaderboard">
+                <div
+                  className="
               grid
               grid-cols-1
               lg:grid-cols-2
               gap-6
             "
-            >
-              <Card
-                className="
+                >
+                  <Card
+                    className="
                 bg-gray-900
                 border-gray-800
               "
-              >
-                <CardHeader>
-                  <CardTitle
-                    className="
+                  >
+                    <CardHeader>
+                      <CardTitle
+                        className="
                     text-gray-100
                     flex
                     items-center
                     gap-2
                   "
-                  >
-                    <TrophyIcon
-                      className="
+                      >
+                        <TrophyIcon
+                          className="
                       h-5
                       w-5
                       text-yellow-400
                     "
-                    />
-                    Top Contributors
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {topUsers.map((user, index) => (
-                    <div
-                      key={user.id}
-                      className="
+                        />
+                        Top Contributors
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {topUsers.map((user, index) => (
+                        <div
+                          key={user.id}
+                          className="
                         flex
                         items-center
                         gap-3
@@ -536,140 +536,140 @@ export default function CommunityPage() {
                         rounded-lg
                         bg-gray-800/50
                       "
-                    >
-                      <div
-                        className="
+                        >
+                          <div
+                            className="
                         flex
                         items-center
                         gap-3
                         flex-1
                       "
-                      >
-                        <div
-                          className="
+                          >
+                            <div
+                              className="
                           text-lg
                           font-bold
                           text-gray-400
                           w-6
                         "
-                        >
-                          #{index + 1}
-                        </div>
-                        <Avatar
-                          className="
+                            >
+                              #{index + 1}
+                            </div>
+                            <Avatar
+                              className="
                           h-10
                           w-10
                           ring-2
                           ring-gray-700
                         "
-                        >
-                          <AvatarImage
-                            src={user.avatar || "/placeholder.svg"}
-                            alt={user.name}
-                          />
-                          <AvatarFallback
-                            className="
+                            >
+                              <AvatarImage
+                                src={user.avatar || "/placeholder.svg"}
+                                alt={user.name}
+                              />
+                              <AvatarFallback
+                                className="
                             bg-gray-700
                             text-gray-200
                           "
-                          >
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div
-                            className="
+                              >
+                                {user.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div
+                                className="
                             flex
                             items-center
                             gap-2
                           "
-                          >
-                            <p
-                              className="
+                              >
+                                <p
+                                  className="
                               font-semibold
                               text-gray-100
                             "
-                            >
-                              {user.name}
-                            </p>
-                            <Badge
-                              variant="secondary"
-                              className="
+                                >
+                                  {user.name}
+                                </p>
+                                <Badge
+                                  variant="secondary"
+                                  className="
                                 bg-yellow-900/30
                                 text-yellow-400
                                 text-xs
                               "
-                            >
-                              {user.badge}
-                            </Badge>
-                          </div>
-                          <p
-                            className="
+                                >
+                                  {user.badge}
+                                </Badge>
+                              </div>
+                              <p
+                                className="
                             text-sm
                             text-gray-400
                           "
-                          >
-                            {user.username}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div
-                          className="
+                              >
+                                {user.username}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div
+                              className="
                           text-sm
                           font-semibold
                           text-gray-100
                         "
-                        >
-                          {user.posts} posts
-                        </div>
-                        <div
-                          className="
+                            >
+                              {user.posts} posts
+                            </div>
+                            <div
+                              className="
                           text-xs
                           text-gray-400
                         "
-                        >
-                          {user.followers} followers  
+                            >
+                              {user.followers} followers
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                      ))}
+                    </CardContent>
+                  </Card>
 
-              <Card
-                className="
+                  <Card
+                    className="
                 bg-gray-900
                 border-gray-800
               "
-              >
-                <CardHeader>
-                  <CardTitle
-                    className="
+                  >
+                    <CardHeader>
+                      <CardTitle
+                        className="
                     text-gray-100
                     flex
                     items-center
                     gap-2
                   "
-                  >
-                    <ArrowTrendingUpIcon
-                      className="
+                      >
+                        <ArrowTrendingUpIcon
+                          className="
                       h-5
                       w-5
                       text-green-400
                     "
-                    />
-                    Trending Topics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {trendingTopics.map((topic, index) => (
-                    <div
-                      key={topic.name}
-                      className="
+                        />
+                        Trending Topics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {trendingTopics.map((topic, index) => (
+                        <div
+                          key={topic.name}
+                          className="
                         flex
                         items-center
                         justify-between
@@ -680,283 +680,285 @@ export default function CommunityPage() {
                         cursor-pointer
                         transition-colors
                       "
-                    >
-                      <div
-                        className="
+                        >
+                          <div
+                            className="
                         flex
                         items-center
                         gap-3
                       "
-                      >
-                        <div
-                          className="
+                          >
+                            <div
+                              className="
                           text-sm
                           font-bold
                           text-gray-400
                           w-6
                         "
-                        >
-                          #{index + 1}
-                        </div>
-                        <div>
-                          <p
-                            className="
+                            >
+                              #{index + 1}
+                            </div>
+                            <div>
+                              <p
+                                className="
                             font-medium
                             text-gray-100
                           "
-                          >
-                            {topic.name}
-                          </p>
-                          <p
-                            className="
+                              >
+                                {topic.name}
+                              </p>
+                              <p
+                                className="
                             text-sm
                             text-gray-400
                           "
-                          >
-                            {topic.posts} posts
-                          </p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="
+                              >
+                                {topic.posts} posts
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="
                           border-green-700
                           text-green-400
                         "
-                      >
-                        {topic.trend}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                          >
+                            {topic.trend}
+                          </Badge>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
 
-          <TabsContent value="challenges">
-            <CardHeader>
-              <CardTitle
-                className="
+              <TabsContent value="challenges">
+                <CardHeader>
+                  <CardTitle
+                    className="
               text-gray-100
                 flex
                 items-center
                   justify-center
                   gap-2"
-              >
-                🧪 Challenges Coming Soon
-              </CardTitle>
-              <CardContent
-                className="
+                  >
+                    🧪 Challenges Coming Soon
+                  </CardTitle>
+                  <CardContent
+                    className="
               text-gray-300 
               flex
                items-center
                 justify-center
                  pt-4 
                  gap-2 "
-              >
-                Fun food challenges are on the way. Stay tuned! 🚀
-              </CardContent>
-            </CardHeader>
-          </TabsContent>
+                  >
+                    Fun food challenges are on the way. Stay tuned! 🚀
+                  </CardContent>
+                </CardHeader>
+              </TabsContent>
 
-          <TabsContent value="discover">
-            <Card
-              className="
+              <TabsContent value="discover">
+                <Card
+                  className="
             bg-gray-900
              border-gray-800"
-            >
-              <CardHeader>
-                <CardTitle
-                  className="
+                >
+                  <CardHeader>
+                    <CardTitle
+                      className="
                 text-gray-100 
                 flex
                  items-center
                  gap-2"
-                >
-                  <UserPlusIcon className="h-5 w-5 text-blue-400" />
-                  People You May Know
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="grid
+                    >
+                      <UserPlusIcon className="h-5 w-5 text-blue-400" />
+                      People You May Know
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className="grid
                  grid-cols-1
                   md:grid-cols-2 
                   lg:grid-cols-3
                    gap-4"
-                >
-                  {suggestedUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="p-4 
+                    >
+                      {suggestedUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className="p-4 
                       rounded-lg 
                       bg-gray-800/50 
                       text-center"
-                    >
-                      <Avatar className="h-16 w-16 mx-auto mb-3 ring-2 ring-gray-700">
-                        <AvatarImage
-                          src={user.avatar || "/placeholder.svg"}
-                          alt={user.name}
-                        />
-                        <AvatarFallback className="bg-gray-700 text-gray-200">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-semibold text-gray-100">
-                        {user.name}
-                      </h3>
-                      <p className="text-sm text-gray-400 mb-1">
-                        {user.username}
-                      </p>
-                      <p className="text-sm text-gray-300 mb-2">
-                        {user.specialty}
-                      </p>
-                      <p className="text-xs text-gray-400 mb-3">
-                        {user.mutualFollowers} Your followers
-                      </p>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                      >
-                        Follow
-                      </Button>
+                        >
+                          <Avatar className="h-16 w-16 mx-auto mb-3 ring-2 ring-gray-700">
+                            <AvatarImage
+                              src={user.avatar || "/placeholder.svg"}
+                              alt={user.name}
+                            />
+                            <AvatarFallback className="bg-gray-700 text-gray-200">
+                              {user.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <h3 className="font-semibold text-gray-100">
+                            {user.name}
+                          </h3>
+                          <p className="text-sm text-gray-400 mb-1">
+                            {user.username}
+                          </p>
+                          <p className="text-sm text-gray-300 mb-2">
+                            {user.specialty}
+                          </p>
+                          <p className="text-xs text-gray-400 mb-3">
+                            {user.mutualFollowers} Your followers
+                          </p>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                          >
+                            Follow
+                          </Button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="join">
-            <div className="space-y-4">
-              {communityList.map((communityItem: Community) => (
-                <Card
-                  key={communityItem.id}
-                  className="bg-gray-900
+              <TabsContent value="join">
+                <div className="space-y-4">
+                  {communityList.map((communityItem: Community) => (
+                    <Card
+                      key={communityItem.id}
+                      className="bg-gray-900
                    border-gray-800"
-                >
-                  <CardContent className="p-6">
-                    <div
-                      className="flex
+                    >
+                      <CardContent className="p-6">
+                        <div
+                          className="flex
                      flex-col
                       md:flex-row md:items-center
                        md:justify-between 
                        gap-4"
-                    >
-                      <div className="flex-1">
-                        <h3
-                          className="text-lg
+                        >
+                          <div className="flex-1">
+                            <h3
+                              className="text-lg
                          font-semibold
                           text-gray-100 
                          mb-2"
-                        >
-                          {communityItem.title}
-                        </h3>
-                        <p className="text-gray-300 mb-3">
-                          {communityItem.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <UsersIcon className="h-4 w-4" />
-                            {communityItem.members} Members
+                            >
+                              {communityItem.title}
+                            </h3>
+                            <p className="text-gray-300 mb-3">
+                              {communityItem.description}
+                            </p>
+                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <UsersIcon className="h-4 w-4" />
+                                {communityItem.members} Members
+                              </div>
+                            </div>
                           </div>
+                          <Button
+                            onClick={() => handleJoin(communityItem)}
+                            className={
+                              joinedIds.includes(communityItem.id)
+                                ? "bg-green-500 hover:bg-green-600 text-white"
+                                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                            }
+                          >
+                            {joinedIds.includes(communityItem.id) ? (
+                              <span className="flex items-center gap-2">
+                                <CheckIcon className="w-4 h-4 text-white" />
+                                Joined
+                              </span>
+                            ) : (
+                              "Join Communities"
+                            )}
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        onClick={() => handleJoin(communityItem)}
-                        className={
-                          joinedIds.includes(communityItem.id)
-                            ? "bg-green-500 hover:bg-green-600 text-white"
-                            : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        }
-                      >
-                        {joinedIds.includes(communityItem.id) ? (
-                          <span className="flex items-center gap-2">
-                            <CheckIcon className="w-4 h-4 text-white" />
-                            Joined
-                          </span>
-                        ) : (
-                          "Join Communities"
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
 
-          <TabsContent value="usercommunity">
-            <div className="space-y-4">
-              {userCommunities.length === 0 ? (
-                <CardContent
-                  className=" flex
+              <TabsContent value="usercommunity">
+                <div className="space-y-4">
+                  {userCommunities.length === 0 ? (
+                    <CardContent
+                      className=" flex
                  mt-4
                   justify-center
                    items-center
                     gap-2
                      text-gray-200 
                      font-semibold"
-                >
-                  You haven't joined any community yet 😢
-                </CardContent>
-              ) : (
-                userCommunities.map((usercommunityItem: Community) => (
-                  <Card
-                    key={usercommunityItem.id}
-                    className="bg-gray-900
+                    >
+                      You haven't joined any community yet 😢
+                    </CardContent>
+                  ) : (
+                    userCommunities.map((usercommunityItem: Community) => (
+                      <Card
+                        key={usercommunityItem.id}
+                        className="bg-gray-900
                    border-gray-800"
-                  >
-                    <CardContent className="p-6">
-                      <div
-                        className="flex
+                      >
+                        <CardContent className="p-6">
+                          <div
+                            className="flex
                      flex-col
                       md:flex-row 
                       md:items-center
                        md:justify-between 
                        gap-4"
-                      >
-                        <div className="flex-1">
-                          <h3
-                            className="text-lg
+                          >
+                            <div className="flex-1">
+                              <h3
+                                className="text-lg
                          font-semibold
                           text-gray-100 
                          mb-2"
-                          >
-                            {usercommunityItem.title}
-                          </h3>
-                          <p className="text-gray-300 mb-3">
-                            {usercommunityItem.description}
-                          </p>
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <UsersIcon className="h-4 w-4" />
-                              {usercommunityItem.members} Members
+                              >
+                                {usercommunityItem.title}
+                              </h3>
+                              <p className="text-gray-300 mb-3">
+                                {usercommunityItem.description}
+                              </p>
+                              <div className="flex items-center gap-4 text-sm text-gray-400">
+                                <div className="flex items-center gap-1">
+                                  <UsersIcon className="h-4 w-4" />
+                                  {usercommunityItem.members} Members
+                                </div>
+                              </div>
                             </div>
+                            <Button
+                              onClick={() =>
+                                router.push(
+                                  `/community/${usercommunityItem.id}`
+                                )
+                              }
+                              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                            >
+                              View Community
+                            </Button>
                           </div>
-                        </div>
-                        <Button
-                          onClick={() =>
-                            router.push(`/community/${usercommunityItem.id}`)
-                          }
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        >
-                          View Community
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

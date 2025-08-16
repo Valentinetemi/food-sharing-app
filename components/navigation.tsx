@@ -44,7 +44,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
       : []),
   ];
   return (
-    <div className="flex-1 ml-0 lg:ml-64">
+    <div className="flex-1">
       {/* Desktop Sidebar */}
       <aside
         className="
@@ -181,7 +181,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
               {unreadCount > 0 && (
                 <Badge
                   className="
-                  absolute
+                  absolute  
                   left-5
                   top-0
                   -translate-y-1/2
@@ -336,35 +336,36 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             ))}
-            <Link href="/notifications">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "relative flex flex-col items-center gap-1 h-auto py-2 px-3 text-gray-400 hover:bg-zinc-800 hover:text-orange-500",
-                  pathname === "/notifications" && "text-orange-400"
-                )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="
+                relative
+                flex
+                flex-col
+                items-center
+                gap-1
+                text-gray-400
+                hover:text-gray-100
+              "
+            >
+              <BellIcon className="h-5 w-5" />
+              <span className="text-xs"></span>
+              <Badge
+                className="
+                absolute
+                -top-1
+                -right-1
+                h-4
+                w-4
+                p-0
+                text-[10px]
+                bg-red-500
+              "
               >
-                <BellIcon className="h-5 w-5" />
-                <span className="text-xs">Notifications</span>
-                {unreadCount > 0 && (
-                  <Badge
-                    className="
-                    absolute
-                    -top-1
-                    -right-1
-                    h-4
-                    w-4
-                    p-0
-                    text-[10px]
-                    bg-red-500
-                  "
-                  >
-                    {unreadCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+                3
+              </Badge>
+            </Button>
           </div>
         </div>
       </div>
