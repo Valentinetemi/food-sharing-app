@@ -435,7 +435,7 @@ export default function CommunityPage() {
             className="
             bg-gray-900
             border-gray-800
-            flex flex-col sm:flex-col
+            flex flex-col sm:flex-row
             w-full
             h-auto
             flex-wrap
