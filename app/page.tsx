@@ -22,7 +22,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64">
         {/* Main Feed */}
-        <div className="max-w-2xl mx-auto px-4 pt-2 pb-0 lg:mb-0">
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-0">
           <div className="space-y-6">
             {isLoading
               ? // Loading skeletons
@@ -55,7 +55,7 @@ export default function HomePage() {
 
           {/* Load More - Always show when posts exist, but disable when no more to load */}
           {!isLoading && posts.length > 0 && (
-            <div className="text-center mt-4 pb-4">
+            <div className="text-center mt-4 pb-4 lg:mb-4">
               <Button
                 variant="outline"
                 className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"

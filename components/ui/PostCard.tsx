@@ -45,24 +45,24 @@ const staticComments: Comment[] = [
   {
     id: 1,
     user: {
-      name: "Sarah Johnson",
-      username: "sarahj",
-      avatar: "/placeholder-user.jpg",
+      name: "Joy Joseph",
+      username: "jjl",
+      avatar: "/jjl.jpg",
     },
     content: "This looks amazing! Would love to try this recipe.",
-    timestamp: "2024-01-15T10:30:00Z",
+    timestamp: "2025-07-15T10:30:00Z",
     timeAgo: "2 hours ago",
   },
   {
     id: 2,
     user: {
-      name: "Mike Chen",
-      username: "mikec",
-      avatar: "/placeholder-user.jpg",
+      name: "Benson John",
+      username: "benson",
+      avatar: "/ben.jpg",
     },
     content:
       "How many servings does this make? Planning to cook for family dinner.",
-    timestamp: "2024-01-15T09:15:00Z",
+    timestamp: "2025-01-15T09:15:00Z",
     timeAgo: "3 hours ago",
   },
   {
@@ -145,9 +145,9 @@ export default function PostCard({
       const newComment: Comment = {
         id: Date.now(),
         user: {
-          name: "Current User",
-          username: "currentuser",
-          avatar: "/placeholder-user.jpg",
+          name: "Temiloluwa Valentine",
+          username: "temivalentine",
+          avatar: "/cht.png",
         },
         content: commentText,
         timestamp: new Date().toISOString(),

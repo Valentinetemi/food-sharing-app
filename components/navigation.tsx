@@ -2,7 +2,7 @@
 
 import { Children, useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   CameraIcon,
@@ -11,11 +11,13 @@ import {
   BellIcon,
   Bars3Icon,
   StarIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/solid";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/context/NotificationsContext";
+import { useAuth } from "@/context/AuthContext";
 
 const mockUser = {
   followedTags: ["healthy", "vegan"],
@@ -23,9 +25,11 @@ const mockUser = {
 
 export function Navigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("recent");
   const { unreadCount } = useNotifications();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Home" },
@@ -206,53 +210,116 @@ export function Navigation({ children }: { children: React.ReactNode }) {
           mb-4
         "
         >
-          <div
-            className="
-            flex
-            items-center
-            gap-4
-            px-3
-            py-2
-            rounded-lg
-            hover:bg-zinc-800
-            hover:text-orange-500
-            cursor-pointer
-          "
-          >
-            <StarIcon className="w-6 h-6" />
-            <span
-              className="
-              text-md
-              font-bold
-            "
-            >
-              Stats
-            </span>
-          </div>
+          {user ? (
+            <>
+              <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-white">
+                    {user.name}
+                  </span>
+                  <span className="text-xs text-gray-400">{user.email}</span>
+                </div>
+              </div>
 
-          <div
-            className="
-            flex
-            items-center
-            gap-4
-            px-3
-            py-2
-            rounded-lg
-            hover:bg-zinc-800
-            hover:text-orange-500
-            cursor-pointer
-          "
-          >
-            <Bars3Icon className="w-6 h-6" />
-            <span
+              <div
+                className="
+                flex
+                items-center
+                gap-4
+                px-3
+                py-2
+                rounded-lg
+                hover:bg-zinc-800
+                hover:text-orange-500
+                cursor-pointer
+              "
+              >
+                <StarIcon className="w-6 h-6" />
+                <span
+                  className="
+                  text-md
+                  font-bold
+                "
+                >
+                  Stats
+                </span>
+              </div>
+
+              <div
+                className="
+                flex
+                items-center
+                gap-4
+                px-3
+                py-2
+                rounded-lg
+                hover:bg-zinc-800
+                hover:text-orange-500
+                cursor-pointer
+              "
+              >
+                <Bars3Icon className="w-6 h-6" />
+                <span
+                  className="
+                  text-md
+                  font-bold
+                "
+                >
+                  More
+                </span>
+              </div>
+
+              <button
+                onClick={logout}
+                className="
+                flex
+                items-center
+                gap-4
+                px-3
+                py-2
+                rounded-lg
+                hover:bg-red-900/30
+                text-gray-300
+                hover:text-red-400
+                cursor-pointer
+                mt-4
+                border border-transparent hover:border-red-800/50
+              "
+              >
+                <ArrowRightOnRectangleIcon className="w-6 h-6" />
+                <span
+                  className="
+                  text-md
+                  font-bold
+                "
+                >
+                  Logout
+                </span>
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
               className="
-              text-md
-              font-bold
+              flex
+              items-center
+              gap-4
+              px-3
+              py-2
+              rounded-lg
+              bg-orange-600
+              hover:bg-orange-700
+              text-white
+              cursor-pointer
+              justify-center
             "
             >
-              More
-            </span>
-          </div>
+              <span className="text-md font-bold">Sign In</span>
+            </Link>
+          )}
         </div>
       </aside>
 
@@ -336,36 +403,61 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="
-                relative
-                flex
-                flex-col
-                items-center
-                gap-1
-                text-gray-400
-                hover:text-gray-100
-              "
-            >
-              <BellIcon className="h-5 w-5" />
-              <span className="text-xs"></span>
-              <Badge
-                className="
-                absolute
-                -top-1
-                -right-1
-                h-4
-                w-4
-                p-0
-                text-[10px]
-                bg-red-500
-              "
-              >
-                3
-              </Badge>
-            </Button>
+
+            {user ? (
+              <Link href="/notifications">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="
+                    relative
+                    flex
+                    flex-col
+                    items-center
+                    gap-1
+                    text-gray-400
+                    hover:text-gray-100
+                  "
+                >
+                  <BellIcon className="h-5 w-5" />
+                  <span className="text-xs">Alerts</span>
+                  {unreadCount > 0 && (
+                    <Badge
+                      className="
+                      absolute
+                      -top-1
+                      -right-1
+                      h-4
+                      w-4
+                      p-0
+                      text-[10px]
+                      bg-red-500
+                    "
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="
+                    flex
+                    flex-col
+                    items-center
+                    gap-1
+                    text-orange-500
+                    hover:text-orange-400
+                  "
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  <span className="text-xs">Login</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

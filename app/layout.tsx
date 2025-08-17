@@ -8,6 +8,7 @@ import ClientWrapper from "@/components/ClientWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import { PostsProvider } from "@/context/PostsContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
+import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -34,18 +35,20 @@ export default function RootLayout({
             enableSystem={false}
             disableTransitionOnChange
           >
-            <PostsProvider>
-              <NotificationsProvider>
-                <Navigation />
-                <main className="flex-1 overflow-auto relative">
-                  <div className="min-h-full">
-                    {children}
-                    <Toaster />
-                  </div>
-                  <div className="h-16 lg:hidden" aria-hidden="true" />
-                </main>
-              </NotificationsProvider>
-            </PostsProvider>
+            <AuthProvider>
+              <PostsProvider>
+                <NotificationsProvider>
+                  <Navigation />
+                  <main className="flex-1 overflow-auto relative">
+                    <div className="min-h-full">
+                      {children}
+                      <Toaster />
+                    </div>
+                    <div className="h-16 lg:hidden" aria-hidden="true" />
+                  </main>
+                </NotificationsProvider>
+              </PostsProvider>
+            </AuthProvider>
           </ThemeProvider>
         </ClientWrapper>
       </body>
