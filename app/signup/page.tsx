@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-
+import { CheckBadgeIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 export default function SignupPage() {
   const { signup } = useAuth();
   const [name, setName] = useState("");
@@ -27,8 +28,8 @@ export default function SignupPage() {
       return false;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
       return false;
     }
 
@@ -57,41 +58,19 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
-      {/* Left side - Image (hidden on mobile) */}
-      <div className="hidden md:flex md:w-1/2 bg-gray-900 items-center justify-center p-8">
-        <div className="relative w-full max-w -md aspect-[9/16] overflow-hidden border border-gray-800 transform -rotate-6">
-        {/*First Image*/}
+     {/* Left side - Image (hidden on mobile) */}
+     <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image
-            src="/food1.jpg"
-            alt="FoodShare Image1"
+            src="/image1.png"
+            alt="FoodShare App"
             fill
             className="object-cover"
             priority
           />
-      
-          {/*Second Image*/}
-          <div className="relative w-full max-w -md aspect-[9/16] overflow-hidden border border-gray-800 transform -rotate-6">
-          <Image
-          src="/food2.jpg"
-          alt="FoodShare Image2"
-          fill
-          className="object-cover"
-          priority
-          />
-      
-
-          {/* Overlay with app name */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/60">
-            <div className="text-center px-6">
-              <h2 className="text-3xl font-bold text-white mb-3">FoodShare</h2>
-              <p className="text-gray-200 text-lg">
-                Share your culinary moments with friends and food enthusiasts
-              </p>
-            </div>
-          </div>
         </div>
-        </div>
-        </div>
+      </div>
+   
 
       {/* Right side - Signup form */}
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
@@ -99,24 +78,21 @@ export default function SignupPage() {
           {/* Logo and heading */}
           <div className="text-center mb-8">
             <div className="inline-block mb-4">
-              <svg
-                className="w-12 h-12 text-orange-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
+              <Image
+              src="/favicon.ico"
+              alt="FoodShare Logo"
+              width={60}
+              height={60}
+              className="mx-auto"
+              priority
+              />
+
+            </div>  
             <h1 className="text-3xl font-bold text-white mb-2">
-              Create an account
+        Welcome To FoodShare
             </h1>
-            <p className="text-gray-400">
-              Join our community of food enthusiasts
+            <p className="text-gray-200">
+             Share your culinary moment with friends and food enthusiasts
             </p>
           </div>
 
@@ -142,7 +118,7 @@ export default function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="John Doe"
+                placeholder="enter your name  "
                 required
                 disabled={isLoading}
               />
@@ -161,7 +137,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="you@example.com"
+                placeholder="enter your email"
                 required
                 disabled={isLoading}
               />
@@ -216,27 +192,8 @@ export default function SignupPage() {
               >
                 {isLoading ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Creating account...
+                    <CheckCircleIcon className="w-6 h-6 text-green-500"/>
+                    Preparing Your Journey...
                   </>
                 ) : (
                   "Create account"

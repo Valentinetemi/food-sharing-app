@@ -27,7 +27,7 @@ export default function LoginPage() {
         setIsLoading(false);
       }
     } catch (err) {
-      setError("Failed to login. Please check your credentials.");
+      setError("Failed to login. Please check your email or password.");
       console.error(err);
       setIsLoading(false);
     }
@@ -36,19 +36,26 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
       {/* Left side - Image (hidden on mobile) */}
-      <div className="hidden md:flex md:w-1/2 bg-gray-900 items-center justify-center p-8">
-        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-800">
+      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image
-            src="/app-mockup.png"
+            src="/image2.png"
             alt="FoodShare App"
             fill
             className="object-cover"
             priority
           />
-          {/* Fallback if image doesn't load */}
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 text-white text-lg font-medium">
-            FoodShare App Preview
-          </div>
+        </div>
+      </div>
+      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+          <Image
+            src="/image2.png"
+            alt="FoodShare App"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
       </div>
 
@@ -59,7 +66,7 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <div className="inline-block mb-4">
               <Image
-                src="/logo.png"
+                src="/Image3.png"
                 alt="FoodShare Logo"
                 width={60}
                 height={60}
@@ -134,26 +141,6 @@ export default function LoginPage() {
             >
               {isLoading ? (
                 <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
                   Signing in...
                 </>
               ) : (

@@ -9,6 +9,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { PostsProvider } from "@/context/PostsContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { AuthProvider } from "@/context/AuthContext";
+import NavWrapper from "@/components/NavWrapper";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -38,7 +40,7 @@ export default function RootLayout({
             <AuthProvider>
               <PostsProvider>
                 <NotificationsProvider>
-                  <Navigation />
+                  <NavWrapper />
                   <main className="flex-1 overflow-auto relative">
                     <div className="min-h-full">
                       {children}
