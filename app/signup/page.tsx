@@ -118,7 +118,7 @@ export default function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="enter your name  "
+                placeholder="Enter Your FullName  "
                 required
                 disabled={isLoading}
               />
@@ -137,7 +137,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="enter your email"
+                placeholder="Enter Your Email"
                 required
                 disabled={isLoading}
               />
