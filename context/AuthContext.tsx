@@ -24,6 +24,8 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (email: string, newPassword: string) => Promise<void>;
 };
 
 // Create context with default values
@@ -127,6 +129,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   };
 
+  // Password reset (demo implementation)
+  const requestPasswordReset = async (email: string) => {
+    // In a real app, call your backend to send an email with a reset link/token
+    await new Promise((r) => setTimeout(r, 800));
+    console.info(`Password reset link sent to ${email} (demo)`);
+  };
+
+  const resetPassword = async (email: string, newPassword: string) => {
+    // In a real app, verify token and update password on backend
+    await new Promise((r) => setTimeout(r, 800));
+
+    // If the current stored user matches, update local password (no-op for demo)
+    const stored = localStorage.getItem("foodshare_user");
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u.email === email) {
+        // No password stored in demo; just log
+        console.info(`Password updated for ${email} (demo)`);
+      }
+    }
+  };
+
   // Create context value
   const value = {
     user,
@@ -134,6 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     signup,
     logout,
+    requestPasswordReset,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

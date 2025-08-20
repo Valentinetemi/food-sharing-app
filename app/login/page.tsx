@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
@@ -33,13 +34,27 @@ export default function LoginPage() {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
-      {/* Left side - Image (hidden on mobile) */}
-      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
-        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+     
+          {/* Left side - Image (hidden on mobile) */}
+        <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+     <div className="flex items-center justify-center gap- w-full max-w-2xl">
+      {/* First phone mockup*/}
+        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image
-            src="/image2.png"
+            src="/image1.png"
+            alt="FoodShare App"
+            fill
+            className="object-cover"
+            priority
+          />
+      </div>
+      {/*2nd phone mockup*/}
+        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+          <Image  
+            src="/image1.png"
             alt="FoodShare App"
             fill
             className="object-cover"
@@ -47,17 +62,8 @@ export default function LoginPage() {
           />
         </div>
       </div>
-      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
-        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
-          <Image
-            src="/image2.png"
-            alt="FoodShare App"
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-      </div>
+   </div>
+   
 
       {/* Right side - Login form */}
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
@@ -139,13 +145,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center"
             >
-              {isLoading ? (
-                <>
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
+              {isLoading ? <>Signing in...</> : "Sign in"}
             </button>
           </form>
 

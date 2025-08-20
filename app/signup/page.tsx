@@ -59,9 +59,22 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
      {/* Left side - Image (hidden on mobile) */}
+     
      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
-        <div className="relative w-full max-w-md aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+     <div className="flex items-center justify-center gap- w-full max-w-2xl">
+      {/* First phone mockup*/}
+        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image
+            src="/image1.png"
+            alt="FoodShare App"
+            fill
+            className="object-cover"
+            priority
+          />
+      </div>
+      {/*2nd phone mockup*/}
+        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+          <Image  
             src="/image1.png"
             alt="FoodShare App"
             fill
@@ -70,6 +83,7 @@ export default function SignupPage() {
           />
         </div>
       </div>
+   </div>
    
 
       {/* Right side - Signup form */}
