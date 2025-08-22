@@ -266,7 +266,7 @@ export default function NotificationsPage() {
                           <div className="h-10 w-10 flex items-center justify-center">
                             {getNotificationIcon(notification.type)}
                           </div>
-                        )}
+                        )}  
 
                         <div className="flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">

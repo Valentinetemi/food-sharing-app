@@ -44,7 +44,7 @@ export default function LoginPage() {
       {/* First phone mockup*/}
         <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image
-            src="/image1.png"
+            src="/Image2.png"
             alt="FoodShare App"
             fill
             className="object-cover"
@@ -54,7 +54,7 @@ export default function LoginPage() {
       {/*2nd phone mockup*/}
         <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
           <Image  
-            src="/image1.png"
+            src="/Image4.png"
             alt="FoodShare App"
             fill
             className="object-cover"

@@ -4,16 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { CheckBadgeIcon } from "@heroicons/react/24/solid";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth } from "@/app/firebase/config";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 export default function SignupPage() {
   const { signup } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [createUserWithEmailAndPassword, user, loading, hookError] =
+    useCreateUserWithEmailAndPassword(auth);
 
   const validateForm = (): boolean => {
     setError("");
@@ -46,9 +53,29 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Using the signup function from AuthContext
-      await signup(name, email, password);
-      // No need to redirect here as the signup function handles it
+      // Create account with Firebase
+      const userCredential = await createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      // Optional: set displayName so it appears in your app
+      if (userCredential?.user && name) {
+        try {
+          const { updateProfile } = await import("firebase/auth");
+          await updateProfile(userCredential.user, { displayName: name });
+        } catch {}
+      }
+
+      setEmail("");
+      setPassword("");
+
+      // Toast then redirect to homepage on success
+      toast({
+        title: "Account created",
+        description: "Welcome to FoodShare! Redirecting...",
+        duration: 1500,
+      });
+      setTimeout(() => router.push("/"), 1500);
     } catch (err) {
       setError("Failed to create account. Please try again.");
       console.error(err);
@@ -58,33 +85,32 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
-     {/* Left side - Image (hidden on mobile) */}
-     
-     <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
-     <div className="flex items-center justify-center gap- w-full max-w-2xl">
-      {/* First phone mockup*/}
-        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
-          <Image
-            src="/image1.png"
-            alt="FoodShare App"
-            fill
-            className="object-cover"
-            priority
-          />
-      </div>
-      {/*2nd phone mockup*/}
-        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
-          <Image  
-            src="/image1.png"
-            alt="FoodShare App"
-            fill
-            className="object-cover"
-            priority
-          />
+      {/* Left side - Image (hidden on mobile) */}
+
+      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+        <div className="flex items-center justify-center gap- w-full max-w-2xl">
+          {/* First phone mockup*/}
+          <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+            <Image
+              src="/Image2.png"
+              alt="FoodShare App"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          {/*2nd phone mockup*/}
+          <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+            <Image
+              src="/Image4.png"
+              alt="FoodShare App"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
         </div>
       </div>
-   </div>
-   
 
       {/* Right side - Signup form */}
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
@@ -93,20 +119,19 @@ export default function SignupPage() {
           <div className="text-center mb-8">
             <div className="inline-block mb-4">
               <Image
-              src="/favicon.ico"
-              alt="FoodShare Logo"
-              width={60}
-              height={60}
-              className="mx-auto"
-              priority
+                src="/favicon.ico"
+                alt="FoodShare Logo"
+                width={60}
+                height={60}
+                className="mx-auto"
+                priority
               />
-
-            </div>  
+            </div>
             <h1 className="text-3xl font-bold text-white mb-2">
-        Welcome To FoodShare
+              Welcome To FoodShare
             </h1>
             <p className="text-gray-200">
-             Share your culinary moment with friends and food enthusiasts
+              Share your culinary moment with friends and food enthusiasts
             </p>
           </div>
 
@@ -204,14 +229,7 @@ export default function SignupPage() {
                 disabled={isLoading}
                 className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center"
               >
-                {isLoading ? (
-                  <>
-                    <CheckCircleIcon className="w-6 h-6 text-green-500"/>
-                    Preparing Your Journey...
-                  </>
-                ) : (
-                  "Create account"
-                )}
+                {isLoading ? <>Preparing Your Journey...</> : "Create account"}
               </button>
             </div>
           </form>

@@ -14,6 +14,7 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/solid";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -26,7 +27,6 @@ const mockUser = {
 export function Navigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("recent");
   const { unreadCount } = useNotifications();
   const { user, logout } = useAuth();
@@ -35,7 +35,8 @@ export function Navigation({ children }: { children: React.ReactNode }) {
     { href: "/", icon: HomeIcon, label: "Home" },
     { href: "/create", icon: CameraIcon, label: "Share Food" },
     { href: "/community", icon: UsersIcon, label: "Community" },
-    { href: "/profile", icon: UserIcon, label: "Profile" },
+    { href: "/profile", icon: UserIcon, label: "Profile"}
+    
   ];
 
   const filters = [
@@ -232,20 +233,11 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 px-3
                 py-2
                 rounded-lg
-                hover:bg-zinc-800
-                hover:text-orange-500
+                hover:bg-zinc-800 hover:text-orange-500
                 cursor-pointer
               "
               >
-                <StarIcon className="w-6 h-6" />
-                <span
-                  className="
-                  text-md
-                  font-bold
-                "
-                >
-                  Stats
-                </span>
+                
               </div>
 
               <div
@@ -356,7 +348,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 className={`px-3 py-1 text-sm sm:text-base font-bold py-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all ${
                   activeFilter === filter.value
                     ? "bg-orange-500 text-white"
-                    : "bg-gray-950 text-gray-300"
+                    : "hover:bg-zinc-800 hover:text-orange-500"
                 }`}
               >
                 {filter.label}
@@ -404,60 +396,92 @@ export function Navigation({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
 
-            {user ? (
-              <Link href="/notifications">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="
-                    relative
-                    flex
-                    flex-col
-                    items-center
-                    gap-1
-                    text-gray-400
-                    hover:text-gray-100
+            <Link href="/notifications">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="
+                  relative
+                  flex
+                  flex-col
+                  items-center
+                  gap-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-zinc-800 hover:text-orange-500
+                 
+                "
+              >
+                <BellIcon className="h-5 w-5" />
+                <span className="text-xs">Alerts</span>
+                {unreadCount > 0 && (
+                  <Badge
+                    className="
+                    absolute
+                    -top-1
+                    -right-1
+                    h-4
+                    w-4
+                    p-0
+                    text-[10px]
+                    bg-red-500
                   "
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+
+            {/* Account sheet for mobile */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  className="flex flex-col items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-zinc-800 hover:text-orange-500"
                 >
-                  <BellIcon className="h-5 w-5" />
-                  <span className="text-xs">Alerts</span>
-                  {unreadCount > 0 && (
-                    <Badge
-                      className="
-                      absolute
-                      -top-1
-                      -right-1
-                      h-4
-                      w-4
-                      p-0
-                      text-[10px]
-                      bg-red-500
-                    "
-                    >
-                      {unreadCount}
-                    </Badge>
+                  <UserIcon className="h-6 w-6" />
+                  <span className="text-xs">Account</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="bg-gray-950 text-white border-l border-gray-800"
+              >
+                <div className="mt-6 space-y-4">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>  
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {user.name}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {user.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={logout}
+                        variant="ghost"
+                        className="w-full justify-start text-gray-300 hover:text-red-400"
+                      >
+                        <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Link href="/login" className="block">
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                        Sign in
+                      </Button>
+                    </Link>
                   )}
-                </Button>
-              </Link>
-            ) : (
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="
-                    flex
-                    flex-col
-                    items-center
-                    gap-1
-                    text-orange-500
-                    hover:text-orange-400
-                  "
-                >
-                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                  <span className="text-xs">Login</span>
-                </Button>
-              </Link>
-            )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
