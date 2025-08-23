@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth } from "@/context/AuthContext";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 export default function SignupPage() {
-  const { signup } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [name, setName] = useState("");
@@ -19,8 +17,19 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [createUserWithEmailAndPassword, user, loading, hookError] =
+  const [createUserWithEmailAndPassword, user] =
     useCreateUserWithEmailAndPassword(auth);
+
+  useEffect(() => {
+    if (user) {
+      toast({
+        title: "Account created",
+        description: `Welcome ${user.user.displayName || user.user.email}`,
+        duration: 3000,
+      });
+      router.push("/");
+    }
+  }, [user, router, toast]);
 
   const validateForm = (): boolean => {
     setError("");
@@ -43,7 +52,7 @@ export default function SignupPage() {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -63,26 +72,18 @@ export default function SignupPage() {
         try {
           const { updateProfile } = await import("firebase/auth");
           await updateProfile(userCredential.user, { displayName: name });
-        } catch {}
+        } catch (error) {
+          setError("Please enter both email and password");
+          console.error(error);
+        }
       }
-
-      setEmail("");
-      setPassword("");
-
-      // Toast then redirect to homepage on success
-      toast({
-        title: "Account created",
-        description: "Welcome to FoodShare! Redirecting...",
-        duration: 1500,
-      });
-      setTimeout(() => router.push("/"), 1500);
-    } catch (err) {
-      setError("Failed to create account. Please try again.");
-      console.error(err);
+    } catch (error) {
+      setError("Failed to create account");
+      console.error(error);
+    } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
       {/* Left side - Image (hidden on mobile) */}
@@ -156,7 +157,7 @@ export default function SignupPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
                 placeholder="Enter Your FullName  "
                 required
                 disabled={isLoading}
@@ -175,7 +176,7 @@ export default function SignupPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
                 placeholder="Enter Your Email"
                 required
                 disabled={isLoading}
@@ -194,7 +195,7 @@ export default function SignupPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
@@ -216,7 +217,7 @@ export default function SignupPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
