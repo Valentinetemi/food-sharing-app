@@ -17,21 +17,32 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [createUserWithEmailAndPassword, user] =
+  const [createUserWithEmailAndPassword, user, loading, firebaseError] =
     useCreateUserWithEmailAndPassword(auth);
 
   useEffect(() => {
     if (user) {
+      console.log("Signup successful! Redirecting...", user.user)
       toast({
         title: "Account created",
         description: `Welcome ${user.user.displayName || user.user.email}`,
         duration: 3000,
       });
-      router.push("/");
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
     }
   }, [user, router, toast]);
+//to handle firebase errors
+  useEffect(() => {
+    if (firebaseError) {
+      console.error("Firebase error:",firebaseError);
+      setError(firebaseError.message || "Failed to create account");
+      setIsLoading(false);
+    }
+  }, [firebaseError]);
 
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     setError("");
 
     if (!name || !email || !password || !confirmPassword) {
@@ -60,6 +71,7 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
+    setError("");
 
     try {
       // Create account with Firebase
@@ -72,18 +84,25 @@ export default function SignupPage() {
         try {
           const { updateProfile } = await import("firebase/auth");
           await updateProfile(userCredential.user, { displayName: name });
+          console.log("displayName updated successfully", name);
         } catch (error) {
           setError("Please enter both email and password");
-          console.error(error);
+          console.error("Error updating display profile:", error);
         }
       }
-    } catch (error) {
-      setError("Failed to create account");
-      console.error(error);
-    } finally {
+    
+      if (!userCredential){
+        setIsLoading(false);
+        setError("Failed to create account");
+      }
+
+    }
+    catch(error: any){
+      console.error('Error creating account:', error);
+      setError(error.message || "Failed to create account");
       setIsLoading(false);
     }
-  };
+    };
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
       {/* Left side - Image (hidden on mobile) */}
