@@ -1,27 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth } from "@/app/firebase/config"
+import { useRouter } from "next/router";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [SignInUserWithEmailAndPassword, user, loading , firebaseError] = useSignInWithEmailAndPassword(auth);
+
+  useEffect(()=> {
+      if (user) {
+        console.log ("signIn successful!", user.user)
+        toast({
+          title: "Welcome back",
+          description: `Welcome back ${user.user.displayName || user.user.email}`,
+          duration : 3000,
+        });
+        setTimeout(() => {
+          router.push("/");
+        }, 100);
+      }
+    },
+    [user, router, toast]);
+    //to handle firebase errors
+    useEffect(()=>{
+      if(firebaseError){
+        console.log("Firebase Error", firebaseError);
+        setError(firebaseError.message || "Failed to signIn");
+        setIsLoading(false);
+      }
+    }, [firebaseError]);
+  
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      // Use the login function from AuthContext
+      // Use the login function from firebase
+      const logIn = await SignInUserWithEmailAndPassword(
+        email,password
+      );
       if (email && password) {
-        await login(email, password);
+        await import("firebase/auth");
         // No need to redirect here as the login function handles it
       } else {
         setError("Please enter both email and password");
