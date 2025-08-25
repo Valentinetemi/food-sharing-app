@@ -7,6 +7,8 @@ import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import  { FiEye, FiEyeOff } from "react-icons/fi";
+import { supabase } from "@/lib/supabase";
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -22,7 +24,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (user) {
-      console.log("Signup successful! Redirecting...", user.user)
+      console.log("Signup successful! Redirecting...", user.user);
       toast({
         title: "Account created",
         description: `Welcome ${user.user.displayName || user.user.email}`,
@@ -33,10 +35,10 @@ export default function SignupPage() {
       }, 100);
     }
   }, [user, router, toast]);
-//to handle firebase errors
+  //to handle firebase errors
   useEffect(() => {
     if (firebaseError) {
-      console.error("Firebase error:",firebaseError);
+      console.error("Firebase error:", firebaseError);
       setError(firebaseError.message || "Failed to create account");
       setIsLoading(false);
     }
@@ -90,19 +92,38 @@ export default function SignupPage() {
           console.error("Error updating display profile:", error);
         }
       }
-    
-      if (!userCredential){
+
+      if (!userCredential) {
         setIsLoading(false);
         setError("Failed to create account");
+        return;
       }
 
-    }
-    catch(error: any){
-      console.error('Error creating account:', error);
+      async function syncUserWithSupabase(user: any) {
+        const { uid, email, displayName } = user;
+        const { data, error } = await supabase.from("users").upsert([
+          {
+            id: uid,
+            email,
+            name: displayName || null,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        if (error) {
+          console.error("Supabase sync error", error);
+        } else {
+          console.log("User synced with Supabase successfully", data);
+        }
+      }
+
+      await syncUserWithSupabase(userCredential.user);
+      setIsLoading(false);
+    } catch (error: any) {
+      console.error("Error creating account:", error);
       setError(error.message || "Failed to create account");
       setIsLoading(false);
     }
-    };
+  };
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
       {/* Left side - Image (hidden on mobile) */}
@@ -222,6 +243,12 @@ export default function SignupPage() {
               <p className="mt-1 text-xs text-gray-500">
                 Must be at least 8 characters long
               </p>
+              <span
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+              onClick={() => setShowPassword((prev) => !prev}
+              >
+                
+              </span>
             </div>
 
             <div>
