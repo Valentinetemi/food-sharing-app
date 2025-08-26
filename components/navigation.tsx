@@ -30,13 +30,19 @@ export function Navigation({ children }: { children: React.ReactNode }) {
   const [activeFilter, setActiveFilter] = useState("recent");
   const { unreadCount } = useNotifications();
   const { user, logout } = useAuth();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      router.replace("/login");
+    }
+  };
 
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Home" },
     { href: "/create", icon: CameraIcon, label: "Share Food" },
     { href: "/community", icon: UsersIcon, label: "Community" },
-    { href: "/profile", icon: UserIcon, label: "Profile"}
-    
+    { href: "/profile", icon: UserIcon, label: "Profile" },
   ];
 
   const filters = [
@@ -214,8 +220,8 @@ export function Navigation({ children }: { children: React.ReactNode }) {
           {user ? (
             <>
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
-                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
-                  {user.name.charAt(0).toUpperCase()}
+                <div className="w-20 h-20  rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+                  {user.name.charAt(2).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-white">
@@ -236,9 +242,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                 hover:bg-zinc-800 hover:text-orange-500
                 cursor-pointer
               "
-              >
-                
-              </div>
+              ></div>
 
               <div
                 className="
@@ -265,7 +269,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
               </div>
 
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="
                 flex
                 items-center
@@ -434,7 +438,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             <Sheet>
               <SheetTrigger asChild>
                 <Button
-                  variant="ghost" 
+                  variant="ghost"
                   size="sm"
                   className="flex flex-col items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-zinc-800 hover:text-orange-500"
                 >
@@ -450,9 +454,9 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                   {user ? (
                     <>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+                        <div className="w-20 h-20  rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
                           {user.name.charAt(0).toUpperCase()}
-                        </div>  
+                        </div>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">
                             {user.name}
@@ -464,7 +468,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
                       </div>
 
                       <Button
-                        onClick={logout}
+                        onClick={handleLogout}
                         variant="ghost"
                         className="w-full justify-start text-gray-300 hover:text-red-400"
                       >

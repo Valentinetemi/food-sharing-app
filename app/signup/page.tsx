@@ -7,7 +7,7 @@ import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import  { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { supabase } from "@/lib/supabase";
 export default function SignupPage() {
   const router = useRouter();
@@ -18,6 +18,8 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [createUserWithEmailAndPassword, user, loading, firebaseError] =
     useCreateUserWithEmailAndPassword(auth);
@@ -93,26 +95,37 @@ export default function SignupPage() {
         }
       }
 
-      if (!userCredential) {
+      if (!userCredential?.user) {
         setIsLoading(false);
         setError("Failed to create account");
         return;
       }
 
       async function syncUserWithSupabase(user: any) {
-        const { uid, email, displayName } = user;
-        const { data, error } = await supabase.from("users").upsert([
-          {
-            id: uid,
-            email,
-            name: displayName || null,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-        if (error) {
-          console.error("Supabase sync error", error);
-        } else {
-          console.log("User synced with Supabase successfully", data);
+        try {
+          const { uid, email, displayName } = user;
+          const { data, error } = await supabase.from("users").upsert([
+            {
+              id: uid,
+              email,
+              name: displayName || null,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+          if (error) {
+            console.error("Supabase sync error", error);
+            // Don't set error here as the account was created successfully
+            // Just log it for debugging
+            console.warn(
+              "User account created but Supabase sync failed:",
+              error.message
+            );
+          } else {
+            console.log("User synced with Supabase successfully", data);
+          }
+        } catch (syncError) {
+          console.error("Unexpected error during Supabase sync:", syncError);
+          // Don't fail the signup process for Supabase sync issues
         }
       }
 
@@ -157,8 +170,8 @@ export default function SignupPage() {
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
         <div className="w-full max-w-md">
           {/* Logo and heading */}
-          <div className="text-center mb-8">
-            <div className="inline-block mb-4">
+          <div className="text-center mb-6">
+            <div className="inline-block mb-3">
               <Image
                 src="/favicon.ico"
                 alt="FoodShare Logo"
@@ -168,10 +181,10 @@ export default function SignupPage() {
                 priority
               />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-white mb-2">
               Welcome To FoodShare
             </h1>
-            <p className="text-gray-200">
+            <p className="text-gray-200 text-sm">
               Share your culinary moment with friends and food enthusiasts
             </p>
           </div>
@@ -184,11 +197,11 @@ export default function SignupPage() {
           )}
 
           {/* Signup form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-300 mb-1"
+                className="block  font-medium text-gray-300 mb-1"
               >
                 Full Name
               </label>
@@ -230,25 +243,28 @@ export default function SignupPage() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="••••••••"
-                required
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-300"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <FiEye size={20} /> : <FiEyeOff size={20} />}
+                </button>
+              </div>
               <p className="mt-1 text-xs text-gray-500">
                 Must be at least 8 characters long
               </p>
-              <span
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              onClick={() => setShowPassword((prev) => !prev}
-              >
-                
-              </span>
             </div>
 
             <div>
@@ -258,16 +274,29 @@ export default function SignupPage() {
               >
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="••••••••"
-                required
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-300"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                >
+                  {showConfirmPassword ? (
+                    <FiEye size={20} />
+                  ) : (
+                    <FiEyeOff size={20} />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="pt-2">
@@ -282,7 +311,7 @@ export default function SignupPage() {
           </form>
 
           {/* Sign in link */}
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <p className="text-gray-400">
               Already have an account?{" "}
               <Link

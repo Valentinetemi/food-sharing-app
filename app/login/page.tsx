@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth } from "@/app/firebase/config"
-import { useRouter } from "next/router";
+import { auth } from "@/app/firebase/config";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
@@ -16,31 +16,30 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [SignInUserWithEmailAndPassword, user, loading , firebaseError] = useSignInWithEmailAndPassword(auth);
+  const [SignInUserWithEmailAndPassword, user, loading, firebaseError] =
+    useSignInWithEmailAndPassword(auth);
 
-  useEffect(()=> {
-      if (user) {
-        console.log ("signIn successful!", user.user)
-        toast({
-          title: "Welcome back",
-          description: `Welcome back ${user.user.displayName || user.user.email}`,
-          duration : 3000,
-        });
-        setTimeout(() => {
-          router.push("/");
-        }, 100);
-      }
-    },
-    [user, router, toast]);
-    //to handle firebase errors
-    useEffect(()=>{
-      if(firebaseError){
-        console.log("Firebase Error", firebaseError);
-        setError(firebaseError.message || "Failed to signIn");
-        setIsLoading(false);
-      }
-    }, [firebaseError]);
-  
+  useEffect(() => {
+    if (user) {
+      console.log("signIn successful!", user.user);
+      toast({
+        title: "Welcome back",
+        description: `Welcome back ${user.user.displayName || user.user.email}`,
+        duration: 3000,
+      });
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
+    }
+  }, [user, router, toast]);
+  //to handle firebase errors
+  useEffect(() => {
+    if (firebaseError) {
+      console.log("Firebase Error", firebaseError);
+      setError(firebaseError.message || "Failed to signIn");
+      setIsLoading(false);
+    }
+  }, [firebaseError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,9 +48,7 @@ export default function LoginPage() {
 
     try {
       // Use the login function from firebase
-      const logIn = await SignInUserWithEmailAndPassword(
-        email,password
-      );
+      const logIn = await SignInUserWithEmailAndPassword(email, password);
       if (email && password) {
         await import("firebase/auth");
         // No need to redirect here as the login function handles it
@@ -66,36 +63,33 @@ export default function LoginPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
-     
-          {/* Left side - Image (hidden on mobile) */}
-        <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
-     <div className="flex items-center justify-center gap- w-full max-w-2xl">
-      {/* First phone mockup*/}
-        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
-          <Image
-            src="/Image2.png"
-            alt="FoodShare App"
-            fill
-            className="object-cover"
-            priority
-          />
-      </div>
-      {/*2nd phone mockup*/}
-        <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
-          <Image  
-            src="/Image4.png"
-            alt="FoodShare App"
-            fill
-            className="object-cover"
-            priority
-          />
+      {/* Left side - Image (hidden on mobile) */}
+      <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
+        <div className="flex items-center justify-center gap- w-full max-w-2xl">
+          {/* First phone mockup*/}
+          <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+            <Image
+              src="/Image2.png"
+              alt="FoodShare App"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          {/*2nd phone mockup*/}
+          <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
+            <Image
+              src="/Image4.png"
+              alt="FoodShare App"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
         </div>
       </div>
-   </div>
-   
 
       {/* Right side - Login form */}
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
