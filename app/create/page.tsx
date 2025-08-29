@@ -26,6 +26,7 @@ import CalorieDropdown from "@/components/ui/CalorieDropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -186,7 +187,21 @@ export default function CreatePostPage() {
     if (validateForm()) {
       setIsSharing(true);
 
-      const imageUrl = selectedImage || "/placeholder.svg?height=500&width=500";
+     const supabasePost = {
+      firebase_uid: CurrentUser.uid,
+      caption: description,
+      image_url: imageUrl,
+      calories: calories,
+      tags: tags.join(","),
+      mealType: mealType,
+
+     };
+
+     const { data, error } = await supabase
+     .from("posts")
+     .insert([supabasePost]);
+
+     post.map{()}
 
       // Create the new post object
       const newPost = {

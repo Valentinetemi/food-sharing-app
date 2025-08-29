@@ -220,8 +220,8 @@ export function Navigation({ children }: { children: React.ReactNode }) {
           {user ? (
             <>
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
-                <div className="w-20 h-20  rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
-                  {user.name.charAt(2).toUpperCase()}
+                <div className="w-12 h-12  rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+                  {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-white">

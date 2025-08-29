@@ -100,13 +100,14 @@ export default function SignupPage() {
         setError("Failed to create account");
         return;
       }
+      console.log(userCredential.user);
 
       async function syncUserWithSupabase(user: any) {
         try {
           const { uid, email, displayName } = user;
           const { data, error } = await supabase.from("users").upsert([
             {
-              id: uid,
+              firebase_uid: uid,
               email,
               name: displayName || null,
               created_at: new Date().toISOString(),
@@ -114,7 +115,7 @@ export default function SignupPage() {
           ]);
           if (error) {
             console.error("Supabase sync error", error);
-            // Don't set error here as the account was created successfully
+    
             // Just log it for debugging
             console.warn(
               "User account created but Supabase sync failed:",
