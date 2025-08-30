@@ -201,7 +201,7 @@ export default function CreatePostPage() {
      .from("posts")
      .insert([supabasePost]);
 
-     post.map{()}
+
 
       // Create the new post object
       const newPost = {
