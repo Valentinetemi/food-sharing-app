@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { foods, Food } from "../data/foods";
-import { Dispatch, SetStateAction } from "react";
 
 interface CalorieDropdownProps {
   onCalorieChange?: (calories: number) => void;

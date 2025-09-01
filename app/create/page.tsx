@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Jacques_Francois_Shadow } from "next/font/google";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -64,6 +65,7 @@ export default function CreatePostPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [posts, setPosts] = useState("");
 
   // Get the addPost function from context
   const { addPost } = usePosts();
@@ -182,26 +184,37 @@ export default function CreatePostPage() {
     localStorage.removeItem("foodShareDraft");
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
       setIsSharing(true);
 
-     const supabasePost = {
-      firebase_uid: CurrentUser.uid,
-      caption: description,
-      image_url: imageUrl,
-      calories: calories,
-      tags: tags.join(","),
-      mealType: mealType,
+      if (!error && data){
+        const newPost = data[0];
+        setPosts((prev) => [newPost, ...prev]);
+      }
+      // For now, use a placeholder image URL since imageUrl is not defined
+      const imageUrl = selectedImage || "/placeholder-food.jpg";
 
-     };
+      const supabasePost = {
+        firebase_uid: "current-user-id", // Replace with actual user ID from auth
+        caption: description,
+        image_url: imageUrl,
+        calories: calories,
+        tags: tags.join(","),
+        mealType: mealType,
+      };
 
-     const { data, error } = await supabase
-     .from("posts")
-     .insert([supabasePost]);
+      const { data, error } = await supabase
+        .from("posts")
+        .insert([supabasePost])
+        .select();
 
-
+      if (error) {
+        console.error("Error Inserting into supabase", error.message);
+      } else {
+        console.log("Content inserted successfully", supabasePost);
+      }
 
       // Create the new post object
       const newPost = {
