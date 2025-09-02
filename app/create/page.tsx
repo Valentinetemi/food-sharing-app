@@ -239,6 +239,7 @@ export default function CreatePostPage() {
 
       // Simulate API call delay
       setTimeout(() => {
+        hjbhlae
         // Show success message
         alert("Post shared successfully!");
 
