@@ -27,7 +27,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Jacques_Francois_Shadow } from "next/font/google";
+import { getAuth } from "firebase/auth";
+
+//get name and email from firebase
+const auth = getAuth();
+const {currentUser} = auth;
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -65,7 +69,7 @@ export default function CreatePostPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [posts, setPosts] = useState("");
+  const [posts, setPosts] = useState<any[]>([]);
 
   // Get the addPost function from context
   const { addPost } = usePosts();
@@ -189,15 +193,11 @@ export default function CreatePostPage() {
     if (validateForm()) {
       setIsSharing(true);
 
-      if (!error && data){
-        const newPost = data[0];
-        setPosts((prev) => [newPost, ...prev]);
-      }
       // For now, use a placeholder image URL since imageUrl is not defined
       const imageUrl = selectedImage || "/placeholder-food.jpg";
 
       const supabasePost = {
-        firebase_uid: "current-user-id", // Replace with actual user ID from auth
+        firebase_uid: "current-user-id", // Replace with actual user ID from firebase
         caption: description,
         image_url: imageUrl,
         calories: calories,
@@ -210,32 +210,35 @@ export default function CreatePostPage() {
         .insert([supabasePost])
         .select();
 
+      if (!error && data) {
+        const dbPost = data[0];
+
+        // Create the new post object
+        const uiPost = {
+          id: dbPost.id,
+          title: dbPost.title,
+          caption: dbPost.caption,
+          image_url: dbPost.image_url,
+          calories: dbPost.calories,
+          tags: dbPost.tags,
+          mealType: dbPost.mealType,
+          user: {
+            name: currentUser?.displayName || "anonymous",
+            username: currentUser?.email || "example@gmail.com",
+            avatar: currentUser?.photoURL || "default.png",
+          },
+        };
+        setPosts((prev) => [uiPost, ...prev]);
+      }
+
       if (error) {
         console.error("Error Inserting into supabase", error.message);
       } else {
         console.log("Content inserted successfully", supabasePost);
       }
 
-      // Create the new post object
-      const newPost = {
-        title: foodName,
-        description,
-        image: imageUrl,
-        calories,
-        tags,
-        user: {
-          name: "Current User", // In a real app, this would come from authentication
-          username: "@currentuser",
-          avatar: "/cht.png?height=40&width=40",
-        },
-        mealType,
-      };
-
       // Simulate API call delay
       setTimeout(() => {
-        // Add the post to the global state
-        addPost(newPost);
-
         // Show success message
         alert("Post shared successfully!");
 
