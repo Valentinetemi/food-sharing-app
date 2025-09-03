@@ -234,12 +234,12 @@ export default function CreatePostPage() {
       if (error) {
         console.error("Error Inserting into supabase", error.message);
       } else {
-        console.log("Content inserted successfully", supabasePost);
+        console.log("Content inserted successfully", data);
       }
 
       // Simulate API call delay
       setTimeout(() => {
-        hjbhlae
+        
         // Show success message
         alert("Post shared successfully!");
 
