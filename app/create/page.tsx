@@ -28,6 +28,7 @@ import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuth } from "firebase/auth";
+import { title } from "process";
 
 //get name and email from firebase
 const auth = getAuth();
@@ -197,12 +198,13 @@ export default function CreatePostPage() {
       const imageUrl = selectedImage || "/placeholder-food.jpg";
 
       const supabasePost = {
-        firebase_uid: "firebase_uid", // Replace with actual user ID from firebase
+        firebase_uid: "firebaseUser.uid", // Replace with actual user ID from firebase
         caption: description,
         image_url: imageUrl,
         calories: calories,
+        title: foodName,
         tags: tags.join(","),
-        mealType: mealType,
+        mealtype: mealType,
       };
 
       const { data, error } = await supabase
@@ -210,9 +212,9 @@ export default function CreatePostPage() {
         .insert([supabasePost])
         .select();
 
-      if (!error && data) {
-        const dbPost = data[0];
-
+    if (!error && data) {
+          const dbPost = data[0];
+    
         // Create the new post object
         const uiPost = {
           id: dbPost.id,
@@ -228,7 +230,9 @@ export default function CreatePostPage() {
             avatar: currentUser?.photoURL || "default.png",
           },
         };
-        setPosts((prev) => [uiPost, ...prev]);
+        setPosts((prev) => [supabasePost, ...prev]);
+
+        
       }
 
       if (error) {
