@@ -197,7 +197,7 @@ export default function CreatePostPage() {
       const imageUrl = selectedImage || "/placeholder-food.jpg";
 
       const supabasePost = {
-        firebase_uid: "current-user-id", // Replace with actual user ID from firebase
+        firebase_uid: "firebase_uid", // Replace with actual user ID from firebase
         caption: description,
         image_url: imageUrl,
         calories: calories,
@@ -221,7 +221,7 @@ export default function CreatePostPage() {
           image_url: dbPost.image_url,
           calories: dbPost.calories,
           tags: dbPost.tags,
-          mealType: dbPost.mealType,
+          mealtype: dbPost.mealtype,
           user: {
             name: currentUser?.displayName || "anonymous",
             username: currentUser?.email || "example@gmail.com",
