@@ -32,7 +32,6 @@ import { title } from "process";
 
 //get name and email from firebase
 const auth = getAuth();
-const { currentUser } = auth;
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -76,24 +75,28 @@ export default function CreatePostPage() {
   const { addPost } = usePosts();
   const router = useRouter();
 
-  useEffect(() => { 
-    const fetchPost = async() => {
-      const {data, error} = await supabase.from("posts").select("*")
-      .order("created_at", {ascending: false});
+  useEffect(() => {
+    const fetchPost = async () => {
+      const currentUser = auth.currentUser;
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if(error) {
+      if (error) {
         console.error("Error fetching posts.", error.message);
-          return;
+        return;
       }
-  
-   if(data){
-    const uiPost = data.map((dbPost) => mapDbPostToUiPost(dbPost, currentUser));
-    setPosts(uiPost);
-   }
-  };
-  fetchPost();
-}, [currentUser]);
 
+      if (data) {
+        const uiPost = data.map((dbPost) =>
+          mapDbPostToUiPost(dbPost, currentUser)
+        );
+        setPosts(uiPost);
+      }
+    };
+    fetchPost();
+  }, []);
 
   // Function to save draft to localStorage
   const saveDraft = () => {
@@ -208,37 +211,69 @@ export default function CreatePostPage() {
     localStorage.removeItem("foodShareDraft");
   };
 
+  // Generate an initial avatar (SVG data URL) from user's display name
+  const getInitialAvatar = (name: string) => {
+    if (!name || name === "Anonymous") {
+      return "/default.png";
+    }
+
+    const firstLetter = name.trim().charAt(0).toUpperCase();
+
+    const colors = [
+      "#F87171",
+      "#FB923C",
+      "#FBBF24",
+      "#A3E635",
+      "#34D399",
+      "#22D3EE",
+      "#60A5FA",
+      "#A78BFA",
+      "#F472B6",
+    ];
+    const colorIndex = firstLetter.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+        <rect width="100" height="100" fill="${bgColor}" />
+        <text x="50" y="50" font-family="Arial" font-size="50" fill="white" text-anchor="middle" dominant-baseline="central">
+          ${firstLetter}
+        </text>
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
   function mapDbPostToUiPost(dbPost: any, currentUser: any) {
+    const userName = currentUser?.displayName || "Anonymous";
     return {
       id: dbPost.id,
       title: dbPost.title,
       description: dbPost.caption,
       imageUrl: dbPost.image_url,
       calories: dbPost.calories,
-      tags: dbPost.tags ? dbPost.tags.spilt(",") : [],
+      tags: dbPost.tags ? dbPost.tags.split(",") : [],
       mealType: dbPost.mealtype,
       user: {
         name: currentUser?.displayName || "Anonymous",
         username: currentUser?.email || "example@gmail.com",
-        avatar: currentUser?.photoURL || "/default.png",
+        avatar: currentUser?.photoURL || getInitialAvatar(userName),
       },
     };
   }
- 
-        
-
-  
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
       setIsSharing(true);
+      const currentUser = auth.currentUser;
 
       // For now, use a placeholder image URL since imageUrl is not defined
       const imageUrl = selectedImage || "/placeholder-food.jpg";
 
       const supabasePost = {
-        firebase_uid: "firebaseUser.uid", // Replace with actual user ID from firebase
+        firebase_uid: currentUser?.uid || "anonymous", // Use actual user ID from firebase
         caption: description,
         image_url: imageUrl,
         calories: calories,
@@ -254,28 +289,32 @@ export default function CreatePostPage() {
 
       if (!error && data) {
         const dbPost = data[0];
+        const userName = currentUser?.displayName || "Anonymous";
 
-      
-        // Create the new post object
-    
-        setPosts((prev) => [mapDbPostToUiPost, ...prev]);
-      
-    }
+        addPost({
+          title: dbPost.title,
+          description: dbPost.caption,
+          image: dbPost.image_url,
+          calories: dbPost.calories,
+          tags: dbPost.tags ? dbPost.tags.split(",") : [],
+          user: {
+            name: currentUser?.displayName || "Anonymous",
+            username: currentUser?.email || "example@gmail.com",
+            avatar: currentUser?.photoURL || getInitialAvatar(userName),
+          },
+        });
 
-    
-
-      // Simulate API call delay
-      setTimeout(() => {
         // Show success message
-        alert("Post shared successfully!");
-
-        // Reset form and state
+        setTimeout(() => {
+          alert("Post shared successfully!");
+          setIsSharing(false);
+          resetForm();
+          router.push("/");
+        }, 1500);
+      } else {
+        alert("Error creating post: " + error?.message);
         setIsSharing(false);
-        resetForm();
-
-        // Navigate to the home page to see the new post
-        router.push("/");
-      }, 1500);
+      }
     }
   };
 
