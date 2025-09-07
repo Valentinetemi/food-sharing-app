@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, FormEvent } from "react";
+import React, { useState, useRef, FormEvent, useEffect } from "react";
 import {
   CameraIcon,
   ArrowUpTrayIcon,
@@ -32,7 +32,7 @@ import { title } from "process";
 
 //get name and email from firebase
 const auth = getAuth();
-const {currentUser} = auth;
+const { currentUser } = auth;
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -75,6 +75,25 @@ export default function CreatePostPage() {
   // Get the addPost function from context
   const { addPost } = usePosts();
   const router = useRouter();
+
+  useEffect(() => { 
+    const fetchPost = async() => {
+      const {data, error} = await supabase.from("posts").select("*")
+      .order("created_at", {ascending: false});
+
+      if(error) {
+        console.error("Error fetching posts.", error.message);
+          return;
+      }
+  
+   if(data){
+    const uiPost = data.map((dbPost) => mapDbPostToUiPost(dbPost, currentUser));
+    setPosts(uiPost);
+   }
+  };
+  fetchPost();
+}, [currentUser]);
+
 
   // Function to save draft to localStorage
   const saveDraft = () => {
@@ -189,6 +208,27 @@ export default function CreatePostPage() {
     localStorage.removeItem("foodShareDraft");
   };
 
+  function mapDbPostToUiPost(dbPost: any, currentUser: any) {
+    return {
+      id: dbPost.id,
+      title: dbPost.title,
+      description: dbPost.caption,
+      imageUrl: dbPost.image_url,
+      calories: dbPost.calories,
+      tags: dbPost.tags ? dbPost.tags.spilt(",") : [],
+      mealType: dbPost.mealtype,
+      user: {
+        name: currentUser?.displayName || "Anonymous",
+        username: currentUser?.email || "example@gmail.com",
+        avatar: currentUser?.photoURL || "/default.png",
+      },
+    };
+  }
+ 
+        
+
+  
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
@@ -212,38 +252,20 @@ export default function CreatePostPage() {
         .insert([supabasePost])
         .select();
 
-    if (!error && data) {
-          const dbPost = data[0];
-    
+      if (!error && data) {
+        const dbPost = data[0];
+
+      
         // Create the new post object
-        const uiPost = {
-          id: dbPost.id,
-          title: dbPost.title,
-          caption: dbPost.caption,
-          image_url: dbPost.image_url,
-          calories: dbPost.calories,
-          tags: dbPost.tags,
-          mealtype: dbPost.mealtype,
-          user: {
-            name: currentUser?.displayName || "anonymous",
-            username: currentUser?.email || "example@gmail.com",
-            avatar: currentUser?.photoURL || "default.png",
-          },
-        };
-        setPosts((prev) => [supabasePost, ...prev]);
+    
+        setPosts((prev) => [mapDbPostToUiPost, ...prev]);
+      
+    }
 
-        
-      }
-
-      if (error) {
-        console.error("Error Inserting into supabase", error.message);
-      } else {
-        console.log("Content inserted successfully", data);
-      }
+    
 
       // Simulate API call delay
       setTimeout(() => {
-        
         // Show success message
         alert("Post shared successfully!");
 
