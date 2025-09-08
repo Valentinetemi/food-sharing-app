@@ -7,6 +7,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import Image from "next/image";
+import { getAuth } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
 
 type Comment = {
   id: number;
@@ -159,6 +161,53 @@ export default function PostCard({
       setCommentText("");
     }
   };
+  const toggleLike = async (postId: string) => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const { data, error } = await supabase
+      .from("likes")
+      .select("*")
+      .eq("post_id", postId)
+      .eq("user_id", currentUser.uid)
+      .single();
+
+    if (error && error.code != "PDRST116") {
+      console.error("Error checking like", error.message);
+      return;
+    }
+
+    if (data) {
+      //Already liked the post > unlike the post
+      const { error: deleteError } = await supabase
+        .from("likes")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", currentUser.uid);
+
+      if (deleteError) {
+        console.error("Error deleting like", deleteError.message);
+      } else {
+        const { error: insertError } = await supabase
+          .from("likes")
+          .insert({ post_id: postId, user_id: currentUser.uid });
+
+        if (insertError) {
+          console.error("Error inserting like", insertError.message);
+        } else {
+          setLiked(true);
+        }
+      }
+    }
+  };
+
+  const mapDbPostToUiPost = async (dbPost:any, currentUser:any) => {
+    const { count } = await supabase
+    .from("likes"),
+    .select("*", { count: "extact", head:true})
+    .eq("post_id", dp.post.id)
+  }
 
   const handleShare = async () => {
     try {
@@ -239,7 +288,10 @@ export default function PostCard({
 
       {/* ACTION BUTTONS */}
       <div className="flex items-center gap-4 mt-3 text-pink">
-        <button onClick={handleLike} className="flex items-center gap-1">
+        <button
+          onClick={() => toggleLike(id.toString())}
+          className="flex items-center gap-1"
+        >
           <HeartIcon
             className={`w-5 h-5 ${liked ? "text-red-500 fill-red-500" : ""}`}
           />

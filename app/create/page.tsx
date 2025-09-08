@@ -28,7 +28,7 @@ import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuth } from "firebase/auth";
-import { title } from "process";
+
 
 //get name and email from firebase
 const auth = getAuth();
