@@ -12,7 +12,7 @@ import { getAuth } from "firebase/auth";
 
 // Define the Post type
 export type Post = {
-  id: number;
+  id: string;
   user: {
     name: string;
     username: string;
@@ -34,7 +34,7 @@ type PostsContextType = {
   addPost: (post: Omit<Post, "id" | "likes" | "comments" | "timeAgo">) => void;
   isLoading: boolean;
   updatePostLikes: (
-    postId: number,
+    postId: string,
     newLikesCount: number,
     isLiked: boolean
   ) => void;
@@ -46,7 +46,7 @@ const PostsContext = createContext<PostsContextType | undefined>(undefined);
 // Initial posts data
 const initialPosts: Post[] = [
   {
-    id: 1,
+    id: "550e8400-e29b-41d4-a716-446655440001",
     user: {
       name: "Joy Joseph",
       username: "@joyjoseph",
@@ -63,7 +63,7 @@ const initialPosts: Post[] = [
     timeAgo: "2h ago",
   },
   {
-    id: 2,
+    id: "550e8400-e29b-41d4-a716-446655440002",
     user: {
       name: "Mike Rodriguez",
       username: "@mikeats",
@@ -80,7 +80,7 @@ const initialPosts: Post[] = [
     timeAgo: "4h ago",
   },
   {
-    id: 3,
+    id: "550e8400-e29b-41d4-a716-446655440003",
     user: {
       name: "Joy Wilson",
       username: "@joywilson",
@@ -96,7 +96,7 @@ const initialPosts: Post[] = [
     timeAgo: "12h Ago",
   },
   {
-    id: 4,
+    id: "550e8400-e29b-41d4-a716-446655440004",
     user: {
       name: "Emma Wilson",
       username: "@emmaeats",
@@ -128,7 +128,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     // Create a new post with generated fields
     const newPost: Post = {
       ...newPostData,
-      id: Date.now(), // Use timestamp as a unique ID
+      id: crypto.randomUUID(), // Generate a proper UUID
       likes: 0,
       comments: 0,
       timeAgo: "Just now",
@@ -141,7 +141,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
 
   // Function to update post likes
   const updatePostLikes = (
-    postId: number,
+    postId: string,
     newLikesCount: number,
     isLiked: boolean
   ) => {

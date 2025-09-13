@@ -24,7 +24,7 @@ type Comment = {
 };
 
 type PostCardProps = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   image: string;
@@ -101,24 +101,71 @@ export default function PostCard({
   const [commentCount, setCommentCount] = useState(comments || 0);
 
   useEffect(() => {
-    const
-  })
+    // Initialize liked state and like count from database
+    const initializeLikeState = async () => {
+      const auth = getAuth();
+      const { currentUser } = auth;
+      
+      if (!currentUser) {
+        return;
+      }
+
+      try {
+        // Check if user has liked this post
+        const { data: existingLike, error: likeError } = await supabase
+          .from("likes")
+          .select("*")
+          .eq("post_id", id)
+          .eq("user_id", currentUser.uid)
+          .maybeSingle();
+
+        if (likeError && likeError.code !== "PGRST116") {
+          console.error("Error checking like status:", likeError.message);
+          return;
+        }
+
+        // Set liked state based on database
+        setLiked(!!existingLike);
+
+        // Get current like count from database
+        const { count, error: countError } = await supabase
+          .from("likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", id);
+
+        if (countError) {
+          console.error("Error getting like count:", countError.message);
+          return;
+        }
+
+        // Update like count
+        setLikes(count || 0);
+      } catch (error) {
+        console.error("Error initializing like state:", error);
+      }
+    };
+
+    initializeLikeState();
+  }, [id]);
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
 
-  const handleLike = () => {
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikes((prev) => (newLiked ? prev + 1 : prev - 1));
-
-    if (newLiked && likeSound) likeSound.play().catch(() => {});
+  const handleLike = async () => {
+    await toggleLike(id);
+    
+    if (!liked && likeSound) {
+      likeSound.play().catch(() => {});
+    }
   };
 
-  const handleDoubleClick = () => {
-    setLiked(true);
-    setLikes((prev) => (liked ? prev : prev + 1));
+  const handleDoubleClick = async () => {
+    // Only like if not already liked (double-click should only like, not unlike)
+    if (!liked) {
+      await toggleLike(id);
+    }
 
+    // Show heart burst animation
     const heartBursts = [0, 1, 2];
     heartBursts.forEach((_, i) => {
       setTimeout(() => {
@@ -168,45 +215,56 @@ export default function PostCard({
   };
   const toggleLike = async (postId: string) => {
     const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    const { data: existingLike, error: checkError } = await supabase
-      .from("likes")
-      .select("*")
-      .eq("post_id", postId)
-      .eq("user_id", currentUser.uid)
-      .maybeSingle();
-
-    if (checkError && checkError.code != "PGRST116") {
-      console.error("Error checking like", checkError.message);
+    const { currentUser } = auth;
+    if (!currentUser) {
+      console.error("User not authenticated");
       return;
     }
 
-    if (existingLike) {
-      //Already liked the post > unlike the post
-      const { error: deleteError } = await supabase
+    try {
+      const { data: existingLike, error: checkError } = await supabase
         .from("likes")
-        .delete()
+        .select("*")
         .eq("post_id", postId)
-        .eq("user_id", currentUser.uid);
+        .eq("user_id", currentUser.uid)
+        .maybeSingle();
 
-      if (!deleteError) {
-        setLiked(false);
-        setLikes((prev) => prev - 1);
-      } else {
-        console.error("Error deleting like", deleteError.message);
+      if (checkError && checkError.code !== "PGRST116") {
+        console.error("Error checking like:", checkError.message);
+        return;
       }
-    } else {
-      const { error: insertError } = await supabase
-        .from("likes")
-        .insert({ post_id: postId, user_id: currentUser.uid });
 
-      if (!insertError) {
-        setLiked(true);
-        setLikes((prev) => prev + 1);
-      } else{
-      console.error("Error inserting like", insertError.message);
+      if (existingLike) {
+        // Already liked the post > unlike the post
+        const { error: deleteError } = await supabase
+          .from("likes")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_id", currentUser.uid);
+
+        if (!deleteError) {
+          setLiked(false);
+          setLikes((prev) => Math.max(0, prev - 1)); // Prevent negative likes
+          console.log("Successfully unliked post");
+        } else {
+          console.error("Error deleting like:", deleteError.message);
+        }
+      } else {
+        // Not liked yet > like the post
+        const { error: insertError } = await supabase
+          .from("likes")
+          .insert({ post_id: postId, user_id: currentUser.uid });
+
+        if (!insertError) {
+          setLiked(true);
+          setLikes((prev) => prev + 1);
+          console.log("Successfully liked post");
+        } else {
+          console.error("Error inserting like:", insertError.message);
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error in toggleLike:", error);
     }
   };
 
@@ -315,7 +373,7 @@ export default function PostCard({
       {/* ACTION BUTTONS */}
       <div className="flex items-center gap-4 mt-3 text-pink">
         <button
-          onClick={() => toggleLike(id.toString())}
+          onClick={() => toggleLike(id)}
           className="flex items-center gap-1"
         >
           <HeartIcon
@@ -407,4 +465,4 @@ export default function PostCard({
       )}
     </div>
   );
-  }
+}
