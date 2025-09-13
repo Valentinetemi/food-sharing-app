@@ -9,6 +9,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { getAuth } from "firebase/auth";
 import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 type Comment = {
   id: number;
@@ -93,11 +94,15 @@ export default function PostCard({
   timeAgo,
 }: PostCardProps) {
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(initialLikes || 0);
+  const [likes, setLikes] = useState<number>(initialLikes ?? 0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [postComments, setPostComments] = useState<Comment[]>(staticComments);
   const [commentCount, setCommentCount] = useState(comments || 0);
+
+  useEffect(() => {
+    const
+  })
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
@@ -166,19 +171,19 @@ export default function PostCard({
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    const { data, error } = await supabase
+    const { data: existingLike, error: checkError } = await supabase
       .from("likes")
       .select("*")
       .eq("post_id", postId)
       .eq("user_id", currentUser.uid)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code != "PDRST116") {
-      console.error("Error checking like", error.message);
+    if (checkError && checkError.code != "PGRST116") {
+      console.error("Error checking like", checkError.message);
       return;
     }
 
-    if (data) {
+    if (existingLike) {
       //Already liked the post > unlike the post
       const { error: deleteError } = await supabase
         .from("likes")
@@ -186,28 +191,49 @@ export default function PostCard({
         .eq("post_id", postId)
         .eq("user_id", currentUser.uid);
 
-      if (deleteError) {
-        console.error("Error deleting like", deleteError.message);
+      if (!deleteError) {
+        setLiked(false);
+        setLikes((prev) => prev - 1);
       } else {
-        const { error: insertError } = await supabase
-          .from("likes")
-          .insert({ post_id: postId, user_id: currentUser.uid });
-
-        if (insertError) {
-          console.error("Error inserting like", insertError.message);
-        } else {
-          setLiked(true);
-        }
+        console.error("Error deleting like", deleteError.message);
       }
+    } else {
+      const { error: insertError } = await supabase
+        .from("likes")
+        .insert({ post_id: postId, user_id: currentUser.uid });
+
+      if (!insertError) {
+        setLiked(true);
+        setLikes((prev) => prev + 1);
+      } else{
+      console.error("Error inserting like", insertError.message);
     }
   };
 
-  const mapDbPostToUiPost = async (dbPost:any, currentUser:any) => {
+  const mapDbPostToUiPost = async (dbPost: any, currentUser: any) => {
     const { count } = await supabase
-    .from("likes"),
-    .select("*", { count: "extact", head:true})
-    .eq("post_id", dp.post.id)
-  }
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("post_id", dbPost.id);
+
+    let isLiked = false;
+    if (currentUser) {
+      const { data } = await supabase
+        .from("likes")
+        .select("*")
+        .eq("post_id", dbPost.id)
+        .eq("user_id", currentUser.uid)
+        .maybeSingle();
+
+      isLiked = !!data;
+    }
+
+    return {
+      ...dbPost,
+      likesCount: count || 0,
+      isLikedByCurrentUser: isLiked,
+    };
+  };
 
   const handleShare = async () => {
     try {
@@ -381,4 +407,4 @@ export default function PostCard({
       )}
     </div>
   );
-}
+  }

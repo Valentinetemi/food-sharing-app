@@ -7,6 +7,8 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { supabase } from "@/lib/supabase";
+import { getAuth } from "firebase/auth";
 
 // Define the Post type
 export type Post = {
@@ -31,6 +33,11 @@ type PostsContextType = {
   posts: Post[];
   addPost: (post: Omit<Post, "id" | "likes" | "comments" | "timeAgo">) => void;
   isLoading: boolean;
+  updatePostLikes: (
+    postId: number,
+    newLikesCount: number,
+    isLiked: boolean
+  ) => void;
 };
 
 // Create the context with a default value
@@ -74,7 +81,11 @@ const initialPosts: Post[] = [
   },
   {
     id: 3,
-    user: { name: "Joy Wilson", username: "@joywilson", avatar: "/grace.jpg?height=40&width=40" },
+    user: {
+      name: "Joy Wilson",
+      username: "@joywilson",
+      avatar: "/grace.jpg?height=40&width=40",
+    },
     image: "/food1.jpg?height=400&width=400",
     title: "Cabbage Salad",
     description: "Cabbage Salad is a delicious and healthy salad recipe.",
@@ -128,11 +139,28 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
+  // Function to update post likes
+  const updatePostLikes = (
+    postId: number,
+    newLikesCount: number,
+    isLiked: boolean
+  ) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, likes: newLikesCount } : post
+      )
+    );
+    console.log(
+      `Updated post ${postId} likes to ${newLikesCount}, isLiked: ${isLiked}`
+    );
+  };
+
   // Provide the context value
   const value = {
     posts,
     addPost,
     isLoading,
+    updatePostLikes,
   };
 
   return (
