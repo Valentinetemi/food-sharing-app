@@ -221,7 +221,7 @@ export default function PostCard({
       return;
     }
 
-    try {
+    try{
       const { data: existingLike, error: checkError } = await supabase
         .from("likes")
         .select("*")
