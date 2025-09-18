@@ -153,10 +153,7 @@ export default function PostCard({
 
   const handleLike = async () => {
     await toggleLike(id);
-    
-    if (!liked && likeSound) {
-      likeSound.play().catch(() => {});
-    }
+  
   };
 
   const handleDoubleClick = async () => {
@@ -229,10 +226,7 @@ export default function PostCard({
         .eq("user_id", currentUser.uid)
         .maybeSingle();
 
-      if (checkError && checkError.code !== "PGRST116") {
-        console.error("Error checking like:", checkError.message);
-        return;
-      }
+        let newLiked = false;
 
       if (existingLike) {
         // Already liked the post > unlike the post
@@ -243,6 +237,7 @@ export default function PostCard({
           .eq("user_id", currentUser.uid);
 
         if (!deleteError) {
+          newLiked = false;
           setLiked(false);
           setLikes((prev) => Math.max(0, prev - 1)); // Prevent negative likes
           console.log("Successfully unliked post");
@@ -257,16 +252,24 @@ export default function PostCard({
 
         if (!insertError) {
           setLiked(true);
-          setLikes((prev) => prev + 1);
-          console.log("Successfully liked post");
-        } else {
-          console.error("Error inserting like:", insertError.message);
+          setLikes((prev) => prev + 1);.
+
+          if (likeSound) {
+            likeSound.play().catch(() => {});
+          }
         }
       }
+      return newLiked;
+
+        
     } catch (error) {
       console.error("Unexpected error in toggleLike:", error);
+      return false;
+    }
     }
   };
+  
+
 
   const mapDbPostToUiPost = async (dbPost: any, currentUser: any) => {
     const { count } = await supabase
