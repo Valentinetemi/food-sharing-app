@@ -125,7 +125,8 @@ export default function PostCard({
         }
 
         // Set liked state based on database
-        setLiked(!!existingLike);
+        setLiked(!liked);
+        setLikes(likes ? likes - 1 : likes + 1);
 
         // Get current like count from database
         const { count, error: countError } = await supabase
