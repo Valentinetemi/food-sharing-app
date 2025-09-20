@@ -1,17 +1,22 @@
-"use client"
+"use client";
 
 import { usePathname } from "next/navigation";
 import { Navigation } from "@/components/navigation";
 
-export default function NavWrapper() {
-    const pathname = usePathname();
+export default function NavWrapper(): JSX.Element {
+  const pathname = usePathname();
 
-    const noNavRoutes = ["/login", "/signup", "/forgot-password", "/reset-password"];
-    const hideNav = noNavRoutes.includes(pathname);
-    
-    if (hideNav) return null;
+  const noNavRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ];
+  const hideNav = noNavRoutes.includes(pathname);
 
-    return <Navigation/>;
-    
+  if (hideNav) {
+    return <></>;
+  }
 
+  return <Navigation />;
 }
