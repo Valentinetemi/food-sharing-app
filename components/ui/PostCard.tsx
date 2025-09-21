@@ -152,7 +152,7 @@ export default function PostCard({
 
   const handleDoubleClick = () => {
     // Only like if not already liked (double-click should only like, not unlike)
-    if (!liked) {
+    if (!liked && !isLiking) {
       // Trigger heart burst animation immediately (optimistic)
       const heartBursts = [0, 1, 2];
       heartBursts.forEach((_, i) => {
@@ -209,6 +209,7 @@ export default function PostCard({
   const toggleLike = async (postId: string) => {
     const auth = getAuth();
     const { currentUser } = auth;
+
     if (!currentUser) {
       console.error("User not authenticated");
       return;
@@ -218,6 +219,7 @@ export default function PostCard({
     if (isLiking) {
       return;
     }
+
     setIsLiking(true);
 
     // Store current state for potential reversion
@@ -232,17 +234,19 @@ export default function PostCard({
     try {
       if (newLiked) {
         // Adding a like
-        const { error } = await supabase
-          .from("likes")
-          .insert({ post_id: postId, user_id: currentUser.uid });
+        const { error } = await supabase.from("likes").insert({
+          post_id: postId,
+          user_id: currentUser.uid,
+          created_at: new Date().toISOString(),
+        });
 
         if (error) {
           console.error("Error adding like:", error.message);
           // Revert optimistic update on error
-          setLiked(previousLiked);
-          setLikes(previousLikes);
-          // Optionally show user notification
-          // toast.error("Failed to like post. Please try again.");
+          
+          // Show user notification
+          alert("Failed to like post. Please try again.");
+          console.log("POST ID", postId)
         }
       } else {
         // Removing a like
@@ -257,8 +261,8 @@ export default function PostCard({
           // Revert optimistic update on error
           setLiked(previousLiked);
           setLikes(previousLikes);
-          // Optionally show user notification
-          // toast.error("Failed to unlike post. Please try again.");
+          // Show user notification
+          alert("Failed to unlike post. Please try again.");
         }
       }
     } catch (err) {
@@ -266,8 +270,8 @@ export default function PostCard({
       // Revert optimistic update on unexpected error
       setLiked(previousLiked);
       setLikes(previousLikes);
-      // Optionally show user notification
-      // toast.error("Something went wrong. Please try again.");
+      // Show user notification
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsLiking(false);
     }

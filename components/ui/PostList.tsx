@@ -7,7 +7,7 @@ export default function PostList(){
 
     useEffect(() => {
         const fetchPosts = async () => {
-            const { data, error } = await supabase.from("posts").select("*")
+            const { data, error } = await supabase.from("posts").select("*, user(*)");
             if (!error && data){
                 setPosts(data)
             }
@@ -29,8 +29,8 @@ export default function PostList(){
                     username: post.user.username,
                     avatar: post.user.avatar,
                  }}
-                 likes={post.initialLikes}
-                 comments={post.comment}
+                 likes={0}
+                 comments={0}
                  tags={post.tags}
                  calories={post.calories}
                  timeAgo={post.timeAgo}
