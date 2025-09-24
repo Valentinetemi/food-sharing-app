@@ -5,19 +5,22 @@ import {
   ArrowUpTrayIcon,
   HeartIcon,
 } from "@heroicons/react/24/solid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { supabase } from "@/lib/supabase";
-import { useEffect } from "react";
+import { validate as isValidUUID } from "uuid";
+
+type Profile = {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+};
 
 type Comment = {
-  id: number;
-  user: {
-    name: string;
-    username: string;
-    avatar: string;
-  };
+  id: string;
+  user: Profile;
   content: string;
   timestamp: string;
   timeAgo: string;
@@ -43,43 +46,10 @@ type PostCardProps = {
 const likeSound =
   typeof Audio !== "undefined" ? new Audio("/like-pop.mp3") : null;
 
-// Static comments data
-const staticComments: Comment[] = [
-  {
-    id: 1,
-    user: {
-      name: "Joy Joseph",
-      username: "jjl",
-      avatar: "/jjl.jpg",
-    },
-    content: "This looks amazing! Would love to try this recipe.",
-    timestamp: "2025-07-15T10:30:00Z",
-    timeAgo: "2 hours ago",
-  },
-  {
-    id: 2,
-    user: {
-      name: "Benson John",
-      username: "benson",
-      avatar: "/ben.jpg",
-    },
-    content:
-      "How many servings does this make? Planning to cook for family dinner.",
-    timestamp: "2025-01-15T09:15:00Z",
-    timeAgo: "3 hours ago",
-  },
-  {
-    id: 3,
-    user: {
-      name: "Emma Wilson",
-      username: "emmaw",
-      avatar: "/placeholder-user.jpg",
-    },
-    content: "Love the presentation! The colors are so vibrant.",
-    timestamp: "2024-01-15T08:45:00Z",
-    timeAgo: "4 hours ago",
-  },
-];
+const generateLetterAvatar = (email: string | null | undefined): string => {
+  const letter = email?.charAt(0).toUpperCase() || "U";
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23555'%3E%3C/circle%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%23fff' text-anchor='middle' dy='.3em'%3E${letter}%3C/text%3E%3C/svg%3E`;
+};
 
 export default function PostCard({
   id,
@@ -97,21 +67,69 @@ export default function PostCard({
   const [likes, setLikes] = useState<number>(initialLikes ?? 0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [postComments, setPostComments] = useState<Comment[]>(staticComments);
+  const [postComments, setPostComments] = useState<Comment[]>([]);
   const [commentCount, setCommentCount] = useState(comments || 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    // Initialize liked state and like count from database
-    const initializeLikeState = async () => {
+    const initializeLikeAndComments = async () => {
       const auth = getAuth();
       const { currentUser } = auth;
 
       if (!currentUser) {
+        console.error("No authenticated user");
         return;
       }
+
       try {
-        // Check if user has liked this post
+        // Ensure profile exists in Supabase
+        const { data: me, error: meError } = await supabase
+          .from("profiles")
+          .select("id,name,username,avatar")
+          .eq("id", currentUser.uid)
+          .maybeSingle();
+        if (meError && meError.code !== "PGRST116") {
+          console.error("Error fetching current profile:", meError);
+        }
+        if (!me) {
+          // Create profile if missing
+          const newProfile = {
+            id: currentUser.uid,
+            name: currentUser.displayName || "Anonymous",
+            username:
+              currentUser.email?.split("@")[0] ||
+              `user_${currentUser.uid.slice(0, 8)}`,
+            avatar:
+              currentUser.photoURL || generateLetterAvatar(currentUser.email),
+          };
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .upsert(newProfile);
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+          } else {
+            setCurrentProfile(newProfile);
+          }
+        } else {
+          setCurrentProfile({
+            id: me.id,
+            name: me.name || currentUser.displayName || "Anonymous",
+            username:
+              me.username ||
+              currentUser.email?.split("@")[0] ||
+              `user_${me.id.slice(0, 8)}`,
+            avatar: me.avatar || generateLetterAvatar(currentUser.email),
+          });
+        }
+
+        // After profile is ensured, validate post id before post-specific queries
+        if (!isValidUUID(id)) {
+          console.error("Invalid UUID for post_id:", id);
+          return;
+        }
+
+        // Check like status
         const { data: existingLike, error: likeError } = await supabase
           .from("likes")
           .select("*")
@@ -120,40 +138,82 @@ export default function PostCard({
           .maybeSingle();
 
         if (likeError && likeError.code !== "PGRST116") {
-          console.error("Error checking like status:", likeError.message);
-          return;
+          console.error("Error checking like status:", likeError);
         }
-
-        // Set liked state based on database
         setLiked(!!existingLike);
-        // Get current like count from database
+
+        // Get like count
         const { count, error: countError } = await supabase
           .from("likes")
           .select("*", { count: "exact", head: true })
           .eq("post_id", id);
 
         if (countError) {
-          console.error("Error getting like count:", countError.message);
-          return;
+          console.error("Error getting like count:", countError);
+        } else {
+          setLikes(count || 0);
         }
 
-        // Update like count
-        setLikes(count || 0);
+        // Fetch comments with joined profiles
+        const { data: dbComments, error: commentsError } = await supabase
+          .from("comments")
+          .select(
+            "id, content, created_at, author:profiles!comments_user_id_fkey(id, name, username, avatar)"
+          )
+          .eq("post_id", id)
+          .order("created_at", { ascending: false });
+
+        if (commentsError) {
+          console.error("Error fetching comments:", commentsError);
+        } else {
+          setPostComments(
+            (dbComments || []).map((c: any) => {
+              const profile = c.author || {};
+              return {
+                id: String(c.id),
+                user: {
+                  id: profile.id || "",
+                  name: profile.name || "Anonymous",
+                  username: profile.username || "",
+                  avatar: profile.avatar || "/placeholder-user.jpg",
+                },
+                content: c.content,
+                timestamp: c.created_at,
+                timeAgo: formatTimeAgo(new Date(c.created_at)),
+              } as Comment;
+            })
+          );
+          setCommentCount((dbComments || []).length);
+        }
       } catch (error) {
-        console.error("Error initializing like state:", error);
+        console.error("Error initializing:", error);
       }
     };
 
-    initializeLikeState();
+    const auth = getAuth();
+    const maybeInit = () => initializeLikeAndComments();
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser) {
+        maybeInit();
+      }
+    });
+    if (auth.currentUser) {
+      maybeInit();
+    }
+    return () => unsubscribe();
   }, [id]);
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
 
   const handleDoubleClick = () => {
-    // Only like if not already liked (double-click should only like, not unlike)
     if (!liked && !isLiking) {
-      // Trigger heart burst animation immediately (optimistic)
+      if (!isValidUUID(id)) {
+        console.error("Invalid UUID on double-click:", id);
+        alert("Invalid post ID format.");
+        return;
+      }
+
       const heartBursts = [0, 1, 2];
       heartBursts.forEach((_, i) => {
         setTimeout(() => {
@@ -177,7 +237,6 @@ export default function PostCard({
         }, i * 100);
       });
 
-      // Like the post (this will handle optimistic updates)
       toggleLike(id);
     }
   };
@@ -186,70 +245,159 @@ export default function PostCard({
     setShowComments(!showComments);
   };
 
-  const handleAddComment = () => {
-    if (commentText.trim()) {
-      const newComment: Comment = {
-        id: Date.now(),
-        user: {
-          name: "Temiloluwa Valentine",
-          username: "temivalentine",
-          avatar: "/cht.png",
-        },
-        content: commentText,
-        timestamp: new Date().toISOString(),
-        timeAgo: "just now",
-      };
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
 
-      setPostComments([newComment, ...postComments]);
-      setCommentCount(commentCount + 1);
-      setCommentText("");
+    if (!isValidUUID(id)) {
+      console.error("Invalid UUID for comment:", id);
+      alert("Invalid post ID format.");
+      return;
+    }
+
+    const auth = getAuth();
+    const { currentUser } = auth;
+
+    if (!currentUser) {
+      alert("Please log in to comment.");
+      return;
+    }
+
+    if (!currentProfile) {
+      alert("Profile not loaded. Please try again.");
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment: Comment = {
+      id: tempId,
+      user: currentProfile,
+      content: commentText,
+      timestamp: new Date().toISOString(),
+      timeAgo: "just now",
+    };
+
+    setPostComments((prev) => [optimisticComment, ...prev]);
+    setCommentCount((prev) => prev + 1);
+    const previousComments = postComments;
+    const textToSend = commentText;
+    setCommentText("");
+
+    try {
+      const { error, data } = await supabase
+        .from("comments")
+        .insert({
+          post_id: id,
+          user_id: currentUser.uid,
+          content: textToSend,
+          created_at: new Date().toISOString(),
+        })
+        .select(
+          "id, content, created_at, author:profile(id, name, username, avatar)"
+        )
+        .single();
+
+      if (error) {
+        console.error("Error adding comment:", error, {
+          postId: id,
+          userId: currentUser.uid,
+        });
+        setPostComments(previousComments);
+        setCommentCount((prev) => Math.max(0, prev - 1));
+        alert(`Failed to add comment: ${error.message} (Code: ${error.code})`);
+        return;
+      }
+
+      if (data) {
+        const profile = (data as any).author || {};
+        const persisted: Comment = {
+          id: String(data.id),
+          user: {
+            id: profile.id || currentProfile.id,
+            name: profile.name || currentProfile.name,
+            username: profile.username || currentProfile.username,
+            avatar: profile.avatar || currentProfile.avatar,
+          },
+          content: data.content,
+          timestamp: data.created_at,
+          timeAgo: formatTimeAgo(new Date(data.created_at)),
+        };
+        setPostComments((prev) => [
+          persisted,
+          ...prev.filter((c) => c.id !== tempId),
+        ]);
+      }
+    } catch (err) {
+      console.error("Unexpected error in handleAddComment:", err);
+      setPostComments(previousComments);
+      setCommentCount((prev) => Math.max(0, prev - 1));
+      alert("Unexpected error adding comment.");
+    }
+  };
+
+  const handleCommentKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      if (!currentProfile || !commentText.trim()) return;
+      e.preventDefault();
+      handleAddComment();
     }
   };
 
   const toggleLike = async (postId: string) => {
+    if (!isValidUUID(postId)) {
+      console.error("Invalid UUID for like:", postId);
+      alert("Invalid post ID format.");
+      return;
+    }
+
     const auth = getAuth();
     const { currentUser } = auth;
 
     if (!currentUser) {
       console.error("User not authenticated");
+      alert("Please log in to like posts.");
       return;
     }
 
-    // Prevent rapid clicking
-    if (isLiking) {
-      return;
-    }
-
+    if (isLiking) return;
     setIsLiking(true);
 
-    // Store current state for potential reversion
     const previousLiked = liked;
     const previousLikes = likes;
 
-    // Optimistic UI update - update state immediately
     const newLiked = !liked;
     setLiked(newLiked);
     setLikes((prev) => (newLiked ? prev + 1 : Math.max(0, prev - 1)));
 
     try {
       if (newLiked) {
-        // Adding a like
-        const { error } = await supabase.from("likes").insert({
-          post_id: postId,
-          user_id: currentUser.uid,
-          created_at: new Date().toISOString(),
-        });
+        const { error } = await supabase.from("likes").upsert(
+          {
+            post_id: postId,
+            user_id: currentUser.uid,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "post_id,user_id" }
+        );
 
         if (error) {
-          console.error("Error adding like:", error.message);
-          // Revert optimistic update on error
-          
-          // Show user notification
-          alert("Failed to like post. Please try again.");
-          console.log("POST ID", postId)
+          console.error("Error adding like:", error, {
+            postId,
+            userId: currentUser.uid,
+          });
+          setLiked(previousLiked);
+          setLikes(previousLikes);
+          alert(`Failed to like post: ${error.message} (Code: ${error.code})`);
+          return;
         }
+        const { count } = await supabase
+          .from("likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+        setLikes(count || 0);
+        setLiked(true);
       } else {
-        // Removing a like
         const { error } = await supabase
           .from("likes")
           .delete()
@@ -257,21 +405,32 @@ export default function PostCard({
           .eq("user_id", currentUser.uid);
 
         if (error) {
-          console.error("Error removing like:", error.message);
-          // Revert optimistic update on error
+          console.error("Error removing like:", error, {
+            postId,
+            userId: currentUser.uid,
+          });
           setLiked(previousLiked);
           setLikes(previousLikes);
-          // Show user notification
-          alert("Failed to unlike post. Please try again.");
+          alert(
+            `Failed to unlike post: ${error.message} (Code: ${error.code})`
+          );
+          return;
         }
+        const { count } = await supabase
+          .from("likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+        setLikes(count || 0);
+        setLiked(false);
       }
     } catch (err) {
-      console.error("Unexpected error:", err);
-      // Revert optimistic update on unexpected error
+      console.error("Unexpected error in toggleLike:", err, {
+        postId,
+        userId: currentUser.uid,
+      });
       setLiked(previousLiked);
       setLikes(previousLikes);
-      // Show user notification
-      alert("Something went wrong. Please try again.");
+      alert("Unexpected error. Please try again.");
     } finally {
       setIsLiking(false);
     }
@@ -289,6 +448,15 @@ export default function PostCard({
     }
   };
 
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diff = (now.getTime() - date.getTime()) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
+
   return (
     <div className="bg-gray-900 p-4 rounded-lg shadow-lg space-y-4 w-full max-w-xl mx-auto">
       <div className="flex items-center gap-3">
@@ -297,13 +465,11 @@ export default function PostCard({
           alt={user.name}
           className="h-10 w-10 rounded-full"
         />
-
         <div>
           <p className="text-white font-semibold">{user.name}</p>
           <span className="text-gray-400">@{user.username}</span>
           <span className="ml-auto text-xs text-gray-500">. {timeAgo}</span>
         </div>
-
         <div className="ml-auto flex items-center gap-2">
           <span className="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
             {calories} cal
@@ -311,7 +477,6 @@ export default function PostCard({
         </div>
       </div>
 
-      {/* IMAGE */}
       <div
         onDoubleClick={handleDoubleClick}
         className="relative cursor-pointer"
@@ -338,7 +503,6 @@ export default function PostCard({
         ))}
       </div>
 
-      {/* POST DETAILS */}
       <div>
         <h2 className="text-lg font-bold text-white">{title}</h2>
         <p className="text-gray-300">{description}</p>
@@ -354,7 +518,6 @@ export default function PostCard({
         </div>
       </div>
 
-      {/* ACTION BUTTONS */}
       <div className="flex items-center gap-4 mt-3 text-pink">
         <button
           onClick={() => toggleLike(id)}
@@ -388,17 +551,14 @@ export default function PostCard({
         </button>
       </div>
 
-      {/* COMMENTS SECTION */}
       {showComments && (
         <div className="border-t border-gray-700 pt-4 space-y-4">
           <h3 className="text-white font-semibold">Comments</h3>
-
-          {/* Add new comment */}
           <div className="space-y-2">
             <div className="flex gap-3">
               <img
-                src="/placeholder-user.jpg"
-                alt="Current User"
+                src={currentProfile?.avatar || "/placeholder-user.jpg"}
+                alt={currentProfile?.name || "Current User"}
                 className="h-8 w-8 rounded-full"
               />
               <div className="flex-1 space-y-2">
@@ -406,14 +566,15 @@ export default function PostCard({
                   placeholder="Add a comment..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={handleCommentKeyDown}
                   className="bg-gray-800 border-gray-700 text-white resize-none w-full p-2 rounded-md"
                   rows={2}
                 />
                 <div className="flex justify-end">
                   <button
                     onClick={handleAddComment}
-                    disabled={!commentText.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
+                    disabled={!commentText.trim() || !currentProfile}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm disabled:opacity-50"
                   >
                     Post
                   </button>
@@ -421,8 +582,6 @@ export default function PostCard({
               </div>
             </div>
           </div>
-
-          {/* Comments list */}
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {postComments.map((comment) => (
               <div key={comment.id} className="flex gap-3">

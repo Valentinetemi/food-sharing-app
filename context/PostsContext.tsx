@@ -31,7 +31,9 @@ export type Post = {
 // Define the context type
 type PostsContextType = {
   posts: Post[];
-  addPost: (post: Omit<Post, "id" | "likes" | "comments" | "timeAgo">) => void;
+  addPost: (
+    post: Omit<Post, "likes" | "comments" | "timeAgo"> & { id?: string }
+  ) => void;
   isLoading: boolean;
   updatePostLikes: (
     postId: string,
@@ -116,19 +118,66 @@ const initialPosts: Post[] = [
 
 // Create the provider component
 export function PostsProvider({ children }: { children: ReactNode }) {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load posts from Supabase so IDs exist for FK constraints in likes
+  useEffect(() => {
+    let isMounted = true;
+    const loadPosts = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch posts from Supabase:", error);
+        setIsLoading(false);
+        return;
+      }
+
+      const mapped: Post[] = (data || []).map((dbPost: any) => ({
+        id: dbPost.id,
+        user: {
+          name: dbPost.author_name || "Anonymous",
+          username: dbPost.author_username || "user",
+          avatar: "/cht.png",
+        },
+        image: dbPost.image_url,
+        title: dbPost.title,
+        description: dbPost.caption,
+        calories: dbPost.calories ?? 0,
+        tags: dbPost.tags ? String(dbPost.tags).split(",").filter(Boolean) : [],
+        likes: 0,
+        comments: 0,
+        timeAgo: "",
+      }));
+
+      if (isMounted) {
+        setPosts(mapped);
+        setIsLoading(false);
+      }
+    };
+
+    loadPosts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Function to add a new post
   const addPost = (
-    newPostData: Omit<Post, "id" | "likes" | "comments" | "timeAgo">
+    newPostData: Omit<Post, "likes" | "comments" | "timeAgo"> & {
+      id?: string;
+    }
   ) => {
     setIsLoading(true);
 
     // Create a new post with generated fields
     const newPost: Post = {
       ...newPostData,
-      id: crypto.randomUUID(), // Generate a proper UUID
+      id: newPostData.id ?? crypto.randomUUID(), // Use provided UUID or generate
       likes: 0,
       comments: 0,
       timeAgo: "Just now",

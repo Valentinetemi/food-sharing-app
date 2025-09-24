@@ -29,7 +29,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuth } from "firebase/auth";
 
-
 //get name and email from firebase
 const auth = getAuth();
 
@@ -292,6 +291,7 @@ export default function CreatePostPage() {
         const userName = currentUser?.displayName || "Anonymous";
 
         addPost({
+          id: dbPost.id, // Preserve Supabase UUID for likes/comments
           title: dbPost.title,
           description: dbPost.caption,
           image: dbPost.image_url,
