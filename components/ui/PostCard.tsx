@@ -165,7 +165,9 @@ export default function PostCard({
 
         if (commentsError) {
           console.error("Error fetching comments:", commentsError);
+          alert("Failed to load comments: " + commentsError.message);
         } else {
+          console.log("Fetched comments:", dbComments);
           setPostComments(
             (dbComments || []).map((c: any) => {
               const profile = c.author || {};
@@ -202,6 +204,10 @@ export default function PostCard({
     }
     return () => unsubscribe();
   }, [id]);
+
+  useEffect(() => {
+    console.log("Current postComments:", postComments);
+  }, [postComments]);
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
@@ -246,7 +252,10 @@ export default function PostCard({
   };
 
   const handleAddComment = async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim()) {
+      console.log("Comment text is empty");
+      return;
+    }
 
     if (!isValidUUID(id)) {
       console.error("Invalid UUID for comment:", id);
@@ -256,18 +265,21 @@ export default function PostCard({
 
     const auth = getAuth();
     const { currentUser } = auth;
+    console.log("Current user:", currentUser);
 
     if (!currentUser) {
+      console.error("No authenticated user");
       alert("Please log in to comment.");
       return;
     }
 
     if (!currentProfile) {
+      console.error("Current profile not loaded");
       alert("Profile not loaded. Please try again.");
       return;
     }
 
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticComment: Comment = {
       id: tempId,
       user: currentProfile,
@@ -283,6 +295,21 @@ export default function PostCard({
     setCommentText("");
 
     try {
+      const { data: profileExists } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", currentUser.uid)
+        .maybeSingle();
+
+      if (!profileExists) {
+        console.error("User profile not found for user_id:", currentUser.uid);
+        alert("Please complete your profile to comment.");
+        setPostComments(previousComments);
+        setCommentCount((prev) => Math.max(0, prev - 1));
+        setCommentText(textToSend);
+        return;
+      }
+
       const { error, data } = await supabase
         .from("comments")
         .insert({
@@ -291,24 +318,26 @@ export default function PostCard({
           content: textToSend,
           created_at: new Date().toISOString(),
         })
-        .select(
-          "id, content, created_at, author:profile(id, name, username, avatar)"
-        )
+        .select("id, content, created_at, author:profiles!comments_user_id_fkey(id, name, username, avatar)")
         .single();
 
       if (error) {
         console.error("Error adding comment:", error, {
           postId: id,
           userId: currentUser.uid,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
         });
         setPostComments(previousComments);
         setCommentCount((prev) => Math.max(0, prev - 1));
+        setCommentText(textToSend);
         alert(`Failed to add comment: ${error.message} (Code: ${error.code})`);
         return;
       }
 
       if (data) {
-        const profile = (data as any).author || {};
+        const profile = (data as any).author || currentProfile;
         const persisted: Comment = {
           id: String(data.id),
           user: {
@@ -325,11 +354,18 @@ export default function PostCard({
           persisted,
           ...prev.filter((c) => c.id !== tempId),
         ]);
+      } else {
+        console.error("No data returned from comment insert");
+        setPostComments(previousComments);
+        setCommentCount((prev) => Math.max(0, prev - 1));
+        setCommentText(textToSend);
+        alert("Failed to add comment: No data returned");
       }
     } catch (err) {
       console.error("Unexpected error in handleAddComment:", err);
       setPostComments(previousComments);
       setCommentCount((prev) => Math.max(0, prev - 1));
+      setCommentText(textToSend);
       alert("Unexpected error adding comment.");
     }
   };
@@ -583,31 +619,35 @@ export default function PostCard({
             </div>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            {postComments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <img
-                  src={comment.user.avatar}
-                  alt={comment.user.name}
-                  className="h-8 w-8 rounded-full"
-                />
-                <div className="flex-1">
-                  <div className="bg-gray-800 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white text-sm">
-                        {comment.user.name}
-                      </span>
-                      <span className="text-gray-400 text-xs">
-                        @{comment.user.username}
-                      </span>
-                      <span className="text-gray-500 text-xs">
-                        · {comment.timeAgo}
-                      </span>
+            {postComments.length === 0 ? (
+              <p className="text-gray-500 text-sm">No comments yet.</p>
+            ) : (
+              postComments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <img
+                    src={comment.user.avatar}
+                    alt={comment.user.name}
+                    className="h-8 w-8 rounded-full"
+                  />
+                  <div className="flex-1">
+                    <div className="bg-gray-800 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-white text-sm">
+                          {comment.user.name}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          @{comment.user.username}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          · {comment.timeAgo}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm">{comment.content}</p>
                     </div>
-                    <p className="text-gray-300 text-sm">{comment.content}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
