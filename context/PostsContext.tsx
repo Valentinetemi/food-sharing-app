@@ -68,11 +68,7 @@ const initialPosts: Post[] = [
     id: "550e8400-e29b-41d4-a716-446655440002",
     user: {
       name: "Mike Rodriguez",
-      username: "@mikeats",
-      avatar: "/cht.png?height=40&width=40",
-    },
-    image: "/food6.jpg?height=100&width=200",
-    title: "Grape Cupcake",
+      us
     description:
       "Delicious grape cupcake for your birthday party or any special occasion. Enjoy it with friends and family!!",
     calories: 485,
@@ -80,11 +76,6 @@ const initialPosts: Post[] = [
     likes: 42,
     comments: 12,
     timeAgo: "4h ago",
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440003",
-    user: {
-      name: "Joy Wilson",
       username: "@joywilson",
       avatar: "/grace.jpg?height=40&width=40",
     },
