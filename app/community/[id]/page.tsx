@@ -54,7 +54,7 @@ const mockCommunities: Community[] = [
     id: 1,
     title: "🍳 Everyday Eats",
     description: "For casual meals, what people are really eating daily.",
-    members: 127,
+    members: 50,
   },
   {
     id: 2,

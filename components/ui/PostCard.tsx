@@ -9,7 +9,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { supabase } from "@/lib/supabase";
-import { validate as isValidUUID } from "uuid";
 
 type Profile = {
   id: string;
@@ -39,7 +38,7 @@ type PostCardProps = {
   likes: number;
   comments: number;
   tags: string[];
-  calories: number;
+  calories: string; // Changed to string to match table
   timeAgo: string;
 };
 
@@ -58,7 +57,7 @@ export default function PostCard({
   image,
   user,
   likes: initialLikes,
-  comments,
+  comments: initialComments,
   tags,
   calories,
   timeAgo,
@@ -68,7 +67,7 @@ export default function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [postComments, setPostComments] = useState<Comment[]>([]);
-  const [commentCount, setCommentCount] = useState(comments || 0);
+  const [commentCount, setCommentCount] = useState(initialComments || 0);
   const [isLiking, setIsLiking] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
 
@@ -79,57 +78,68 @@ export default function PostCard({
 
       if (!currentUser) {
         console.error("No authenticated user");
+        alert("Please log in to interact with posts.");
         return;
       }
 
       try {
         // Ensure profile exists in Supabase
+        let profile: Profile | null = null;
         const { data: me, error: meError } = await supabase
           .from("profiles")
-          .select("id,name,username,avatar")
+          .select("id, name, username, avatar")
           .eq("id", currentUser.uid)
           .maybeSingle();
-        if (meError && meError.code !== "PGRST116") {
-          console.error("Error fetching current profile:", meError);
-        }
-        if (!me) {
-          // Create profile if missing
-          const newProfile = {
+
+        if (meError) {
+          console.error("Profile fetch error:", meError.message);
+          // Fallback to Firebase data
+          profile = {
             id: currentUser.uid,
             name: currentUser.displayName || "Anonymous",
             username:
-              currentUser.email?.split("@")[0] ||
-              `user_${currentUser.uid.slice(0, 8)}`,
+              currentUser.email || `user_${currentUser.uid.slice(0, 8)}`,
+            avatar:
+              currentUser.photoURL || generateLetterAvatar(currentUser.email),
+          };
+          // Create profile
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .upsert(profile, { onConflict: "id" });
+          if (insertError) {
+            console.error("Profile insert error:", insertError.message);
+            // Use fallback profile
+          }
+        } else if (!me) {
+          // Create new profile
+          profile = {
+            id: currentUser.uid,
+            name: currentUser.displayName || "Anonymous",
+            username:
+              currentUser.email || `user_${currentUser.uid.slice(0, 8)}`,
             avatar:
               currentUser.photoURL || generateLetterAvatar(currentUser.email),
           };
           const { error: insertError } = await supabase
             .from("profiles")
-            .upsert(newProfile);
+            .upsert(profile, { onConflict: "id" });
           if (insertError) {
-            console.error("Error creating profile:", insertError);
-          } else {
-            setCurrentProfile(newProfile);
+            console.error("Profile insert error:", insertError.message);
+            profile = null; // Prevent further actions
           }
         } else {
-          setCurrentProfile({
+          profile = {
             id: me.id,
             name: me.name || currentUser.displayName || "Anonymous",
             username:
-              me.username ||
-              currentUser.email?.split("@")[0] ||
-              `user_${me.id.slice(0, 8)}`,
+              me.username || currentUser.email || `user_${me.id.slice(0, 8)}`,
             avatar: me.avatar || generateLetterAvatar(currentUser.email),
-          });
+          };
         }
 
-        // After profile is ensured, validate post id before post-specific queries
-        if (!isValidUUID(id)) {
-          console.error("Invalid UUID for post_id:", id);
-          return;
-        }
+        setCurrentProfile(profile);
 
-        // Check like status
+        // Fetch likes
         const { data: existingLike, error: likeError } = await supabase
           .from("likes")
           .select("*")
@@ -138,46 +148,54 @@ export default function PostCard({
           .maybeSingle();
 
         if (likeError && likeError.code !== "PGRST116") {
-          console.error("Error checking like status:", likeError);
+          console.error("Like fetch error:", likeError.message);
         }
         setLiked(!!existingLike);
 
-        // Get like count
         const { count, error: countError } = await supabase
           .from("likes")
           .select("*", { count: "exact", head: true })
           .eq("post_id", id);
 
         if (countError) {
-          console.error("Error getting like count:", countError);
+          console.error("Like count error:", countError.message);
         } else {
           setLikes(count || 0);
         }
 
-        // Fetch comments with joined profiles
+        // Fetch comments
         const { data: dbComments, error: commentsError } = await supabase
           .from("comments")
           .select(
-            "id, content, created_at, author:profiles!comments_user_id_fkey(id, name, username, avatar)"
+            `
+            id,
+            content,
+            created_at,
+            author:profiles!user_id(id, name, username, avatar)
+          `
           )
           .eq("post_id", id)
           .order("created_at", { ascending: false });
 
         if (commentsError) {
-          console.error("Error fetching comments:", commentsError);
+          console.error("Comments fetch error:", commentsError.message);
           alert("Failed to load comments: " + commentsError.message);
         } else {
-          console.log("Fetched comments:", dbComments);
           setPostComments(
             (dbComments || []).map((c: any) => {
               const profile = c.author || {};
+              const name = profile.name || "Anonymous";
+              const username =
+                profile.username ||
+                `user_${(profile.id || "unknown").slice(0, 8)}`;
+              const avatar = profile.avatar || generateLetterAvatar(username);
               return {
                 id: String(c.id),
                 user: {
                   id: profile.id || "",
-                  name: profile.name || "Anonymous",
-                  username: profile.username || "",
-                  avatar: profile.avatar || "/placeholder-user.jpg",
+                  name,
+                  username,
+                  avatar,
                 },
                 content: c.content,
                 timestamp: c.created_at,
@@ -188,61 +206,47 @@ export default function PostCard({
           setCommentCount((dbComments || []).length);
         }
       } catch (error) {
-        console.error("Error initializing:", error);
+        console.error("Initialization error:", error);
+        alert("Failed to initialize post data.");
       }
     };
 
     const auth = getAuth();
-    const maybeInit = () => initializeLikeAndComments();
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
-        maybeInit();
+        initializeLikeAndComments();
       }
     });
     if (auth.currentUser) {
-      maybeInit();
+      initializeLikeAndComments();
     }
     return () => unsubscribe();
   }, [id]);
-
-  useEffect(() => {
-    console.log("Current postComments:", postComments);
-  }, [postComments]);
 
   type HeartBurst = { id: number; x: number; y: number };
   const [hearts, setHearts] = useState<HeartBurst[]>([]);
 
   const handleDoubleClick = () => {
     if (!liked && !isLiking) {
-      if (!isValidUUID(id)) {
-        console.error("Invalid UUID on double-click:", id);
-        alert("Invalid post ID format.");
-        return;
-      }
-
       const heartBursts = [0, 1, 2];
       heartBursts.forEach((_, i) => {
         setTimeout(() => {
           if (likeSound) {
-            likeSound?.pause();
+            likeSound.pause();
             likeSound.currentTime = 0;
             likeSound.play().catch(() => {});
           }
-
           const burst: HeartBurst = {
             id: Date.now() + i,
             x: Math.random() * 160 - 80,
             y: Math.random() * 160 - 80,
           };
-
           setHearts((prev) => [...prev, burst]);
-
           setTimeout(() => {
             setHearts((prev) => prev.filter((h) => h.id !== burst.id));
           }, 600);
         }, i * 100);
       });
-
       toggleLike(id);
     }
   };
@@ -257,15 +261,8 @@ export default function PostCard({
       return;
     }
 
-    if (!isValidUUID(id)) {
-      console.error("Invalid UUID for comment:", id);
-      alert("Invalid post ID format.");
-      return;
-    }
-
     const auth = getAuth();
     const { currentUser } = auth;
-    console.log("Current user:", currentUser);
 
     if (!currentUser) {
       console.error("No authenticated user");
@@ -295,21 +292,6 @@ export default function PostCard({
     setCommentText("");
 
     try {
-      const { data: profileExists } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", currentUser.uid)
-        .maybeSingle();
-
-      if (!profileExists) {
-        console.error("User profile not found for user_id:", currentUser.uid);
-        alert("Please complete your profile to comment.");
-        setPostComments(previousComments);
-        setCommentCount((prev) => Math.max(0, prev - 1));
-        setCommentText(textToSend);
-        return;
-      }
-
       const { error, data } = await supabase
         .from("comments")
         .insert({
@@ -317,35 +299,24 @@ export default function PostCard({
           user_id: currentUser.uid,
           content: textToSend,
           created_at: new Date().toISOString(),
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, // Generate text ID
         })
-        .select("id, content, created_at, author:profiles!comments_user_id_fkey(id, name, username, avatar)")
+        .select("id, content, created_at")
         .single();
 
       if (error) {
-        console.error("Error adding comment:", error, {
-          postId: id,
-          userId: currentUser.uid,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        });
+        console.error("Comment insert error:", error.message);
         setPostComments(previousComments);
         setCommentCount((prev) => Math.max(0, prev - 1));
         setCommentText(textToSend);
-        alert(`Failed to add comment: ${error.message} (Code: ${error.code})`);
+        alert(`Failed to add comment: ${error.message}`);
         return;
       }
 
       if (data) {
-        const profile = (data as any).author || currentProfile;
         const persisted: Comment = {
-          id: String(data.id),
-          user: {
-            id: profile.id || currentProfile.id,
-            name: profile.name || currentProfile.name,
-            username: profile.username || currentProfile.username,
-            avatar: profile.avatar || currentProfile.avatar,
-          },
+          id: data.id,
+          user: currentProfile,
           content: data.content,
           timestamp: data.created_at,
           timeAgo: formatTimeAgo(new Date(data.created_at)),
@@ -354,12 +325,6 @@ export default function PostCard({
           persisted,
           ...prev.filter((c) => c.id !== tempId),
         ]);
-      } else {
-        console.error("No data returned from comment insert");
-        setPostComments(previousComments);
-        setCommentCount((prev) => Math.max(0, prev - 1));
-        setCommentText(textToSend);
-        alert("Failed to add comment: No data returned");
       }
     } catch (err) {
       console.error("Unexpected error in handleAddComment:", err);
@@ -381,12 +346,6 @@ export default function PostCard({
   };
 
   const toggleLike = async (postId: string) => {
-    if (!isValidUUID(postId)) {
-      console.error("Invalid UUID for like:", postId);
-      alert("Invalid post ID format.");
-      return;
-    }
-
     const auth = getAuth();
     const { currentUser } = auth;
 
@@ -401,7 +360,6 @@ export default function PostCard({
 
     const previousLiked = liked;
     const previousLikes = likes;
-
     const newLiked = !liked;
     setLiked(newLiked);
     setLikes((prev) => (newLiked ? prev + 1 : Math.max(0, prev - 1)));
@@ -414,25 +372,16 @@ export default function PostCard({
             user_id: currentUser.uid,
             created_at: new Date().toISOString(),
           },
-          { onConflict: "post_id,user_id" }
+          { onConflict: ["post_id", "user_id"] }
         );
 
         if (error) {
-          console.error("Error adding like:", error, {
-            postId,
-            userId: currentUser.uid,
-          });
+          console.error("Error adding like:", error.message);
           setLiked(previousLiked);
           setLikes(previousLikes);
-          alert(`Failed to like post: ${error.message} (Code: ${error.code})`);
+          alert(`Failed to like post: ${error.message}`);
           return;
         }
-        const { count } = await supabase
-          .from("likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", postId);
-        setLikes(count || 0);
-        setLiked(true);
       } else {
         const { error } = await supabase
           .from("likes")
@@ -441,29 +390,22 @@ export default function PostCard({
           .eq("user_id", currentUser.uid);
 
         if (error) {
-          console.error("Error removing like:", error, {
-            postId,
-            userId: currentUser.uid,
-          });
+          console.error("Error removing like:", error.message);
           setLiked(previousLiked);
           setLikes(previousLikes);
-          alert(
-            `Failed to unlike post: ${error.message} (Code: ${error.code})`
-          );
+          alert(`Failed to unlike post: ${error.message}`);
           return;
         }
-        const { count } = await supabase
-          .from("likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", postId);
-        setLikes(count || 0);
-        setLiked(false);
       }
+
+      const { count } = await supabase
+        .from("likes")
+        .select("*", { count: "exact", head: true })
+        .eq("post_id", postId);
+      setLikes(count || 0);
+      setLiked(newLiked);
     } catch (err) {
-      console.error("Unexpected error in toggleLike:", err, {
-        postId,
-        userId: currentUser.uid,
-      });
+      console.error("Unexpected error in toggleLike:", err);
       setLiked(previousLiked);
       setLikes(previousLikes);
       alert("Unexpected error. Please try again.");
@@ -642,7 +584,7 @@ export default function PostCard({
                           · {comment.timeAgo}
                         </span>
                       </div>
-                      <p className="text-gray-300 text-sm">{comment.content}</p>
+                      <p className="text-gray-300">{comment.content}</p>
                     </div>
                   </div>
                 </div>

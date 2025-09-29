@@ -45,68 +45,6 @@ type PostsContextType = {
 // Create the context with a default value
 const PostsContext = createContext<PostsContextType | undefined>(undefined);
 
-// Initial posts data
-const initialPosts: Post[] = [
-  {
-    id: "550e8400-e29b-41d4-a716-446655440001",
-    user: {
-      name: "Joy Joseph",
-      username: "@joyjoseph",
-      avatar: "/cht.png?height=60&width=60",
-    },
-    image: "/food2.jpg?height=400&width=400",
-    title: "Homemade Chicken With Onions Cream Salad",
-    description:
-      "Perfect dinner with roasted chiken and onions cream and salad!",
-    calories: 420,
-    tags: ["dinner", "healthy", "vegetarian"],
-    likes: 38,
-    comments: 29,
-    timeAgo: "2h ago",
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440002",
-    user: {
-      name: "Mike Rodriguez",
-      us
-    description:
-      "Delicious grape cupcake for your birthday party or any special occasion. Enjoy it with friends and family!!",
-    calories: 485,
-    tags: ["cupcake", "Sweet", "Birthday Party"],
-    likes: 42,
-    comments: 12,
-    timeAgo: "4h ago",
-      username: "@joywilson",
-      avatar: "/grace.jpg?height=40&width=40",
-    },
-    image: "/food1.jpg?height=400&width=400",
-    title: "Cabbage Salad",
-    description: "Cabbage Salad is a delicious and healthy salad recipe.",
-    calories: 300,
-    tags: ["vegetable", "salad", "cabbage"],
-    likes: 87,
-    comments: 23,
-    timeAgo: "12h Ago",
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440004",
-    user: {
-      name: "Emma Wilson",
-      username: "@emmaeats",
-      avatar: "/cht.png?height=40&width=40",
-    },
-    image: "/food3.jpg?height=500&width=500",
-    title: "Vegetable Salad With Avocado",
-    description:
-      "Vegetable salad with avocado is a delicious and healthy salad recipe.",
-    calories: 420,
-    tags: ["vegetable", "avocado", "salad"],
-    likes: 67,
-    comments: 15,
-    timeAgo: "6h ago",
-  },
-];
-
 // Create the provider component
 export function PostsProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -133,7 +71,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
         user: {
           name: dbPost.author_name || "Anonymous",
           username: dbPost.author_username || "user",
-          avatar: "/cht.png",
+          avatar: dbPost.author_avatar || "/cht.png",
         },
         image: dbPost.image_url,
         title: dbPost.title,

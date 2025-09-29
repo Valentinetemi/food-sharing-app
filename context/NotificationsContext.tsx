@@ -8,7 +8,6 @@ import React, {
   ReactNode,
 } from "react";
 
-
 // Define the Notification type
 export type Notification = {
   id: number;
@@ -48,56 +47,11 @@ const NotificationsContext = createContext<
 const initialNotifications: Notification[] = [
   {
     id: 1,
-    type: "like",
-    message: "liked your post",
-    postId: 1,
-    postTitle: "Homemade Avocado Toast",
-    postImage: "/salad.jpg?height=100&width=100",
-    fromUser: {
-      name: "Mike Rodriguez",
-      username: "@mikeats",
-      avatar: "/cht.png?height=40&width=40",
-    },
-    read: false,
-    createdAt: "2023-08-15T10:30:00Z",
-    timeAgo: "2h ago",
-  },
-  {
-    id: 2,
-    type: "comment",
-    message: "commented on your post",
-    postId: 1,
-    postTitle: "Homemade Avocado Toast",
-    postImage: "/salad.jpg?height=100&width=100",
-    fromUser: {
-      name: "Emma Wilson",
-      username: "@emmaeats",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    read: false,
-    createdAt: "2023-08-15T09:15:00Z",
-    timeAgo: "3h ago",
-  },
-  {
-    id: 3,
-    type: "follow",
-    message: "started following you",
-    fromUser: {
-      name: "Joy Wilson",
-      username: "@joywilson",
-      avatar: "",
-    },
-    read: true,
-    createdAt: "2023-08-14T14:20:00Z",
-    timeAgo: "1d ago",
-  },
-  {
-    id: 4,
     type: "system",
-    message: "Welcome to FoodShare! Start by sharing your first meal.",
-    read: true,
-    createdAt: "2023-08-10T08:00:00Z",
-    timeAgo: "5d ago",
+    message: "You just joined! Earn the FoodShare MVP early adopter badge.",
+    read: false,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    timeAgo: "Just now",
   },
 ];
 
@@ -131,10 +85,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     };
 
     // Add the new notification to the beginning of the array
-    setNotifications((prevNotifications) => [
-      newNotification,
-      ...prevNotifications,
-    ]);
+    setNotifications([newNotification]);
 
     // Play notification sound if available
     if (typeof window !== "undefined") {
@@ -165,8 +116,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   // Setup WebSocket connection for real-time notifications
   useEffect(() => {
-  
-
     const simulateIncomingNotification = () => {
       // Only simulate new notifications occasionally (20% chance)
       if (Math.random() > 0.8) {
@@ -256,7 +205,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     };
 
     // Simulate WebSocket connection with interval
-    const interval = setInterval(simulateIncomingNotification, 30000); // 
+    const interval = setInterval(simulateIncomingNotification, 30000); //
 
     return () => {
       clearInterval(interval); // Clean up on unmount

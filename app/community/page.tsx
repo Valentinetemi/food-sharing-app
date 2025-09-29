@@ -1,14 +1,10 @@
-"use client";
-import { UserPlusIcon, UsersIcon } from "@heroicons/react/24/solid";
-import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
-import { TrophyIcon } from "@heroicons/react/24/solid";
-import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+'use client';
+
+import { UsersIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
@@ -27,70 +23,6 @@ export default function CommunityPage() {
     description: string;
     members: number;
   };
-
-  const topUsers = [
-    {
-      id: 1,
-      name: "Joseph Joy",
-      username: "@jjl",
-      avatar: "/jjl1.jpg?height=40&width=40",
-      posts: 26,
-      followers: 200,
-      badge: "Top Chef",
-    },
-    {
-      id: 2,
-      name: "Benson John",
-      username: "@benson",
-      avatar: "/ben.jpg?height=40&width=40",
-      posts: 42,
-      followers: 1.5,
-      amount: "k",
-      badge: "Fitness Guru",
-    },
-    {
-      id: 3,
-      name: "Grace Willson",
-      username: "@gracewillson",
-      avatar: "/grace.jpg?height=40&width=40",
-      posts: 37,
-      followers: 109,
-      badge: "Healthy Living",
-    },
-  ];
-
-  const trendingTopics = [
-    { name: "Keto Recipes", posts: 49, trend: "+8%" },
-    { name: "Quick Breakfast", posts: 50, trend: "+5%" },
-    { name: "Dessert Goals", posts: 95, trend: "+20%" },
-  ];
-
-  const suggestedUsers = [
-    {
-      id: 1,
-      name: "Alex Thompson",
-      username: "@alexcooks",
-      avatar: "/placeholder.svg?height=40&width=40",
-      specialty: "Italian Cuisine",
-      mutualFollowers: 12,
-    },
-    {
-      id: 2,
-      name: "Lisa Park",
-      username: "@lisaeats",
-      avatar: "/placeholder.svg?height=40&width=40",
-      specialty: "Vegan Recipes",
-      mutualFollowers: 8,
-    },
-    {
-      id: 3,
-      name: "David Kim",
-      username: "@davidfood",
-      avatar: "/placeholder.svg?height=40&width=40",
-      specialty: "Asian Fusion",
-      mutualFollowers: 15,
-    },
-  ];
 
   const [activeTab, setActiveTab] = useState("join");
   const [joinedIds, setJoinedIds] = useState<number[]>([]);
@@ -178,8 +110,8 @@ export default function CommunityPage() {
           md:flex-row
           md:items-center
           md:justify-between
-          gap-6
-          mb-4
+          gap-12
+          mb-8
         "
           >
             <div>
@@ -197,6 +129,8 @@ export default function CommunityPage() {
                 you.
               </p>
             </div>
+            {/* Search bar - commented out (part of Discover) */}
+            {/*
             <div
               className="
             flex
@@ -229,9 +163,11 @@ export default function CommunityPage() {
                 />
               </div>
             </div>
+            */}
           </div>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - commented out (Statistics and Achievements) */}
+          {/*
           <div
             className="
           grid
@@ -417,6 +353,7 @@ export default function CommunityPage() {
               </CardContent>
             </Card>
           </div>
+          */}
 
           {/* Main Content */}
           <div className="w-full">
@@ -425,14 +362,6 @@ export default function CommunityPage() {
               onValueChange={setActiveTab}
               className="space-y-3"
             >
-              {/* 
-            Added responsive classes:
-            - flex-col for small screens to stack vertically
-            - sm:flex-row for larger screens to display horizontally
-            - w-full to ensure full width
-            - flex-wrap to allow wrapping if needed
-            - h-auto to override the fixed height
-          */}
               <TabsList
                 className="
             bg-gray-900
@@ -441,8 +370,8 @@ export default function CommunityPage() {
             w-full
             h-auto
             flex-wrap
-            gap-2
-            p-2
+            gap-4           
+           p-4
           "
               >
                 <TabsTrigger
@@ -451,7 +380,6 @@ export default function CommunityPage() {
                 >
                   Join Communities
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="usercommunity"
                   className="
@@ -461,6 +389,8 @@ export default function CommunityPage() {
                 >
                   Your Communities
                 </TabsTrigger>
+                {/* Commented out non-MVP tabs */}
+                {/*
                 <TabsTrigger
                   value="leaderboard"
                   className="
@@ -488,8 +418,11 @@ export default function CommunityPage() {
                 >
                   Challenges
                 </TabsTrigger>
+                */}
               </TabsList>
 
+              {/* Leaderboard - commented out (non-MVP) */}
+              {/*
               <TabsContent value="leaderboard">
                 <div
                   className="
@@ -732,7 +665,10 @@ export default function CommunityPage() {
                   </Card>
                 </div>
               </TabsContent>
+              */}
 
+              {/* Challenges - commented out (non-MVP) */}
+              {/*
               <TabsContent value="challenges">
                 <CardHeader>
                   <CardTitle
@@ -758,7 +694,10 @@ export default function CommunityPage() {
                   </CardContent>
                 </CardHeader>
               </TabsContent>
+              */}
 
+              {/* Discover - commented out (non-MVP) */}
+              {/*
               <TabsContent value="discover">
                 <Card
                   className="
@@ -829,6 +768,7 @@ export default function CommunityPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+              */}
 
               <TabsContent value="join">
                 <div className="space-y-4">
