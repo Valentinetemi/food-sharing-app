@@ -8,10 +8,13 @@ import {
   ArrowLeftIcon,
   UsersIcon,
   PaperAirplaneIcon,
+  ShareIcon,
+  BookmarkIcon,
 } from "@heroicons/react/24/outline";
 import {
   HeartIcon as HeartIconSolid,
   ChatBubbleLeftIcon as ChatBubbleLeftIconSolid,
+  BookmarkIcon as BookmarkIconSolid,
 } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,6 +22,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { auth, db } from "@/app/firebase/config";
+import {
+  collection,
+  doc,
+  addDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  serverTimestamp,
+  onSnapshot,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 // TypeScript Interfaces
 interface Community {
@@ -29,11 +49,26 @@ interface Community {
 }
 
 interface Comment {
-  id: number;
-  author: string;
-  authorAvatar: string;
+  id: string | number;
+  author:
+    | string
+    | {
+        uid: string;
+        name: string;
+        email: string;
+        avatar?: string;
+      };
+  authorAvatar?: string;
   text: string;
-  createdAt: string;
+  createdAt: any;
+  postId?: string;
+}
+
+interface Like {
+  id: string;
+  userId: string;
+  postId: string;
+  createdAt: any;
 }
 
 interface Post {
@@ -198,142 +233,355 @@ const mockPosts: { [key: number]: Post[] } = {
 // Components
 interface PostCardProps {
   post: Post;
-  onLike: (postId: number) => void;
-  onComment: (postId: number, comment: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onLike, onComment }) => {
+const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const [user] = useAuthState(auth);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [likes, setLikes] = useState<Like[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      onComment(post.id, newComment);
+  // Load comments and likes
+  useEffect(() => {
+    if (!user) return;
+
+    const postId = post.id.toString();
+
+    // Subscribe to comments
+    const commentsQuery = query(
+      collection(db, "comments"),
+      where("postId", "==", postId),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
+      const commentsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Comment[];
+      setComments(commentsData);
+    });
+
+    // Subscribe to likes
+    const likesQuery = query(
+      collection(db, "likes"),
+      where("postId", "==", postId)
+    );
+
+    const unsubscribeLikes = onSnapshot(likesQuery, (snapshot) => {
+      const likesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Like[];
+      setLikes(likesData);
+      setIsLiked(likesData.some((like) => like.userId === user.uid));
+    });
+
+    return () => {
+      unsubscribeComments();
+      unsubscribeLikes();
+    };
+  }, [post.id, user]);
+
+  const handleLike = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const postId = post.id.toString();
+      const likeRef = doc(db, "likes", `${user.uid}_${postId}`);
+
+      if (isLiked) {
+        await deleteDoc(likeRef);
+      } else {
+        await addDoc(collection(db, "likes"), {
+          userId: user.uid,
+          postId: postId,
+          createdAt: serverTimestamp(),
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !user) return;
+
+    setIsLoading(true);
+    try {
+      const postId = post.id.toString();
+      await addDoc(collection(db, "comments"), {
+        postId: postId,
+        author: {
+          uid: user.uid,
+          name: user.displayName || user.email?.split("@")[0] || "Anonymous",
+          email: user.email || "",
+          avatar: user.photoURL,
+        },
+        text: newComment.trim(),
+        createdAt: serverTimestamp(),
+      });
       setNewComment("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Card className="bg-gray-900 border-gray-800">
-      <CardContent className="p-6">
-        {/* Post Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={post.authorAvatar} alt={post.author} />
-            <AvatarFallback className="bg-gray-700 text-gray-200">
-              {post.author
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h4 className="font-semibold text-gray-100">{post.author}</h4>
-            <p className="text-sm text-gray-400">{post.createdAt}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full"
+    >
+      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm">
+        <CardContent className="p-6">
+          {/* Post Header */}
+          <div className="flex items-center gap-3 mb-6">
+            <Avatar className="h-12 w-12 ring-2 ring-purple-500/30">
+              <AvatarImage src={post.authorAvatar} alt={post.author} />
+              <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-semibold">
+                {post.author
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-100 text-lg">
+                {post.author}
+              </h4>
+              <p className="text-sm text-gray-400">{post.createdAt}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-purple-400 transition-colors"
+            >
+              <BookmarkIcon className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
 
-        {/* Post Content */}
-        <p className="text-gray-200 mb-4 leading-relaxed">{post.content}</p>
-
-        {/* Post Image */}
-        {post.imageUrl && (
-          <div className="mb-4 rounded-lg overflow-hidden">
-            <img
-              src={post.imageUrl}
-              alt="Post content"
-              className="w-full h-64 object-cover"
-            />
-          </div>
-        )}
-
-        {/* Post Actions */}
-        <div className="flex items-center gap-6 mb-4">
-          <button
-            onClick={() => onLike(post.id)}
-            className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors"
+          {/* Post Content */}
+          <motion.p
+            className="text-gray-200 mb-6 leading-relaxed text-base"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
           >
-            {post.isLiked ? (
-              <HeartIconSolid className="h-5 w-5 text-red-500" />
-            ) : (
-              <HeartIcon className="h-5 w-5" />
-            )}
-            <span className="text-sm">{post.likes}</span>
-          </button>
+            {post.content}
+          </motion.p>
 
-          <button
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
-          >
-            <ChatBubbleLeftIcon className="h-5 w-5" />
-            <span className="text-sm">{post.comments.length}</span>
-          </button>
-        </div>
+          {/* Post Image */}
+          {post.imageUrl && (
+            <motion.div
+              className="mb-6 rounded-xl overflow-hidden shadow-lg"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <img
+                src={post.imageUrl}
+                alt="Post content"
+                className="w-full h-80 object-cover hover:scale-105 transition-transform duration-500"
+              />
+            </motion.div>
+          )}
 
-        {/* Comments Section */}
-        {showComments && (
-          <div className="border-t border-gray-700 pt-4">
-            {/* Existing Comments */}
-            {post.comments.length > 0 && (
-              <div className="space-y-3 mb-4">
-                {post.comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={comment.authorAvatar}
-                        alt={comment.author}
-                      />
-                      <AvatarFallback className="bg-gray-700 text-gray-200 text-xs">
-                        {comment.author
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="font-medium text-gray-200 text-sm">
-                          {comment.author}
-                        </p>
-                        <p className="text-gray-300 text-sm">{comment.text}</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {comment.createdAt}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add Comment */}
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-gray-700 text-gray-200 text-xs">
-                  You
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex gap-2">
-                <Input
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-                  className="bg-gray-800 border-gray-700 text-gray-100 text-sm"
-                />
-                <Button
-                  onClick={handleAddComment}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+          {/* Post Actions */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-8">
+              <motion.button
+                onClick={handleLike}
+                disabled={isLoading || !user}
+                className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-all duration-200 group disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <motion.div
+                  animate={isLiked ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.3 }}
                 >
-                  <PaperAirplaneIcon className="h-4 w-4" />
-                </Button>
-              </div>
+                  {isLiked ? (
+                    <HeartIconSolid className="h-6 w-6 text-red-500" />
+                  ) : (
+                    <HeartIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  )}
+                </motion.div>
+                <span className="text-sm font-medium">{likes.length}</span>
+              </motion.button>
+
+              <motion.button
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-all duration-200 group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ChatBubbleLeftIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">{comments.length}</span>
+              </motion.button>
+
+              <motion.button
+                className="flex items-center gap-2 text-gray-400 hover:text-green-400 transition-all duration-200 group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ShareIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">Share</span>
+              </motion.button>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Comments Section */}
+          <AnimatePresence>
+            {showComments && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="border-t border-gray-700 pt-6 mt-6"
+              >
+                {/* Existing Comments */}
+                <div className="space-y-4 mb-6 max-h-96 overflow-y-auto comments-scrollbar">
+                  {comments.length > 0 ? (
+                    comments.map((comment, index) => (
+                      <motion.div
+                        key={comment.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex gap-3"
+                      >
+                        <Avatar className="h-10 w-10 ring-2 ring-purple-500/20">
+                          <AvatarImage
+                            src={
+                              typeof comment.author === "string"
+                                ? comment.authorAvatar || "/default-avatar.png"
+                                : comment.author.avatar || "/default-avatar.png"
+                            }
+                            alt={
+                              typeof comment.author === "string"
+                                ? comment.author
+                                : comment.author.name
+                            }
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-sm">
+                            {typeof comment.author === "string"
+                              ? comment.author
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                              : comment.author.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-4 shadow-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="font-semibold text-gray-100 text-sm">
+                                {typeof comment.author === "string"
+                                  ? comment.author
+                                  : comment.author.name}
+                              </p>
+                              <span className="text-xs text-gray-500">•</span>
+                              <p className="text-xs text-gray-500">
+                                {comment.createdAt
+                                  ?.toDate?.()
+                                  ?.toLocaleDateString() ||
+                                  (typeof comment.createdAt === "string"
+                                    ? comment.createdAt
+                                    : "Just now")}
+                              </p>
+                            </div>
+                            <p className="text-gray-200 text-sm leading-relaxed">
+                              {comment.text}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <ChatBubbleLeftIcon className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 text-sm">
+                        No comments yet. Be the first to comment!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Add Comment */}
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex gap-3"
+                  >
+                    <Avatar className="h-10 w-10 ring-2 ring-purple-500/20">
+                      <AvatarImage
+                        src={user.photoURL || ""}
+                        alt={user.displayName || ""}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-sm">
+                        {user.displayName
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("") || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 flex gap-3">
+                      <Textarea
+                        placeholder="Write a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment();
+                          }
+                        }}
+                        className="bg-gray-800 border-gray-600 text-gray-100 text-sm resize-none min-h-[60px] focus:border-purple-500 transition-colors"
+                        rows={3}
+                        disabled={isLoading}
+                      />
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          onClick={handleAddComment}
+                          disabled={!newComment.trim() || isLoading}
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-2 h-auto disabled:opacity-50"
+                        >
+                          {isLoading ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <PaperAirplaneIcon className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
@@ -342,6 +590,7 @@ export default function ViewCommunityPage() {
   const params = useParams();
   const router = useRouter();
   const communityId = parseInt(params.id as string);
+  const [user] = useAuthState(auth);
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -355,108 +604,131 @@ export default function ViewCommunityPage() {
     setPosts(mockPosts[communityId] || []);
   }, [communityId]);
 
-  const handleLike = (postId: number) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-            }
-          : post
-      )
-    );
-  };
-
-  const handleComment = (postId: number, commentText: string) => {
-    const newComment: Comment = {
-      id: Date.now(), // Simple ID generation for demo
-      author: "You",
-      authorAvatar: "/placeholder.svg?height=32&width=32",
-      text: commentText,
-      createdAt: "Just now",
-    };
-
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? { ...post, comments: [...post.comments, newComment] }
-          : post
-      )
-    );
-  };
-
   if (!community) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-100 mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <h1 className="text-3xl font-bold text-gray-100 mb-6">
             Community Not Found
           </h1>
           <Button
             onClick={() => router.back()}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3"
           >
             Go Back
           </Button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            onClick={() => router.back()}
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-gray-200"
-          >
-            <ArrowLeftIcon className="h-5 w-5" />
-          </Button>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center gap-4 mb-8"
+        >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={() => router.back()}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-all duration-200"
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </Button>
+          </motion.div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-100 mb-2">
+            <motion.h1
+              className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-3 animate-gradient"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               {community.title}
-            </h1>
-            <p className="text-gray-400 mb-3">{community.description}</p>
-            <div className="flex items-center gap-2">
-              <UsersIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-500">
+            </motion.h1>
+            <motion.p
+              className="text-gray-300 mb-4 text-lg"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {community.description}
+            </motion.p>
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <UsersIcon className="h-5 w-5 text-purple-400" />
+              <span className="text-sm text-gray-400 font-medium">
                 {community.members} members
               </span>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Posts */}
-        <div className="space-y-6">
+        <motion.div
+          className="space-y-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
           {posts.length > 0 ? (
-            posts.map((post) => (
-              <PostCard
+            posts.map((post, index) => (
+              <motion.div
                 key={post.id}
-                post={post}
-                onLike={handleLike}
-                onComment={handleComment}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <PostCard post={post} />
+              </motion.div>
             ))
           ) : (
-            <Card className="bg-gray-900 border-gray-800">
-              <CardContent className="p-8 text-center">
-                <ChatBubbleLeftIconSolid className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">
-                  No posts yet
-                </h3>
-                <p className="text-gray-500">
-                  Be the first to share something in this community!
-                </p>
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 shadow-xl">
+                <CardContent className="p-12 text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
+                  >
+                    <ChatBubbleLeftIconSolid className="h-16 w-16 text-purple-400 mx-auto mb-6" />
+                  </motion.div>
+                  <h3 className="text-xl font-semibold text-gray-200 mb-3">
+                    No posts yet
+                  </h3>
+                  <p className="text-gray-400 mb-6">
+                    Be the first to share something in this community!
+                  </p>
+                  {user && (
+                    <Button
+                      onClick={() => router.push("/create")}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3"
+                    >
+                      Create First Post
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

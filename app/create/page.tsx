@@ -27,10 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getAuth } from "firebase/auth";
-
-//get name and email from firebase
-const auth = getAuth();
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 // Animation variants for smooth transitions
 const fadeInUp = {
@@ -57,6 +54,8 @@ type MealType =
   | "";
 
 export default function CreatePostPage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tags, setTags] = useState<string[]>([]);
@@ -74,29 +73,6 @@ export default function CreatePostPage() {
   const { addPost } = usePosts();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      const currentUser = auth.currentUser;
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching posts.", error.message);
-        return;
-      }
-
-      if (data) {
-        const uiPost = data.map((dbPost) =>
-          mapDbPostToUiPost(dbPost, currentUser)
-        );
-        setPosts(uiPost);
-      }
-    };
-    fetchPost();
-  }, []);
-
   // Function to save draft to localStorage
   const saveDraft = () => {
     const draft = {
@@ -113,7 +89,7 @@ export default function CreatePostPage() {
   };
 
   // Load draft from localStorage on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     const savedDraft = localStorage.getItem("foodShareDraft");
     if (savedDraft) {
       try {
@@ -129,6 +105,44 @@ export default function CreatePostPage() {
       }
     }
   }, []);
+
+  // Wait for Firebase Auth state and fetch user profile from Supabase
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        // Fetch user profile from Supabase
+        const userProfile = await fetchUserProfile(user.uid);
+        if (userProfile) {
+          setCurrentUser({
+            ...user,
+            supabaseProfile: userProfile, // Store Supabase user data
+          });
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setIsLoading(false); // Auth state is resolved
+    });
+
+    return () => unsubscribe(); // Clean up subscription
+  }, []);
+
+  // Function to fetch user data from Supabase
+  const fetchUserProfile = async (firebaseUid: string) => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, name, email, firebase_url, created_at")
+      .eq("firebase_uid", firebaseUid)
+      .single();
+
+    if (error) {
+      console.error("Error fetching user profile:", error.message);
+      return null;
+    }
+    return data;
+  };
 
   // Validate form fields
   const validateForm = () => {
@@ -244,37 +258,15 @@ export default function CreatePostPage() {
     return `data:image/svg+xml;base64,${btoa(svg)}`;
   };
 
-  function mapDbPostToUiPost(dbPost: any, currentUser: any) {
-    const userName = currentUser?.displayName || "Anonymous";
-    return {
-      id: dbPost.id,
-      title: dbPost.title,
-      description: dbPost.caption,
-      imageUrl: dbPost.image_url,
-      calories: dbPost.calories,
-      tags: dbPost.tags ? dbPost.tags.split(",") : [],
-      mealType: dbPost.mealtype,
-      user: {
-        name: currentUser?.displayName || "Anonymous",
-        username: currentUser?.email || "example@gmail.com",
-        avatar: currentUser?.photoURL || getInitialAvatar(userName),
-      },
-    };
-  }
-
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (validateForm()) {
       setIsSharing(true);
-      const currentUser = auth.currentUser;
-
-      // For now, use a placeholder image URL since imageUrl is not defined
-      const imageUrl = selectedImage || "/placeholder-food.jpg";
 
       const supabasePost = {
-        firebase_uid: currentUser?.uid || "anonymous", // Use actual user ID from firebase
+        firebase_uid: currentUser?.uid || "anonymous",
         caption: description,
-        image_url: imageUrl,
+        image_url: selectedImage || "/placeholder-food.jpg",
         calories: calories,
         title: foodName,
         tags: tags.join(","),
@@ -288,19 +280,34 @@ export default function CreatePostPage() {
 
       if (!error && data) {
         const dbPost = data[0];
-        const userName = currentUser?.displayName || "Anonymous";
+        const userName =
+          currentUser?.supabaseProfile?.name ||
+          currentUser?.displayName ||
+          "Anonymous";
+        const userEmail =
+          currentUser?.supabaseProfile?.email ||
+          currentUser?.email ||
+          "user";
+        const username = userEmail.split("@")[0]; // Derive username from email
+        const avatar =
+          currentUser?.supabaseProfile?.firebase_url ||
+          currentUser?.photoURL ||
+          getInitialAvatar(userName);
 
         addPost({
-          id: dbPost.id, // Preserve Supabase UUID for likes/comments
+          id: dbPost.id,
           title: dbPost.title,
           description: dbPost.caption,
           image: dbPost.image_url,
           calories: dbPost.calories,
           tags: dbPost.tags ? dbPost.tags.split(",") : [],
           user: {
-            name: currentUser?.displayName || "Anonymous",
-            username: currentUser?.email || "example@gmail.com",
-            avatar: currentUser?.photoURL || getInitialAvatar(userName),
+            name: userName,
+            username: username,
+            avatar: avatar,
+            id: currentUser?.supabaseProfile?.id || currentUser?.uid || "anonymous",
+            created_at:
+              currentUser?.supabaseProfile?.created_at || new Date().toISOString(),
           },
         });
 
@@ -317,6 +324,11 @@ export default function CreatePostPage() {
       }
     }
   };
+
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-100">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-950">

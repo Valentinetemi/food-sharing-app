@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { UsersIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/24/solid";
@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationsContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CommunityPage() {
   const { toast } = useToast();
@@ -85,13 +86,16 @@ export default function CommunityPage() {
   };
 
   return (
-    <div
-      className="
-      min-h-screen
-      bg-gray-950
-    "
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative min-h-screen overflow-hidden bg-gray-950"
     >
-      <div className="flex-1 ml-0 lg:ml-64">
+      <div className="pointer-events-none absolute -top-56 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-orange-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 right-[-10%] h-[420px] w-[420px] rounded-full bg-purple-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] h-[360px] w-[360px] rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="relative z-10 flex-1 ml-0 lg:ml-64">
         <div
           className="
         max-w-6xl
@@ -103,7 +107,10 @@ export default function CommunityPage() {
       "
         >
           {/* Header */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
             className="
           flex
           flex-col
@@ -115,19 +122,27 @@ export default function CommunityPage() {
         "
           >
             <div>
-              <h1
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
                 className="
-              text-3xl
+              text-4xl
               font-bold
-              text-gray-100
+              bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent animate-gradient
             "
               >
                 Community
-              </h1>
-              <p className="text-gray-400">
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-gray-300 text-lg"
+              >
                 Connect, grow, and share with others who love food just like
                 you.
-              </p>
+              </motion.p>
             </div>
             {/* Search bar - commented out (part of Discover) */}
             {/*
@@ -164,7 +179,7 @@ export default function CommunityPage() {
               </div>
             </div>
             */}
-          </div>
+          </motion.div>
 
           {/* Stats Cards - commented out (Statistics and Achievements) */}
           {/*
@@ -356,41 +371,63 @@ export default function CommunityPage() {
           */}
 
           {/* Main Content */}
-          <div className="w-full">
+          <motion.div
+            className="w-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
               className="space-y-3"
             >
-              <TabsList
-                className="
-            bg-gray-900
-            border-gray-800
-            flex flex-col sm:flex-row
-            w-full
-            h-auto
-            flex-wrap
-            gap-4           
-           p-4
-          "
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
               >
-                <TabsTrigger
-                  value="join"
-                  className="data-[state=active]:bg-gray-200 w-full sm:w-auto"
-                >
-                  Join Communities
-                </TabsTrigger>
-                <TabsTrigger
-                  value="usercommunity"
+                <TabsList
                   className="
-              data-[state=active]:bg-slate-200
-              w-full sm:w-auto
+                bg-gradient-to-r from-gray-900 to-gray-800
+                border-gray-700
+                flex flex-col sm:flex-row
+                w-full
+                h-auto
+                flex-wrap
+                gap-4           
+               p-4
+               shadow-xl
               "
                 >
-                  Your Communities
-                </TabsTrigger>
-                {/* Commented out non-MVP tabs */}
-                {/*
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <TabsTrigger
+                      value="join"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white w-full sm:w-auto transition-all duration-200"
+                    >
+                      Join Communities
+                    </TabsTrigger>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <TabsTrigger
+                      value="usercommunity"
+                      className="
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white
+                w-full sm:w-auto
+                transition-all duration-200
+                "
+                    >
+                      Your Communities
+                    </TabsTrigger>
+                  </motion.div>
+                  {/* Commented out non-MVP tabs */}
+                  {/*
                 <TabsTrigger
                   value="leaderboard"
                   className="
@@ -419,7 +456,8 @@ export default function CommunityPage() {
                   Challenges
                 </TabsTrigger>
                 */}
-              </TabsList>
+                </TabsList>
+              </motion.div>
 
               {/* Leaderboard - commented out (non-MVP) */}
               {/*
@@ -771,134 +809,196 @@ export default function CommunityPage() {
               */}
 
               <TabsContent value="join">
-                <div className="space-y-4">
-                  {communityList.map((communityItem: Community) => (
-                    <Card
-                      key={communityItem.id}
-                      className="bg-gray-900
-                   border-gray-800"
-                    >
-                      <CardContent className="p-6">
-                        <div
-                          className="flex
+                <motion.div
+                  className="space-y-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <AnimatePresence>
+                    {communityList.map(
+                      (communityItem: Community, index: number) => (
+                        <motion.div
+                          key={communityItem.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card
+                            className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
+                       border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm"
+                          >
+                            <CardContent className="p-6">
+                              <div
+                                className="flex
                      flex-col
                       md:flex-row md:items-center
                        md:justify-between 
                        gap-4"
-                        >
-                          <div className="flex-1">
-                            <h3
-                              className="text-lg
+                              >
+                                <div className="flex-1">
+                                  <h3
+                                    className="text-lg
                          font-semibold
                           text-gray-100 
                          mb-2"
-                            >
-                              {communityItem.title}
-                            </h3>
-                            <p className="text-gray-300 mb-3">
-                              {communityItem.description}
-                            </p>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UsersIcon className="h-4 w-4" />
-                                {communityItem.members} Members
+                                  >
+                                    {communityItem.title}
+                                  </h3>
+                                  <p className="text-gray-300 mb-3">
+                                    {communityItem.description}
+                                  </p>
+                                  <div className="flex items-center gap-4 text-sm text-gray-400">
+                                    <div className="flex items-center gap-1">
+                                      <UsersIcon className="h-4 w-4" />
+                                      {communityItem.members} Members
+                                    </div>
+                                  </div>
+                                </div>
+                                <motion.div
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <Button
+                                    onClick={() => handleJoin(communityItem)}
+                                    className={
+                                      joinedIds.includes(communityItem.id)
+                                        ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+                                    }
+                                  >
+                                    {joinedIds.includes(communityItem.id) ? (
+                                      <span className="flex items-center gap-2">
+                                        <CheckIcon className="w-4 h-4 text-white" />
+                                        Joined
+                                      </span>
+                                    ) : (
+                                      "Join Community"
+                                    )}
+                                  </Button>
+                                </motion.div>
                               </div>
-                            </div>
-                          </div>
-                          <Button
-                            onClick={() => handleJoin(communityItem)}
-                            className={
-                              joinedIds.includes(communityItem.id)
-                                ? "bg-green-500 hover:bg-green-600 text-white"
-                                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                            }
-                          >
-                            {joinedIds.includes(communityItem.id) ? (
-                              <span className="flex items-center gap-2">
-                                <CheckIcon className="w-4 h-4 text-white" />
-                                Joined
-                              </span>
-                            ) : (
-                              "Join Communities"
-                            )}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      )
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="usercommunity">
-                <div className="space-y-4">
-                  {userCommunities.length === 0 ? (
-                    <CardContent
-                      className=" flex
-                 mt-4
-                  justify-center
-                   items-center
-                    gap-2
-                     text-gray-200 
-                     font-semibold"
-                    >
-                      You haven't joined any community yet 😢
-                    </CardContent>
-                  ) : (
-                    userCommunities.map((usercommunityItem: Community) => (
-                      <Card
-                        key={usercommunityItem.id}
-                        className="bg-gray-900
-                   border-gray-800"
+                <motion.div
+                  className="space-y-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <AnimatePresence>
+                    {userCommunities.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7 }}
                       >
-                        <CardContent className="p-6">
-                          <div
+                        <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 shadow-xl">
+                          <CardContent
                             className="flex
+                           mt-4
+                            justify-center
+                             items-center
+                              gap-2
+                               text-gray-200 
+                               font-semibold py-12"
+                          >
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.8 }}
+                              className="text-center"
+                            >
+                              <div className="text-6xl mb-4">😢</div>
+                              <p>You haven't joined any community yet</p>
+                              <p className="text-sm text-gray-400 mt-2">
+                                Join communities to start connecting with other
+                                food lovers!
+                              </p>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ) : (
+                      userCommunities.map(
+                        (usercommunityItem: Community, index: number) => (
+                          <motion.div
+                            key={usercommunityItem.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <Card
+                              className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
+                       border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm"
+                            >
+                              <CardContent className="p-6">
+                                <div
+                                  className="flex
                      flex-col
                       md:flex-row 
                       md:items-center
                        md:justify-between 
                        gap-4"
-                          >
-                            <div className="flex-1">
-                              <h3
-                                className="text-lg
+                                >
+                                  <div className="flex-1">
+                                    <h3
+                                      className="text-lg
                          font-semibold
                           text-gray-100 
                          mb-2"
-                              >
-                                {usercommunityItem.title}
-                              </h3>
-                              <p className="text-gray-300 mb-3">
-                                {usercommunityItem.description}
-                              </p>
-                              <div className="flex items-center gap-4 text-sm text-gray-400">
-                                <div className="flex items-center gap-1">
-                                  <UsersIcon className="h-4 w-4" />
-                                  {usercommunityItem.members} Members
+                                    >
+                                      {usercommunityItem.title}
+                                    </h3>
+                                    <p className="text-gray-300 mb-3">
+                                      {usercommunityItem.description}
+                                    </p>
+                                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                                      <div className="flex items-center gap-1">
+                                        <UsersIcon className="h-4 w-4" />
+                                        {usercommunityItem.members} Members
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
+                                    <Button
+                                      onClick={() =>
+                                        router.push(
+                                          `/community/${usercommunityItem.id}`
+                                        )
+                                      }
+                                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
+                                    >
+                                      View Community
+                                    </Button>
+                                  </motion.div>
                                 </div>
-                              </div>
-                            </div>
-                            <Button
-                              onClick={() =>
-                                router.push(
-                                  `/community/${usercommunityItem.id}`
-                                )
-                              }
-                              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                            >
-                              View Community
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )
+                      )
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </TabsContent>
             </Tabs>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,44 +1,134 @@
-import { useEffect, useState } from "react"
-import { supabase  } from "@/lib/supabase"
-import PostCard from "./PostCard"
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import PostCard from "./PostCard";
 
-export default function PostList(){
-    const [posts, setPosts] = useState<any[]>([])
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  created_at: string | null;
+  avatar: string | null;
+  username: string | null;
+}
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            const { data, error } = await supabase.from("posts").select("*, user(*)");
-            if (!error && data){
-                setPosts(data)
-            }
+interface Post {
+  id: string;
+  title: string;
+  caption: string;
+  image_url: string;
+  tags: string[];
+  calories: number;
+  mealtype: string;
+  created_at: string;
+  firebase_uid: string;
+  user: User;
+}
+
+export default function PostList() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("posts")
+          .select(`
+            id,
+            title,
+            caption,
+            image_url,
+            tags,
+            calories,
+            mealtype,
+            created_at,
+            firebase_uid,
+            users (
+            id,
+            name,
+            email,
+            created_at
+            )
+          `)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Error fetching posts:", error.message);
+          return;
         }
-        fetchPosts()
-    }, [])
 
-    return (
-        <div className="flex flex-col gap-4">
-            {posts.map((post) => (
-                <PostCard
-                 key={post.id}
-                 id={post.id}
-                 title={post.title}
-                 description={post.description}
-                 image={post.image}
-                 user={{
-                    name: post.user.name,
-                    username: post.user.username,
-                    avatar: post.user.avatar,
-                 }}
-                 likes={0}
-                 comments={0}
-                 tags={post.tags}
-                 calories={post.calories}
-                 timeAgo={post.timeAgo}
+        const formattedPosts = data.map((post: any) => ({
+          id: post.id,
+          title: post.title,
+          caption: post.caption,
+          image_url: post.image_url,
+          tags: post.tags ? post.tags.split(",") : [],
+          calories: post.calories,
+          mealtype: post.mealtype,
+          created_at: post.created_at,
+          firebase_uid: post.firebase_uid,
+          user: post.users
+            ? {
+                id: post.users.id,
+                name: post.users.raw_user_meta_data?.name || "Anonymous",
+                username:
+                  post.users.raw_user_meta_data?.username ||
+                  post.users.email?.split("@")[0],
+                avatar:
+                  post.users.raw_user_meta_data?.avatar || "/default-avatar.png",
+                email: post.users.email,
+                created_at: post.users.created_at,
+              }
+            : {
+                id: post.firebase_uid,
+                name: "Anonymous",
+                username: `user_${post.firebase_uid.slice(0, 8)}`,
+                avatar: "/default-avatar.png",
+                email: null,
+                created_at: post.created_at,
+              },
+        }));
 
-                 />
-            ))}
-        </div>
-    )
+        setPosts(formattedPosts);
+      } catch (err) {
+        console.error("Unexpected error fetching posts:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        
-        }
+    fetchPosts();
+  }, []);
+
+  if (isLoading) {
+    return <div className="text-gray-100">Loading posts...</div>;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {posts.length === 0 ? (
+        <p className="text-gray-400">No posts available.</p>
+      ) : (
+        posts.map((post) => (
+          <PostCard
+            key={post.id}
+            id={post.id}
+            title={post.title}
+            description={post.caption}
+            image={post.image_url}
+            user={{
+              name: post.user.name,
+              username: post.user.username,
+              avatar: post.user.avatar,
+            }}
+            likes={0}
+            comments={0}
+            tags={post.tags}
+            calories={post.calories}
+            timeAgo={new Date(post.created_at).toLocaleString()}
+          />
+        ))
+      )}
+    </div>
+  );
+}

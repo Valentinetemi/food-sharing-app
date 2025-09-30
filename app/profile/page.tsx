@@ -231,7 +231,7 @@ export default function ProfilePage() {
                   </p>
                   {post.caption && <p className="text-sm text-gray-400 mt-1">{post.caption}</p>}
                   {post.tags && (
-                    <p className="text-sm text-gray-400 mt-1">Tags: {post.tags}.join(", ")</p>
+                    <p className="text-sm text-gray-400 mt-1">Tags: {post.tags.join(", ")}</p>
                   )}
                   {post.mealtype && (
                     <p className="text-sm text-gray-400 mt-1">Meal Type: {post.mealtype}</p>

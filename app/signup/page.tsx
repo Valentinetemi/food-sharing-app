@@ -115,7 +115,7 @@ export default function SignupPage() {
           ]);
           if (error) {
             console.error("Supabase sync error", error);
-    
+
             // Just log it for debugging
             console.warn(
               "User account created but Supabase sync failed:",

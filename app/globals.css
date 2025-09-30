@@ -26,12 +26,73 @@
 }
 
 /* Mobile bottom padding*/
-.mobile-content-padding{
+.mobile-content-padding {
   padding-bottom: 6rem;
 }
 
-@media (min-width: 768px){
-  .mobile-content-padding{
-    padding-bottom:  1rem;
+@media (min-width: 768px) {
+  .mobile-content-padding {
+    padding-bottom: 1rem;
   }
+}
+
+/* Custom animations for heart burst effect */
+@keyframes heart-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+.animate-heart-burst {
+  animation: heart-burst 0.6s ease-out forwards;
+}
+
+/* Smooth scrollbar for comments */
+.comments-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.comments-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 3px;
+}
+
+.comments-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
 }

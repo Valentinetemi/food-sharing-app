@@ -38,7 +38,7 @@ type PostCardProps = {
   likes: number;
   comments: number;
   tags: string[];
-  calories: string; // Changed to string to match table
+  calories: string;
   timeAgo: string;
 };
 
@@ -72,7 +72,7 @@ export default function PostCard({
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const initializeLikeAndComments = async () => {
+    const initializeData = async () => {
       const auth = getAuth();
       const { currentUser } = auth;
 
@@ -83,7 +83,7 @@ export default function PostCard({
       }
 
       try {
-        // Ensure profile exists in Supabase
+        // Fetch current user's profile for commenting
         let profile: Profile | null = null;
         const { data: me, error: meError } = await supabase
           .from("profiles")
@@ -92,8 +92,7 @@ export default function PostCard({
           .maybeSingle();
 
         if (meError) {
-          console.error("Profile fetch error:", meError.message);
-          // Fallback to Firebase data
+          console.error("Profile fetch error:", meError.message); 
           profile = {
             id: currentUser.uid,
             name: currentUser.displayName || "Anonymous",
@@ -102,16 +101,13 @@ export default function PostCard({
             avatar:
               currentUser.photoURL || generateLetterAvatar(currentUser.email),
           };
-          // Create profile
           const { error: insertError } = await supabase
             .from("profiles")
             .upsert(profile, { onConflict: "id" });
           if (insertError) {
             console.error("Profile insert error:", insertError.message);
-            // Use fallback profile
           }
         } else if (!me) {
-          // Create new profile
           profile = {
             id: currentUser.uid,
             name: currentUser.displayName || "Anonymous",
@@ -125,7 +121,7 @@ export default function PostCard({
             .upsert(profile, { onConflict: "id" });
           if (insertError) {
             console.error("Profile insert error:", insertError.message);
-            profile = null; // Prevent further actions
+            profile = null;
           }
         } else {
           profile = {
@@ -171,7 +167,7 @@ export default function PostCard({
             id,
             content,
             created_at,
-            author:profiles!user_id(id, name, username, avatar)
+            author:profiles!comments_user_id_fkey(id, name, username, avatar)
           `
           )
           .eq("post_id", id)
@@ -214,11 +210,11 @@ export default function PostCard({
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
-        initializeLikeAndComments();
+        initializeData();
       }
     });
     if (auth.currentUser) {
-      initializeLikeAndComments();
+      initializeData();
     }
     return () => unsubscribe();
   }, [id]);
@@ -299,7 +295,7 @@ export default function PostCard({
           user_id: currentUser.uid,
           content: textToSend,
           created_at: new Date().toISOString(),
-          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, // Generate text ID
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         })
         .select("id, content, created_at")
         .single();
@@ -372,7 +368,7 @@ export default function PostCard({
             user_id: currentUser.uid,
             created_at: new Date().toISOString(),
           },
-          { onConflict: ["post_id", "user_id"] }
+          { onConflict: "post_id,user_id" }
         );
 
         if (error) {
