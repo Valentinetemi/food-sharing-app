@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PostCard from "./PostCard";
 
-interface User {
+// Types
+interface Profile {
   id: string;
   name: string | null;
-  email: string | null;
-  created_at: string | null;
-  avatar: string | null;
   username: string | null;
+  avatar_url: string | null;
+  created_at: string | null;
 }
 
 interface Post {
@@ -16,12 +16,11 @@ interface Post {
   title: string;
   caption: string;
   image_url: string;
-  tags: string[];
+  tags: string[]; // split into array
   calories: number;
   mealtype: string;
   created_at: string;
-  firebase_uid: string;
-  user: User;
+  user: Profile | null;
 }
 
 export default function PostList() {
@@ -33,7 +32,8 @@ export default function PostList() {
       try {
         const { data, error } = await supabase
           .from("posts")
-          .select(`
+          .select(
+            `
             id,
             title,
             caption,
@@ -42,14 +42,16 @@ export default function PostList() {
             calories,
             mealtype,
             created_at,
-            firebase_uid,
-            users (
-            id,
-            name,
-            email,
-            created_at
+            user_id,
+            profiles (
+              id,
+              name,
+              username,
+              avatar_url,
+              created_at
             )
-          `)
+          `
+          )
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -57,7 +59,7 @@ export default function PostList() {
           return;
         }
 
-        const formattedPosts = data.map((post: any) => ({
+        const formattedPosts: Post[] = data.map((post: any) => ({
           id: post.id,
           title: post.title,
           caption: post.caption,
@@ -66,27 +68,18 @@ export default function PostList() {
           calories: post.calories,
           mealtype: post.mealtype,
           created_at: post.created_at,
-          firebase_uid: post.firebase_uid,
-          user: post.users
+          user: post.profiles
             ? {
-                id: post.users.id,
-                name: post.users.raw_user_meta_data?.name || "Anonymous",
+                id: post.profiles.id,
+                name: post.profiles.name || "Anonymous",
                 username:
-                  post.users.raw_user_meta_data?.username ||
-                  post.users.email?.split("@")[0],
-                avatar:
-                  post.users.raw_user_meta_data?.avatar || "/default-avatar.png",
-                email: post.users.email,
-                created_at: post.users.created_at,
+                  post.profiles.username ||
+                  `user_${post.profiles.id.slice(0, 8)}`,
+                avatar_url:
+                  post.profiles.avatar_url || "/default-avatar.png",
+                created_at: post.profiles.created_at,
               }
-            : {
-                id: post.firebase_uid,
-                name: "Anonymous",
-                username: `user_${post.firebase_uid.slice(0, 8)}`,
-                avatar: "/default-avatar.png",
-                email: null,
-                created_at: post.created_at,
-              },
+            : null,
         }));
 
         setPosts(formattedPosts);
@@ -117,9 +110,9 @@ export default function PostList() {
             description={post.caption}
             image={post.image_url}
             user={{
-              name: post.user.name,
-              username: post.user.username,
-              avatar: post.user.avatar,
+              name: post.user?.name || "Anonymous",
+              username: post.user?.username || "unknown",
+              avatar: post.user?.avatar_url || "/default-avatar.png",
             }}
             likes={0}
             comments={0}

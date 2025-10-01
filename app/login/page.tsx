@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const { toast } = useToast();
@@ -16,30 +15,21 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [SignInUserWithEmailAndPassword, user, loading, firebaseError] =
-    useSignInWithEmailAndPassword(auth);
-
   useEffect(() => {
-    if (user) {
-      console.log("signIn successful!", user.user);
-      toast({
-        title: "Welcome back",
-        description: `Welcome back ${user.user.displayName || user.user.email}`,
-        duration: 3000,
-      });
-      setTimeout(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        toast({
+          title: "Already logged in",
+          description: `Welcome back ${user.user_metadata.full_name || user.email}`,
+          duration: 3000,
+        });
         router.push("/");
-      }, 100);
-    }
-  }, [user, router, toast]);
-  //to handle firebase errors
-  useEffect(() => {
-    if (firebaseError) {
-      console.log("Firebase Error", firebaseError);
-      setError(firebaseError.message || "Failed to signIn");
-      setIsLoading(false);
-    }
-  }, [firebaseError]);
+      }
+    };
+    checkUser();
+  }, [router, toast]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,18 +37,42 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Use the login function from firebase
-      const logIn = await SignInUserWithEmailAndPassword(email, password);
-      if (email && password) {
-        await import("firebase/auth");
-        // No need to redirect here as the login function handles it
-      } else {
-        setError("Please enter both email and password");
-        setIsLoading(false);
+      if (!email || !password) {
+        throw new Error("Please enter both email and password");
       }
-    } catch (err) {
-      setError("Failed to login. Please check your email or password.");
-      console.error(err);
+
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes("Email not confirmed")){
+          alert("Please confirm your email before logging in.");
+        }
+        else{
+          alert(error.message);
+        }
+      }
+
+      if (data.user) {
+        console.log("Sign-in successful!", data.user);
+        toast({
+          title: "Welcome back",
+          description: `Welcome back ${data.user.user_metadata.full_name || data.user.email}`,
+          duration: 3000,
+        });
+        setTimeout(() => {
+          router.push("/");
+        }, 100);
+      } else {
+        throw new Error("No user data returned");
+      }
+    } catch (err: any) {
+      console.error("Error signing in:", err);
+      setError(err.message || "Failed to sign in. Please check your email or password.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -68,7 +82,7 @@ export default function LoginPage() {
       {/* Left side - Image (hidden on mobile) */}
       <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
         <div className="flex items-center justify-center gap- w-full max-w-2xl">
-          {/* First phone mockup*/}
+          {/* First phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image2.png"
@@ -78,7 +92,7 @@ export default function LoginPage() {
               priority
             />
           </div>
-          {/*2nd phone mockup*/}
+          {/* 2nd phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image4.png"

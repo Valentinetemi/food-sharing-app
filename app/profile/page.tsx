@@ -7,12 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/context/AuthContext";
 import { ProfileEditDialog } from "@/components/ProfileEditDialog";
 
 interface UserProfile {
   id: string;
-  firebase_uid: string;
   email: string;
   name: string | null;
 }
@@ -29,7 +27,7 @@ interface Post {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,10 +35,50 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
+  // Check auth state and set user
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata.full_name || "User",
+        });
+      } else {
+        setCurrentUser(null);
+        setError("User not logged in");
+      }
+      setProfileLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata.full_name || "User",
+        });
+        setProfileLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setCurrentUser(null);
+        setError("User not logged in");
+        setProfileLoading(false);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
   // Load user profile
   useEffect(() => {
     async function fetchProfile() {
-      if (!user) {
+      if (!currentUser) {
         setError("User not logged in");
         setProfileLoading(false);
         return;
@@ -50,8 +88,8 @@ export default function ProfilePage() {
         setProfileLoading(true);
         const { data, error } = await supabase
           .from("users")
-          .select("*")
-          .eq("firebase_uid", user.id)
+          .select("id, email, name")
+          .eq("id", currentUser.id)
           .single();
 
         if (error && error.code !== "PGRST116") {
@@ -66,9 +104,9 @@ export default function ProfilePage() {
             .from("users")
             .insert([
               {
-                firebase_uid: user.id,
-                email: user.email,
-                name: user.name || "User",
+                id: currentUser.id,
+                email: currentUser.email,
+                name: currentUser.name || "User",
               },
             ])
             .select()
@@ -81,7 +119,7 @@ export default function ProfilePage() {
           setProfile(newProfile);
         }
       } catch (err: any) {
-        console.error("Error loading profile:", err.message, err.details);
+        console.error("Error loading profile:", err.message);
         setError("Failed to load profile");
       } finally {
         setProfileLoading(false);
@@ -89,27 +127,25 @@ export default function ProfilePage() {
     }
 
     fetchProfile();
-  }, [user]);
+  }, [currentUser]);
 
   // Load user posts
   useEffect(() => {
     async function fetchPosts() {
-      if (!user) {
+      if (!currentUser) {
         setError("User not logged in");
         return;
       }
 
       try {
         setLoading(true);
-        console.log("Fetching posts for firebase_uid:", user.id); // Debug user.id
         const { data, error } = await supabase
           .from("posts")
           .select("id, image_url, title, calories, created_at, caption, tags, mealtype")
-          .eq("firebase_uid", user.id) // Changed from user_id to firebase_uid
+          .eq("user_id", currentUser.id)
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("Supabase error:", error.message, error.details, error.code);
           throw new Error(`Failed to fetch posts: ${error.message}`);
         }
 
@@ -117,17 +153,17 @@ export default function ProfilePage() {
           setPosts(
             data.map((post: any) => ({
               id: post.id,
-              image: post.image_url, // Map imageurl to image
+              image: post.image_url,
               title: post.title,
               calories: post.calories,
               created_at: post.created_at,
               caption: post.caption,
-              tags: post.tags,
+              tags: post.tags ? post.tags.split(",") : [],
               mealtype: post.mealtype,
             }))
           );
         } else {
-          setPosts([]); // Ensure posts is empty if no data
+          setPosts([]);
         }
       } catch (err: any) {
         console.error("Error fetching posts:", err.message);
@@ -138,14 +174,14 @@ export default function ProfilePage() {
     }
 
     fetchPosts();
-  }, [user]);
+  }, [currentUser]);
 
   const handleProfileUpdated = () => {
-    if (user) {
+    if (currentUser) {
       supabase
         .from("users")
-        .select("*")
-        .eq("firebase_uid", user.id)
+        .select("id, email, name")
+        .eq("id", currentUser.id)
         .single()
         .then(({ data, error }) => {
           if (!error && data) {
@@ -154,6 +190,17 @@ export default function ProfilePage() {
             console.error("Error refreshing profile:", error?.message);
           }
         });
+
+      // Refresh user metadata
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          setCurrentUser({
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata.full_name || "User",
+          });
+        }
+      });
     }
   };
 
@@ -167,19 +214,19 @@ export default function ProfilePage() {
               <Avatar className="h-24 w-24">
                 <AvatarImage
                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    profile?.email?.charAt(0) || "U"
+                    currentUser?.name?.charAt(0) || "U"
                   )}&background=random&color=fff`}
                   alt="Profile"
                 />
                 <AvatarFallback className="bg-gray-700 text-gray-200 text-2xl">
-                  {profile?.email?.charAt(0)?.toUpperCase() || "U"}
+                  {currentUser?.name?.charAt(0)?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-100">
-                  {profile?.name || "User"}
+                  {currentUser?.name || "User"}
                 </h1>
-                <p className="text-gray-400">@{profile?.email || "username"}</p>
+                <p className="text-gray-400">@{currentUser?.email?.split("@")[0] || "username"}</p>
                 <div className="flex gap-2 mt-4">
                   <Button
                     variant="outline"

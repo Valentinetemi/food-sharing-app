@@ -27,9 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/context/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-// Animation variants for smooth transitions
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -67,13 +65,10 @@ export default function CreatePostPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [posts, setPosts] = useState<any[]>([]);
-
-  // Get the addPost function from context
   const { addPost } = usePosts();
   const router = useRouter();
 
-  // Function to save draft to localStorage
+  // Save draft to localStorage
   const saveDraft = () => {
     const draft = {
       foodName,
@@ -83,7 +78,6 @@ export default function CreatePostPage() {
       tags,
       imageDataUrl: selectedImage,
     };
-
     localStorage.setItem("foodShareDraft", JSON.stringify(draft));
     alert("Draft saved successfully!");
   };
@@ -106,49 +100,50 @@ export default function CreatePostPage() {
     }
   }, []);
 
-  // Wait for Firebase Auth state and fetch user profile from Supabase
+  // Check auth state with Supabase
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setCurrentUser(user);
-        // Fetch user profile from Supabase
-        const userProfile = await fetchUserProfile(user.uid);
-        if (userProfile) {
-          setCurrentUser({
-            ...user,
-            supabaseProfile: userProfile, // Store Supabase user data
-          });
-        }
+        setCurrentUser({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata.full_name || "Anonymous",
+        });
       } else {
         setCurrentUser(null);
+        router.push("/login");
       }
-      setIsLoading(false); // Auth state is resolved
+      setIsLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata.full_name || "Anonymous",
+        });
+        setIsLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setCurrentUser(null);
+        router.push("/login");
+      }
     });
 
-    return () => unsubscribe(); // Clean up subscription
-  }, []);
-
-  // Function to fetch user data from Supabase
-  const fetchUserProfile = async (firebaseUid: string) => {
-    const { data, error } = await supabase
-      .from("users")
-      .select("id, name, email, firebase_url, created_at")
-      .eq("firebase_uid", firebaseUid)
-      .single();
-
-    if (error) {
-      console.error("Error fetching user profile:", error.message);
-      return null;
-    }
-    return data;
-  };
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   // Validate form fields
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!selectedImage) {
+    if (!imageFile) {
       newErrors.image = "Please upload a food photo.";
     }
     if (!foodName.trim()) {
@@ -219,19 +214,16 @@ export default function CreatePostPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-
-    // Clear the draft from localStorage
     localStorage.removeItem("foodShareDraft");
   };
 
-  // Generate an initial avatar (SVG data URL) from user's display name
+  // Generate an initial avatar (SVG data URL) from user's name
   const getInitialAvatar = (name: string) => {
     if (!name || name === "Anonymous") {
       return "/default.png";
     }
 
     const firstLetter = name.trim().charAt(0).toUpperCase();
-
     const colors = [
       "#F87171",
       "#FB923C",
@@ -254,45 +246,72 @@ export default function CreatePostPage() {
         </text>
       </svg>
     `;
-
     return `data:image/svg+xml;base64,${btoa(svg)}`;
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (validateForm()) {
-      setIsSharing(true);
+    if (!validateForm()) {
+      return;
+    }
 
+    setIsSharing(true);
+
+    try {
+      // Get the logged-in user from Supabase
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("Not logged in. Please sign in first.");
+      }
+
+      // Upload image to Supabase Storage
+      let imageUrl = "/placeholder-food.jpg";
+      if (imageFile) {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("food-images")
+          .upload(fileName, imageFile);
+
+        if (uploadError) {
+          throw new Error("Failed to upload image: " + uploadError.message);
+        }
+
+        // Get public URL for the uploaded image
+        const { data: publicUrlData } = supabase.storage
+          .from("food-images")
+          .getPublicUrl(fileName);
+        imageUrl = publicUrlData.publicUrl;
+      }
+
+      // Build the post object
       const supabasePost = {
-        firebase_uid: currentUser?.uid || "anonymous",
-        caption: description,
-        image_url: selectedImage || "/placeholder-food.jpg",
-        calories: calories,
         title: foodName,
+        caption: description,
+        image_url: imageUrl,
+        calories: calories,
         tags: tags.join(","),
         mealtype: mealType,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
       };
 
+      // Insert into posts
       const { data, error } = await supabase
         .from("posts")
         .insert([supabasePost])
         .select();
 
-      if (!error && data) {
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
         const dbPost = data[0];
-        const userName =
-          currentUser?.supabaseProfile?.name ||
-          currentUser?.displayName ||
-          "Anonymous";
-        const userEmail =
-          currentUser?.supabaseProfile?.email ||
-          currentUser?.email ||
-          "user";
-        const username = userEmail.split("@")[0]; // Derive username from email
-        const avatar =
-          currentUser?.supabaseProfile?.firebase_url ||
-          currentUser?.photoURL ||
-          getInitialAvatar(userName);
+        const userName = user.user_metadata.full_name || "Anonymous";
+        const userEmail = user.email || "user";
+        const username = userEmail.split("@")[0];
+        const avatar = getInitialAvatar(userName);
 
         addPost({
           id: dbPost.id,
@@ -305,23 +324,21 @@ export default function CreatePostPage() {
             name: userName,
             username: username,
             avatar: avatar,
-            id: currentUser?.supabaseProfile?.id || currentUser?.uid || "anonymous",
-            created_at:
-              currentUser?.supabaseProfile?.created_at || new Date().toISOString(),
+            id: user.id,
+            created_at: dbPost.created_at,
           },
         });
 
-        // Show success message
         setTimeout(() => {
           alert("Post shared successfully!");
           setIsSharing(false);
           resetForm();
           router.push("/");
         }, 1500);
-      } else {
-        alert("Error creating post: " + error?.message);
-        setIsSharing(false);
       }
+    } catch (err: any) {
+      alert("Error creating post: " + err.message);
+      setIsSharing(false);
     }
   };
 
@@ -332,10 +349,7 @@ export default function CreatePostPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <div
-        className="
-      .flex-1 ml-0 lg:ml-64"
-      >
+      <div className="flex-1 ml-0 lg:ml-64">
         <div className="max-w-2xl mx-auto px-4 py-6 pb-20 lg:pb-6 mobile-content-padding">
           {/* Header */}
           <motion.div
@@ -527,7 +541,7 @@ export default function CreatePostPage() {
                       size="icon"
                       variant="outline"
                       className="border-gray-700 bg-transparent"
-                      type="button" // Important to prevent form submission
+                      type="button"
                     >
                       <PlusIcon className="h-4 w-4" />
                     </Button>

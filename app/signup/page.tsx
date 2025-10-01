@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { supabase } from "@/lib/supabase";
+
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -21,30 +20,23 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [createUserWithEmailAndPassword, user, loading, firebaseError] =
-    useCreateUserWithEmailAndPassword(auth);
-
   useEffect(() => {
-    if (user) {
-      console.log("Signup successful! Redirecting...", user.user);
-      toast({
-        title: "Account created",
-        description: `Welcome ${user.user.displayName || user.user.email}`,
-        duration: 3000,
-      });
-      setTimeout(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        toast({
+          title: "Already logged in",
+          description: `Welcome back ${user.email}`,
+          duration: 3000,
+        });
         router.push("/");
-      }, 100);
-    }
-  }, [user, router, toast]);
-  //to handle firebase errors
-  useEffect(() => {
-    if (firebaseError) {
-      console.error("Firebase error:", firebaseError);
-      setError(firebaseError.message || "Failed to create account");
-      setIsLoading(false);
-    }
-  }, [firebaseError]);
+      }
+    };
+    checkUser();
+  }, [router, toast]);
 
   const validateForm = () => {
     setError("");
@@ -69,82 +61,56 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     setIsLoading(true);
     setError("");
-
     try {
-      // Create account with Firebase
-      const userCredential = await createUserWithEmailAndPassword(
+      const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: { data: { full_name: name } },
+      });
+      if (error) throw error;
+      const user = data.user;
+      if (!user) throw new Error("No user returned from signup");
+      else {
+        console.log("Check your email for a confirmation link!");
+      }
+    
+
+      // upsert into profiles, not users
+      const { error: profileError } = await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          name: name || user.email?.split("@")[0] || "User",
+          username: user.email?.split("@")[0],
+          avatar: user.user_metadata?.avatar_url || null,
+        },
+        { onConflict: "id" }
       );
-      // Optional: set displayName so it appears in your app
-      if (userCredential?.user && name) {
-        try {
-          const { updateProfile } = await import("firebase/auth");
-          await updateProfile(userCredential.user, { displayName: name });
-          console.log("displayName updated successfully", name);
-        } catch (error) {
-          setError("Please enter both email and password");
-          console.error("Error updating display profile:", error);
-        }
-      }
+      if (profileError)
+        console.warn("profiles upsert warning:", profileError.message);
 
-      if (!userCredential?.user) {
-        setIsLoading(false);
-        setError("Failed to create account");
-        return;
-      }
-      console.log(userCredential.user);
-
-      async function syncUserWithSupabase(user: any) {
-        try {
-          const { uid, email, displayName } = user;
-          const { data, error } = await supabase.from("users").upsert([
-            {
-              firebase_uid: uid,
-              email,
-              name: displayName || null,
-              created_at: new Date().toISOString(),
-            },
-          ]);
-          if (error) {
-            console.error("Supabase sync error", error);
-
-            // Just log it for debugging
-            console.warn(
-              "User account created but Supabase sync failed:",
-              error.message
-            );
-          } else {
-            console.log("User synced with Supabase successfully", data);
-          }
-        } catch (syncError) {
-          console.error("Unexpected error during Supabase sync:", syncError);
-          // Don't fail the signup process for Supabase sync issues
-        }
-      }
-
-      await syncUserWithSupabase(userCredential.user);
-      setIsLoading(false);
-    } catch (error: any) {
-      console.error("Error creating account:", error);
-      setError(error.message || "Failed to create account");
+      toast({
+        title: "Account created",
+        description: `Welcome ${name || email}`,
+      });
+      router.push("/");
+    } catch (err) {
+      const e = err as Error;
+      console.error(e);
+      setError(e?.message || "Failed to create account");
+    } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col md:flex-row">
       {/* Left side - Image (hidden on mobile) */}
-
       <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
         <div className="flex items-center justify-center gap- w-full max-w-2xl">
-          {/* First phone mockup*/}
+          {/* First phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image2.png"
@@ -154,7 +120,7 @@ export default function SignupPage() {
               priority
             />
           </div>
-          {/*2nd phone mockup*/}
+          {/* 2nd phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image4.png"
@@ -202,7 +168,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="name"
-                className="block  font-medium text-gray-300 mb-1"
+                className="block font-medium text-gray-300 mb-1"
               >
                 Full Name
               </label>
@@ -212,7 +178,7 @@ export default function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-white"
-                placeholder="Enter Your FullName  "
+                placeholder="Enter Your FullName"
                 required
                 disabled={isLoading}
               />

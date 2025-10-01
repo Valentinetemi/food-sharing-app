@@ -8,7 +8,6 @@ import React, {
   ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabase";
-import { getAuth } from "firebase/auth";
 
 // Define the Post type
 export type Post = {
@@ -50,50 +49,115 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load posts from Supabase so IDs exist for FK constraints in likes
+  // Generate an initial avatar (SVG data URL) from user's name
+  const getInitialAvatar = (name: string) => {
+    if (!name || name === "Anonymous") {
+      return "/default.png";
+    }
+
+    const firstLetter = name.trim().charAt(0).toUpperCase();
+    const colors = [
+      "#F87171",
+      "#FB923C",
+      "#FBBF24",
+      "#A3E635",
+      "#34D399",
+      "#22D3EE",
+      "#60A5FA",
+      "#A78BFA",
+      "#F472B6",
+    ];
+    const colorIndex = firstLetter.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+        <rect width="100" height="100" fill="${bgColor}" />
+        <text x="50" y="50" font-family="Arial" font-size="50" fill="white" text-anchor="middle" dominant-baseline="central">
+          ${firstLetter}
+        </text>
+      </svg>
+    `;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
+  // Load posts from Supabase with user data
   useEffect(() => {
     let isMounted = true;
+
     const loadPosts = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("posts")
+          .select(`
+            id,
+            title,
+            caption,
+            image_url,
+            calories,
+            tags,
+            created_at,
+            user_id,
+            users (id, email, name)
+          `)
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Failed to fetch posts from Supabase:", error);
-        setIsLoading(false);
-        return;
-      }
+        if (error) {
+          console.error("Failed to fetch posts from Supabase:", error);
+          throw error;
+        }
 
-      const mapped: Post[] = (data || []).map((dbPost: any) => ({
-        id: dbPost.id,
-        user: {
-          name: dbPost.author_name || "Anonymous",
-          username: dbPost.author_username || "user",
-          avatar: dbPost.author_avatar || "/cht.png",
-        },
-        image: dbPost.image_url,
-        title: dbPost.title,
-        description: dbPost.caption,
-        calories: dbPost.calories ?? 0,
-        tags: dbPost.tags ? String(dbPost.tags).split(",").filter(Boolean) : [],
-        likes: 0,
-        comments: 0,
-        timeAgo: "",
-      }));
+        const mapped: Post[] = (data || []).map((dbPost: any) => {
+          const userName = dbPost.users?.name || dbPost.users?.email?.split("@")[0] || "Anonymous";
+          return {
+            id: dbPost.id,
+            user: {
+              name: userName,
+              username: dbPost.users?.email?.split("@")[0] || "user",
+              avatar: getInitialAvatar(userName),
+            },
+            image: dbPost.image_url || "/placeholder-food.jpg",
+            title: dbPost.title,
+            description: dbPost.caption,
+            calories: dbPost.calories ?? 0,
+            tags: dbPost.tags ? String(dbPost.tags).split(",").filter(Boolean) : [],
+            likes: 0, // Placeholder: implement likes fetching if needed
+            comments: 0, // Placeholder: implement comments fetching if needed
+            timeAgo: calculateTimeAgo(dbPost.created_at),
+          };
+        });
 
-      if (isMounted) {
-        setPosts(mapped);
-        setIsLoading(false);
+        if (isMounted) {
+          setPosts(mapped);
+        }
+      } catch (error) {
+        console.error("Error loading posts:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadPosts();
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  // Calculate time ago for posts
+  const calculateTimeAgo = (createdAt: string) => {
+    const now = new Date();
+    const postDate = new Date(createdAt);
+    const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  };
 
   // Function to add a new post
   const addPost = (
@@ -101,20 +165,16 @@ export function PostsProvider({ children }: { children: ReactNode }) {
       id?: string;
     }
   ) => {
-    setIsLoading(true);
-
-    // Create a new post with generated fields
+    // Since CreatePostPage already inserts into Supabase, just update the local state
     const newPost: Post = {
       ...newPostData,
-      id: newPostData.id ?? crypto.randomUUID(), // Use provided UUID or generate
+      id: newPostData.id ?? crypto.randomUUID(),
       likes: 0,
       comments: 0,
       timeAgo: "Just now",
     };
 
-    // Add the new post to the beginning of the array
     setPosts((prevPosts) => [newPost, ...prevPosts]);
-    setIsLoading(false);
   };
 
   // Function to update post likes

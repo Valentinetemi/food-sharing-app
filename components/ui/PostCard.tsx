@@ -7,7 +7,6 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { supabase } from "@/lib/supabase";
 
 type Profile = {
@@ -45,9 +44,36 @@ type PostCardProps = {
 const likeSound =
   typeof Audio !== "undefined" ? new Audio("/like-pop.mp3") : null;
 
-const generateLetterAvatar = (email: string | null | undefined): string => {
-  const letter = email?.charAt(0).toUpperCase() || "U";
-  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23555'%3E%3C/circle%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%23fff' text-anchor='middle' dy='.3em'%3E${letter}%3C/text%3E%3C/svg%3E`;
+// Generate an initial avatar (SVG data URL) from user's name
+const getInitialAvatar = (name: string) => {
+  if (!name || name === "Anonymous") {
+    return "/default.png";
+  }
+
+  const firstLetter = name.trim().charAt(0).toUpperCase();
+  const colors = [
+    "#F87171",
+    "#FB923C",
+    "#FBBF24",
+    "#A3E635",
+    "#34D399",
+    "#22D3EE",
+    "#60A5FA",
+    "#A78BFA",
+    "#F472B6",
+  ];
+  const colorIndex = firstLetter.charCodeAt(0) % colors.length;
+  const bgColor = colors[colorIndex];
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+      <rect width="40" height="40" fill="${bgColor}" />
+      <text x="50%" y="50%" font-family="Arial" font-size="20" fill="white" text-anchor="middle" dominant-baseline="central">
+        ${firstLetter}
+      </text>
+    </svg>
+  `;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
 };
 
 export default function PostCard({
@@ -73,10 +99,8 @@ export default function PostCard({
 
   useEffect(() => {
     const initializeData = async () => {
-      const auth = getAuth();
-      const { currentUser } = auth;
-
-      if (!currentUser) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
         console.error("No authenticated user");
         alert("Please log in to interact with posts.");
         return;
@@ -86,38 +110,34 @@ export default function PostCard({
         // Fetch current user's profile for commenting
         let profile: Profile | null = null;
         const { data: me, error: meError } = await supabase
-          .from("profiles")
-          .select("id, name, username, avatar")
-          .eq("id", currentUser.uid)
+          .from("users")
+          .select("id, name, email")
+          .eq("id", user.id)
           .maybeSingle();
 
         if (meError) {
-          console.error("Profile fetch error:", meError.message); 
+          console.error("Profile fetch error:", meError.message);
           profile = {
-            id: currentUser.uid,
-            name: currentUser.displayName || "Anonymous",
-            username:
-              currentUser.email || `user_${currentUser.uid.slice(0, 8)}`,
-            avatar:
-              currentUser.photoURL || generateLetterAvatar(currentUser.email),
+            id: user.id,
+            name: user.user_metadata.full_name || "Anonymous",
+            username: user.email?.split("@")[0] || `user_${user.id.slice(0, 8)}`,
+            avatar: getInitialAvatar(user.user_metadata.full_name || user.email || "Anonymous"),
           };
           const { error: insertError } = await supabase
-            .from("profiles")
+            .from("users")
             .upsert(profile, { onConflict: "id" });
           if (insertError) {
             console.error("Profile insert error:", insertError.message);
           }
         } else if (!me) {
           profile = {
-            id: currentUser.uid,
-            name: currentUser.displayName || "Anonymous",
-            username:
-              currentUser.email || `user_${currentUser.uid.slice(0, 8)}`,
-            avatar:
-              currentUser.photoURL || generateLetterAvatar(currentUser.email),
+            id: user.id,
+            name: user.user_metadata.full_name || "Anonymous",
+            username: user.email?.split("@")[0] || `user_${user.id.slice(0, 8)}`,
+            avatar: getInitialAvatar(user.user_metadata.full_name || user.email || "Anonymous"),
           };
           const { error: insertError } = await supabase
-            .from("profiles")
+            .from("users")
             .upsert(profile, { onConflict: "id" });
           if (insertError) {
             console.error("Profile insert error:", insertError.message);
@@ -126,10 +146,9 @@ export default function PostCard({
         } else {
           profile = {
             id: me.id,
-            name: me.name || currentUser.displayName || "Anonymous",
-            username:
-              me.username || currentUser.email || `user_${me.id.slice(0, 8)}`,
-            avatar: me.avatar || generateLetterAvatar(currentUser.email),
+            name: me.name || user.user_metadata.full_name || "Anonymous",
+            username: me.email?.split("@")[0] || `user_${me.id.slice(0, 8)}`,
+            avatar: getInitialAvatar(me.name || user.user_metadata.full_name || me.email || "Anonymous"),
           };
         }
 
@@ -140,7 +159,7 @@ export default function PostCard({
           .from("likes")
           .select("*")
           .eq("post_id", id)
-          .eq("user_id", currentUser.uid)
+          .eq("user_id", user.id)
           .maybeSingle();
 
         if (likeError && likeError.code !== "PGRST116") {
@@ -162,14 +181,13 @@ export default function PostCard({
         // Fetch comments
         const { data: dbComments, error: commentsError } = await supabase
           .from("comments")
-          .select(
-            `
+          .select(`
             id,
             content,
             created_at,
-            author:profiles!comments_user_id_fkey(id, name, username, avatar)
-          `
-          )
+            user_id,
+            users!comments_user_id_fkey(id, name, email)
+          `)
           .eq("post_id", id)
           .order("created_at", { ascending: false });
 
@@ -179,16 +197,14 @@ export default function PostCard({
         } else {
           setPostComments(
             (dbComments || []).map((c: any) => {
-              const profile = c.author || {};
-              const name = profile.name || "Anonymous";
-              const username =
-                profile.username ||
-                `user_${(profile.id || "unknown").slice(0, 8)}`;
-              const avatar = profile.avatar || generateLetterAvatar(username);
+              const profile = c.users || {};
+              const name = profile.name || c.user_id === user.id ? user.user_metadata.full_name : "Anonymous";
+              const username = profile.email?.split("@")[0] || `user_${(c.user_id || "unknown").slice(0, 8)}`;
+              const avatar = getInitialAvatar(name);
               return {
                 id: String(c.id),
                 user: {
-                  id: profile.id || "",
+                  id: c.user_id || "",
                   name,
                   username,
                   avatar,
@@ -207,16 +223,20 @@ export default function PostCard({
       }
     };
 
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-      if (fbUser) {
+    initializeData();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
         initializeData();
+      } else if (event === "SIGNED_OUT") {
+        setCurrentProfile(null);
       }
     });
-    if (auth.currentUser) {
-      initializeData();
-    }
-    return () => unsubscribe();
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [id]);
 
   type HeartBurst = { id: number; x: number; y: number };
@@ -257,10 +277,8 @@ export default function PostCard({
       return;
     }
 
-    const auth = getAuth();
-    const { currentUser } = auth;
-
-    if (!currentUser) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       console.error("No authenticated user");
       alert("Please log in to comment.");
       return;
@@ -292,10 +310,9 @@ export default function PostCard({
         .from("comments")
         .insert({
           post_id: id,
-          user_id: currentUser.uid,
+          user_id: user.id,
           content: textToSend,
           created_at: new Date().toISOString(),
-          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         })
         .select("id, content, created_at")
         .single();
@@ -342,10 +359,8 @@ export default function PostCard({
   };
 
   const toggleLike = async (postId: string) => {
-    const auth = getAuth();
-    const { currentUser } = auth;
-
-    if (!currentUser) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       console.error("User not authenticated");
       alert("Please log in to like posts.");
       return;
@@ -365,10 +380,10 @@ export default function PostCard({
         const { error } = await supabase.from("likes").upsert(
           {
             post_id: postId,
-            user_id: currentUser.uid,
+            user_id: user.id,
             created_at: new Date().toISOString(),
           },
-          { onConflict: "post_id,user_id" }
+          { onConflict: ["post_id", "user_id"] }
         );
 
         if (error) {
@@ -383,7 +398,7 @@ export default function PostCard({
           .from("likes")
           .delete()
           .eq("post_id", postId)
-          .eq("user_id", currentUser.uid);
+          .eq("user_id", user.id);
 
         if (error) {
           console.error("Error removing like:", error.message);
