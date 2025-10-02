@@ -82,7 +82,7 @@ export default function SignupPage() {
       const { error: profileError } = await supabase.from("profiles").upsert(
         {
           id: user.id,
-          name: name || user.email?.split("@")[0] || "User",
+          name: name || user.email?.split("@")[0],
           username: user.email?.split("@")[0],
           avatar: user.user_metadata?.avatar_url || null,
         },
@@ -92,7 +92,7 @@ export default function SignupPage() {
         console.warn("profiles upsert warning:", profileError.message);
 
       toast({
-        title: "Account created",
+        title: "Account created 💕",
         description: `Welcome ${name || email}`,
       });
       router.push("/");

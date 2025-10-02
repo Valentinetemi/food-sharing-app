@@ -22,7 +22,7 @@ export default function LoginPage() {
       if (user) {
         toast({
           title: "Already logged in",
-          description: `Welcome back ${user.user_metadata.full_name || user.email}`,
+          description: `Welcome back 💕 ${user.user_metadata.full_name || user.email}`,
           duration: 3000,
         });
         router.push("/");

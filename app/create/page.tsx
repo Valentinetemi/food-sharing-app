@@ -263,7 +263,23 @@ export default function CreatePostPage() {
       if (userError || !user) {
         throw new Error("Not logged in. Please sign in first.");
       }
-
+      
+      const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    
+    if (!existingProfile) {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        name: name || user.email?.split("@")[0] || "Anonymous",
+        username: user.email?.split("@")[0],
+        avatar: getInitialAvatar(name || user.email?.split("@")[0]),
+        email: user.email,
+      });
+    }
+    
       // Upload image to Supabase Storage
       let imageUrl = "/placeholder-food.jpg";
       if (imageFile) {
