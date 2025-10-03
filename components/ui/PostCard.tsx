@@ -130,11 +130,12 @@ export default function PostCard({
             console.error("Profile insert error:", insertError.message);
           }
         } else if (!me) {
+          const nameToUse = (user.user_metadata.full_name || "Anonymous").trim();
           profile = {
             id: user.id,
             name: user.user_metadata.full_name || "Anonymous",
             username: user.email?.split("@")[0] || `user_${user.id.slice(0, 8)}`,
-            avatar: getInitialAvatar(user.user_metadata.full_name || user.email || "Anonymous"),
+            avatar: getInitialAvatar(nameToUse),
           };
           const { error: insertError } = await supabase
             .from("users")

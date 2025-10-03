@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import CalorieDropdown from "@/components/ui/CalorieDropdown";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePosts } from "@/context/PostsContext";
+import { usePosts } from "@/components/ui/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -65,7 +65,7 @@ export default function CreatePostPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { addPost } = usePosts();
+  const { addPost, fetchPosts } = usePosts();
   const router = useRouter();
 
   // Save draft to localStorage
@@ -103,7 +103,9 @@ export default function CreatePostPage() {
   // Check auth state with Supabase
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setCurrentUser({
           id: user.id,
@@ -120,19 +122,21 @@ export default function CreatePostPage() {
     checkAuth();
 
     // Listen for auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        setCurrentUser({
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata.full_name || "Anonymous",
-        });
-        setIsLoading(false);
-      } else if (event === "SIGNED_OUT") {
-        setCurrentUser(null);
-        router.push("/login");
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          setCurrentUser({
+            id: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata.full_name || "Anonymous",
+          });
+          setIsLoading(false);
+        } else if (event === "SIGNED_OUT") {
+          setCurrentUser(null);
+          router.push("/login");
+        }
       }
-    });
+    );
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -259,27 +263,35 @@ export default function CreatePostPage() {
 
     try {
       // Get the logged-in user from Supabase
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       if (userError || !user) {
         throw new Error("Not logged in. Please sign in first.");
       }
-      
+
       const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-    
-    if (!existingProfile) {
-      await supabase.from("profiles").insert({
-        id: user.id,
-        name: name || user.email?.split("@")[0] || "Anonymous",
-        username: user.email?.split("@")[0],
-        avatar: getInitialAvatar(name || user.email?.split("@")[0]),
-        email: user.email,
-      });
-    }
-    
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!existingProfile) {
+        const displayName =
+          user.user_metadata.full_name ||
+          user.email?.split("@")[0] ||
+          "Anonymous";
+        const baseUsername = user.email?.split("@")?.[0] || "user";
+        await supabase.from("profiles").insert({
+          id: user.id,
+          name: displayName,
+          username: baseUsername,
+          avatar: getInitialAvatar(displayName),
+          email: user.email || "",
+        });
+      }
+
       // Upload image to Supabase Storage
       let imageUrl = "/placeholder-food.jpg";
       if (imageFile) {
@@ -332,18 +344,22 @@ export default function CreatePostPage() {
         addPost({
           id: dbPost.id,
           title: dbPost.title,
-          description: dbPost.caption,
-          image: dbPost.image_url,
+          caption: dbPost.caption,
+          image_url: dbPost.image_url,
           calories: dbPost.calories,
           tags: dbPost.tags ? dbPost.tags.split(",") : [],
+          mealtype: dbPost.mealtype,
+          created_at: dbPost.created_at,
           user: {
+            id: user.id,
             name: userName,
             username: username,
-            avatar: avatar,
-            id: user.id,
-            created_at: dbPost.created_at,
+            avatar_url: avatar,
+            created_at: new Date().toISOString(),
           },
         });
+
+        await fetchPosts();
 
         setTimeout(() => {
           alert("Post shared successfully!");
@@ -360,7 +376,11 @@ export default function CreatePostPage() {
 
   // Show loading state while auth is initializing
   if (isLoading) {
-    return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-100">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-100">
+        Loading...
+      </div>
+    );
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/lib/supabase";
 import PostCard from "./PostCard";
 
@@ -24,16 +25,24 @@ interface Post {
 }
 
 export default function PostList() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const { posts, isLoading } = usePosts();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        isLoading(true);
+        // Ensure user is authenticated
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("User not authenticated:", userError?.message);
+          setPosts([]);
+          return;
+        }
+    
         const { data, error } = await supabase
           .from("posts")
-          .select(
-            `
+          .select(`
             id,
             title,
             caption,
@@ -50,15 +59,20 @@ export default function PostList() {
               avatar_url,
               created_at
             )
-          `
-          )
+          `)
           .order("created_at", { ascending: false });
-
+    
         if (error) {
-          console.error("Error fetching posts:", error.message);
+          console.error("Error fetching posts:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+          });
+          setPosts([]);
           return;
         }
-
+    
         const formattedPosts: Post[] = data.map((post: any) => ({
           id: post.id,
           title: post.title,
@@ -81,15 +95,15 @@ export default function PostList() {
               }
             : null,
         }));
-
+    
         setPosts(formattedPosts);
       } catch (err) {
         console.error("Unexpected error fetching posts:", err);
+        setPosts([]);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchPosts();
   }, []);
 
