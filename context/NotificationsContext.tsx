@@ -4,69 +4,46 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   ReactNode,
 } from "react";
 
-// Define the Notification type
 export type Notification = {
   id: number;
-  type: "like" | "comment" | "follow" | "mention" | "system";
+  type: "system";
   message: string;
-  postId?: number;
-  postTitle?: string;
-  postImage?: string;
-  fromUser?: {
-    name: string;
-    username: string;
-    avatar: string;
-  };
   read: boolean;
   createdAt: string;
   timeAgo: string;
 };
 
-// Define the context type
 type NotificationsContextType = {
   notifications: Notification[];
   unreadCount: number;
   addNotification: (
     notification: Omit<Notification, "id" | "createdAt" | "timeAgo" | "read">
   ) => void;
+  addMVPBadgeNotification: () => void;
+  addWelcomeNotification: (userName: string) => void;
   markAsRead: (id: number) => void;
   markAllAsRead: () => void;
   isLoading: boolean;
 };
 
-// Create the context with a default value
 const NotificationsContext = createContext<
   NotificationsContextType | undefined
 >(undefined);
 
-// Initial notifications data
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "system",
-    message: "You just joined! Earn the FoodShare MVP early adopter badge.",
-    read: false,
-    createdAt: "2024-01-01T00:00:00.000Z",
-    timeAgo: "Just now",
-  },
-];
+const initialNotifications: Notification[] = [];
 
-// Create the provider component
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] =
     useState<Notification[]>(initialNotifications);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Calculate unread count
   const unreadCount = notifications.filter(
     (notification) => !notification.read
   ).length;
 
-  // Function to add a new notification
   const addNotification = (
     newNotificationData: Omit<
       Notification,
@@ -75,21 +52,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   ) => {
     setIsLoading(true);
 
-    // Create a new notification with generated fields
     const newNotification: Notification = {
       ...newNotificationData,
-      id: Date.now(), // Use timestamp as a unique ID
+      id: Date.now(),
       read: false,
       createdAt: new Date().toISOString(),
       timeAgo: "Just now",
     };
 
-    // Add the new notification to the beginning of the array
-    setNotifications([newNotification]);
+    setNotifications((prev) => [newNotification, ...prev]);
 
-    // Play notification sound if available
     if (typeof window !== "undefined") {
-      const notificationSound = new Audio("");
+      const notificationSound = new Audio("/notification-sound.mp3");
       notificationSound
         .play()
         .catch((err) => console.log("Error playing notification sound:", err));
@@ -98,7 +72,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
-  // Function to mark a notification as read
   const markAsRead = (id: number) => {
     setNotifications((prevNotifications) =>
       prevNotifications.map((notification) =>
@@ -107,116 +80,61 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // Function to mark all notifications as read
   const markAllAsRead = () => {
     setNotifications((prevNotifications) =>
       prevNotifications.map((notification) => ({ ...notification, read: true }))
     );
   };
 
-  // Setup WebSocket connection for real-time notifications
-  useEffect(() => {
-    const simulateIncomingNotification = () => {
-      // Only simulate new notifications occasionally (20% chance)
-      if (Math.random() > 0.8) {
-        const randomUsers = [
-          {
-            name: "Mike Rodriguez",
-            username: "@mikeats",
-            avatar: "/cht.png?height=40&width=40",
-          },
-          {
-            name: "Emma Wilson",
-            username: "@emmaeats",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          { name: "Joy Wilson", username: "@joywilson", avatar: "" },
-          {
-            name: "Alex Johnson",
-            username: "@alexj",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-        ];
-
-        const randomPosts = [
-          {
-            id: 1,
-            title: "Homemade Avocado Toast",
-            image: "/salad.jpg?height=100&width=100",
-          },
-          {
-            id: 2,
-            title: "Grilled Salmon Bowl",
-            image: "/salad.jpg?height=100&width=100",
-          },
-          {
-            id: 3,
-            title: "Chocolate Lava Cake",
-            image: "/placeholder.svg?height=100&width=100",
-          },
-        ];
-
-        const notificationTypes: ("like" | "comment" | "follow" | "mention")[] =
-          ["like", "comment", "follow", "mention"];
-        const randomType =
-          notificationTypes[
-            Math.floor(Math.random() * notificationTypes.length)
-          ];
-        const randomUser =
-          randomUsers[Math.floor(Math.random() * randomUsers.length)];
-        const randomPost =
-          randomPosts[Math.floor(Math.random() * randomPosts.length)];
-
-        let newNotification: Omit<
-          Notification,
-          "id" | "createdAt" | "timeAgo" | "read"
-        > = {
-          type: randomType,
-          message: "",
-          fromUser: randomUser,
-        };
-
-        switch (randomType) {
-          case "like":
-            newNotification.message = "liked your post";
-            newNotification.postId = randomPost.id;
-            newNotification.postTitle = randomPost.title;
-            newNotification.postImage = randomPost.image;
-            break;
-          case "comment":
-            newNotification.message = "commented on your post";
-            newNotification.postId = randomPost.id;
-            newNotification.postTitle = randomPost.title;
-            newNotification.postImage = randomPost.image;
-            break;
-          case "follow":
-            newNotification.message = "started following you";
-            break;
-          case "mention":
-            newNotification.message = "mentioned you in a comment";
-            newNotification.postId = randomPost.id;
-            newNotification.postTitle = randomPost.title;
-            newNotification.postImage = randomPost.image;
-            break;
-        }
-
-        addNotification(newNotification);
-      }
+  // Welcome notification for new users
+  const addWelcomeNotification = (userName: string) => {
+    const welcomeNotification: Notification = {
+      id: Date.now(),
+      type: "system",
+      message: `Welcome to FoodShare, ${userName}! We're thrilled to have you in our community. Start by sharing your first delicious meal, exploring different communities, and connecting with fellow food enthusiasts. Happy cooking!`,
+      read: false,
+      createdAt: new Date().toISOString(),
+      timeAgo: "Just now",
     };
 
-    // Simulate WebSocket connection with interval
-    const interval = setInterval(simulateIncomingNotification, 30000); //
+    setNotifications((prev) => [welcomeNotification, ...prev]);
 
-    return () => {
-      clearInterval(interval); // Clean up on unmount
+    if (typeof window !== "undefined") {
+      const notificationSound = new Audio("/notification-sound.mp3");
+      notificationSound
+        .play()
+        .catch((err) => console.log("Error playing notification sound:", err));
+    }
+  };
+
+  // MVP badge notification
+  const addMVPBadgeNotification = () => {
+    const mvpNotification: Notification = {
+      id: Date.now() + 1, // Slightly different ID to avoid collision
+      type: "system",
+      message:
+        "You've earned the MVP Early Adopter badge! Thank you for being one of the first members of our community. Your support means the world to us!",
+      read: false,
+      createdAt: new Date().toISOString(),
+      timeAgo: "Just now",
     };
-  }, []);
 
-  // Provide the context value
+    setNotifications((prev) => [mvpNotification, ...prev]);
+
+    if (typeof window !== "undefined") {
+      const notificationSound = new Audio("/notification-sound.mp3");
+      notificationSound
+        .play()
+        .catch((err) => console.log("Error playing notification sound:", err));
+    }
+  };
+
   const value = {
     notifications,
     unreadCount,
     addNotification,
+    addMVPBadgeNotification,
+    addWelcomeNotification,
     markAsRead,
     markAllAsRead,
     isLoading,
@@ -229,7 +147,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use the notifications context
 export function useNotifications() {
   const context = useContext(NotificationsContext);
   if (context === undefined) {

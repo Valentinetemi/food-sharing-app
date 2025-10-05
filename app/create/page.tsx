@@ -51,6 +51,21 @@ type MealType =
   | "dessert"
   | "";
 
+interface Community {
+  id: number;
+  title: string;
+  description: string;
+  emoji?: string;
+}
+
+// Fixed avatar generator using UI Avatars API
+const getInitialAvatar = (name: string): string => {
+  if (!name || name === "Anonymous") {
+    return "https://ui-avatars.com/api/?name=Anonymous&background=6B7280&color=fff&size=100";
+  }
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&bold=true&size=100`;
+};
+
 export default function CreatePostPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,11 +77,32 @@ export default function CreatePostPage() {
   const [description, setDescription] = useState("");
   const [mealType, setMealType] = useState<MealType>("");
   const [calories, setCalories] = useState<number>(0);
+  const [communityId, setCommunityId] = useState<string>("");
+  const [communities, setCommunities] = useState<Community[]>([]);
   const [isSharing, setIsSharing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { addPost, fetchPosts } = usePosts();
+  const { addPost } = usePosts();
   const router = useRouter();
+
+  // Load communities from Supabase
+  useEffect(() => {
+    const loadCommunities = async () => {
+      const { data, error } = await supabase
+        .from('communities')
+        .select('*')
+        .order('title', { ascending: true });
+      
+      if (data) {
+        setCommunities(data);
+      }
+      if (error) {
+        console.error('Error loading communities:', error);
+      }
+    };
+    
+    loadCommunities();
+  }, []);
 
   // Save draft to localStorage
   const saveDraft = () => {
@@ -76,6 +112,7 @@ export default function CreatePostPage() {
       mealType,
       calories,
       tags,
+      communityId,
       imageDataUrl: selectedImage,
     };
     localStorage.setItem("foodShareDraft", JSON.stringify(draft));
@@ -93,6 +130,7 @@ export default function CreatePostPage() {
         setMealType(draft.mealType || "");
         setCalories(draft.calories || 0);
         setTags(draft.tags || []);
+        setCommunityId(draft.communityId || "");
         setSelectedImage(draft.imageDataUrl || null);
       } catch (error) {
         console.error("Error loading draft:", error);
@@ -121,7 +159,6 @@ export default function CreatePostPage() {
 
     checkAuth();
 
-    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN" && session?.user) {
@@ -143,7 +180,6 @@ export default function CreatePostPage() {
     };
   }, [router]);
 
-  // Validate form fields
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -157,11 +193,13 @@ export default function CreatePostPage() {
       newErrors.description = "Description is required.";
     }
     if (calories <= 0) {
-      newErrors.calories =
-        "Please select at least one food item for calorie information.";
+      newErrors.calories = "Please select at least one food item for calorie information.";
     }
     if (!mealType) {
       newErrors.mealType = "Please select a meal type.";
+    }
+    if (!communityId) {
+      newErrors.communityId = "Please select a community.";
     }
 
     setErrors(newErrors);
@@ -212,6 +250,7 @@ export default function CreatePostPage() {
     setDescription("");
     setMealType("");
     setCalories(0);
+    setCommunityId("");
     setTags([]);
     setNewTag("");
     setErrors({});
@@ -221,48 +260,15 @@ export default function CreatePostPage() {
     localStorage.removeItem("foodShareDraft");
   };
 
-  // Generate an initial avatar (SVG data URL) from user's name
-  const getInitialAvatar = (name: string) => {
-    if (!name || name === "Anonymous") {
-      return "/default.png";
-    }
-
-    const firstLetter = name.trim().charAt(0).toUpperCase();
-    const colors = [
-      "#F87171",
-      "#FB923C",
-      "#FBBF24",
-      "#A3E635",
-      "#34D399",
-      "#22D3EE",
-      "#60A5FA",
-      "#A78BFA",
-      "#F472B6",
-    ];
-    const colorIndex = firstLetter.charCodeAt(0) % colors.length;
-    const bgColor = colors[colorIndex];
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-        <rect width="100" height="100" fill="${bgColor}" />
-        <text x="50" y="50" font-family="Arial" font-size="50" fill="white" text-anchor="middle" dominant-baseline="central">
-          ${firstLetter}
-        </text>
-      </svg>
-    `;
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-  };
-
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!validateForm()) {
       return;
     }
-
+  
     setIsSharing(true);
-
+  
     try {
-      // Get the logged-in user from Supabase
       const {
         data: { user },
         error: userError,
@@ -270,49 +276,73 @@ export default function CreatePostPage() {
       if (userError || !user) {
         throw new Error("Not logged in. Please sign in first.");
       }
-
-      const { data: existingProfile } = await supabase
+  
+      // Check if profile exists, if not create one with proper avatar
+      let { data: existingProfile } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
-
+        .maybeSingle();
+  
       if (!existingProfile) {
         const displayName =
           user.user_metadata.full_name ||
           user.email?.split("@")[0] ||
           "Anonymous";
         const baseUsername = user.email?.split("@")?.[0] || "user";
-        await supabase.from("profiles").insert({
-          id: user.id,
-          name: displayName,
-          username: baseUsername,
-          avatar: getInitialAvatar(displayName),
-          email: user.email || "",
-        });
+        
+        // Generate avatar URL using the API
+        const avatarUrl = getInitialAvatar(displayName);
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            name: displayName,
+            username: baseUsername,
+            avatar: avatarUrl,
+            email: user.email || "",
+          })
+          .select()
+          .single();
+  
+        if (insertError) {
+          throw new Error("Failed to create profile: " + insertError.message);
+        }
+  
+        existingProfile = newProfile;
+      } else if (!existingProfile.avatar || existingProfile.avatar === "/default.png") {
+        // Update existing profile with proper avatar if it's missing or using old default
+        const avatarUrl = getInitialAvatar(existingProfile.name || "Anonymous");
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ avatar: avatarUrl })
+          .eq("id", user.id);
+        
+        if (!updateError) {
+          existingProfile.avatar = avatarUrl;
+        }
       }
-
+    
       // Upload image to Supabase Storage
-      let imageUrl = "/placeholder-food.jpg";
+      let imageUrl = "";
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from("food-images")
           .upload(fileName, imageFile);
-
+  
         if (uploadError) {
           throw new Error("Failed to upload image: " + uploadError.message);
         }
-
-        // Get public URL for the uploaded image
+  
         const { data: publicUrlData } = supabase.storage
           .from("food-images")
           .getPublicUrl(fileName);
         imageUrl = publicUrlData.publicUrl;
       }
-
-      // Build the post object
+  
       const supabasePost = {
         title: foodName,
         caption: description,
@@ -320,27 +350,23 @@ export default function CreatePostPage() {
         calories: calories,
         tags: tags.join(","),
         mealtype: mealType,
+        community_id: parseInt(communityId),
         user_id: user.id,
         created_at: new Date().toISOString(),
       };
-
-      // Insert into posts
+  
       const { data, error } = await supabase
         .from("posts")
         .insert([supabasePost])
         .select();
-
+  
       if (error) {
         throw error;
       }
-
+  
       if (data && data.length > 0) {
         const dbPost = data[0];
-        const userName = user.user_metadata.full_name || "Anonymous";
-        const userEmail = user.email || "user";
-        const username = userEmail.split("@")[0];
-        const avatar = getInitialAvatar(userName);
-
+  
         addPost({
           id: dbPost.id,
           title: dbPost.title,
@@ -351,30 +377,28 @@ export default function CreatePostPage() {
           mealtype: dbPost.mealtype,
           created_at: dbPost.created_at,
           user: {
-            id: user.id,
-            name: userName,
-            username: username,
-            avatar_url: avatar,
-            created_at: new Date().toISOString(),
+            id: existingProfile.id,
+            name: existingProfile.name || "Anonymous",
+            username: existingProfile.username || `user_${existingProfile.id.slice(0, 8)}`,
+            avatar: existingProfile.avatar,
+            created_at: existingProfile.created_at,
           },
         });
-
-        await fetchPosts();
-
+  
         setTimeout(() => {
           alert("Post shared successfully!");
           setIsSharing(false);
           resetForm();
-          router.push("/");
+          router.push(`/community/${communityId}`);
         }, 1500);
       }
     } catch (err: any) {
+      console.error("Error creating post:", err);
       alert("Error creating post: " + err.message);
       setIsSharing(false);
     }
   };
 
-  // Show loading state while auth is initializing
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-100">
@@ -387,13 +411,12 @@ export default function CreatePostPage() {
     <div className="min-h-screen bg-gray-950">
       <div className="flex-1 ml-0 lg:ml-64">
         <div className="max-w-2xl mx-auto px-4 py-6 pb-20 lg:pb-6 mobile-content-padding">
-          {/* Header */}
           <motion.div
             {...fadeInUp}
             className="flex items-center justify-between mb-6"
           >
             <div>
-              <h1 className="text-2xl font-bold text-gray-100">
+              <h1 className="text-2xl font-bold text-gray-100 tracking-tight">
                 Share Your Food
               </h1>
               <p className="text-gray-400">
@@ -401,7 +424,10 @@ export default function CreatePostPage() {
               </p>
             </div>
             <Link href="/">
-              <Button variant="ghost" className="text-gray-400">
+              <Button
+                variant="ghost"
+                className="text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
                 <XMarkIcon className="h-4 w-4" />
               </Button>
             </Link>
@@ -414,15 +440,14 @@ export default function CreatePostPage() {
             animate="animate"
             className="space-y-6"
           >
-            {/* Image Upload */}
             <motion.div variants={fadeInUp}>
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-gray-900 border-gray-800 shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-gray-100">Food Photo</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {!selectedImage ? (
-                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center relative">
+                    <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center relative hover:border-gray-600 transition-colors">
                       <CameraIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
                       <p className="text-gray-400 mb-4">
                         Upload a photo of your food
@@ -430,7 +455,7 @@ export default function CreatePostPage() {
                       <div className="flex gap-2 justify-center">
                         <Button
                           asChild
-                          className="bg-gradient-to-r from-orange-500 to-red-500"
+                          className="bg-orange-600 hover:bg-orange-700 shadow-md"
                         >
                           <label
                             htmlFor="image-upload"
@@ -456,16 +481,16 @@ export default function CreatePostPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="relative">
+                    <div className="relative rounded-xl overflow-hidden">
                       <img
                         src={selectedImage}
                         alt="Selected food"
-                        className="w-full aspect-square object-cover rounded-lg"
+                        className="w-full aspect-square object-cover rounded-xl hover:scale-[1.01] transition-transform duration-300"
                       />
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="absolute top-2 right-2"
+                        className="absolute top-2 right-2 bg-zinc-800/80 text-white hover:bg-zinc-800"
                         onClick={removeImage}
                       >
                         <XMarkIcon className="h-4 w-4" />
@@ -476,9 +501,41 @@ export default function CreatePostPage() {
               </Card>
             </motion.div>
 
-            {/* Food Details */}
             <motion.div variants={fadeInUp}>
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-gray-900 border-gray-800 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-gray-100">Choose Community</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Label htmlFor="community" className="text-gray-200">
+                    Which community would you like to share this in?
+                  </Label>
+                  <Select
+                    value={communityId}
+                    onValueChange={(value: string) => setCommunityId(value)}
+                  >
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100 focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition mt-2">
+                      <SelectValue placeholder="Select a community" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
+                      {communities.map((community) => (
+                        <SelectItem key={community.id} value={community.id.toString()}>
+                          {community.emoji && `${community.emoji} `}{community.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.communityId && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.communityId}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={fadeInUp}>
+              <Card className="bg-gray-900 border-gray-800 shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-gray-100">Food Details</CardTitle>
                 </CardHeader>
@@ -492,7 +549,7 @@ export default function CreatePostPage() {
                       value={foodName}
                       onChange={(e) => setFoodName(e.target.value)}
                       placeholder="e.g., Grilled Salmon with Vegetables"
-                      className="bg-gray-800 border-gray-700 text-gray-100"
+                      className="bg-gray-800 border-gray-700 text-gray-100 focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition"
                     />
                     {errors.foodName && (
                       <p className="text-red-500 text-sm mt-1">
@@ -510,7 +567,7 @@ export default function CreatePostPage() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Tell us about your meal, ingredients, cooking method..."
-                      className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]"
+                      className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px] focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition"
                     />
                     {errors.description && (
                       <p className="text-red-500 text-sm mt-1">
@@ -527,7 +584,7 @@ export default function CreatePostPage() {
                       value={mealType}
                       onValueChange={(value: MealType) => setMealType(value)}
                     >
-                      <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100 focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition">
                         <SelectValue placeholder="Select meal type" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
@@ -549,7 +606,6 @@ export default function CreatePostPage() {
               </Card>
             </motion.div>
 
-            {/* Calorie Dropdown */}
             <motion.div variants={fadeInUp}>
               <CalorieDropdown onCalorieChange={setCalories} />
               {errors.calories && (
@@ -557,9 +613,8 @@ export default function CreatePostPage() {
               )}
             </motion.div>
 
-            {/* Tags */}
             <motion.div variants={fadeInUp}>
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-gradient-to-br from-gray-900 via-gray-850 to-gray-900 border-gray-800/70 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-gray-100">Tags</CardTitle>
                 </CardHeader>
@@ -569,14 +624,19 @@ export default function CreatePostPage() {
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                       placeholder="Add a tag..."
-                      className="bg-gray-800 border-gray-700 text-gray-100"
-                      onKeyDown={(e) => e.key === "Enter" && addTag()}
+                      className="bg-gray-800/80 border-gray-700 text-gray-100 focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addTag();
+                        }
+                      }}
                     />
                     <Button
                       onClick={addTag}
                       size="icon"
                       variant="outline"
-                      className="border-gray-700 bg-transparent"
+                      className="border-gray-700 bg-transparent hover:bg-white/5"
                       type="button"
                     >
                       <PlusIcon className="h-4 w-4" />
@@ -602,6 +662,7 @@ export default function CreatePostPage() {
                                 onClick={() => removeTag(tag)}
                                 className="ml-1 hover:text-blue-300"
                                 aria-label={`Remove tag ${tag}`}
+                                type="button"
                               >
                                 <XMarkIcon className="h-3 w-3" />
                               </button>
@@ -615,11 +676,10 @@ export default function CreatePostPage() {
               </Card>
             </motion.div>
 
-            {/* Submit */}
             <motion.div variants={fadeInUp} className="flex gap-3">
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
                 disabled={isSharing}
               >
                 {isSharing ? (
@@ -634,7 +694,7 @@ export default function CreatePostPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="background-gray-700 text-gray-300 bg-transparent"
+                className="bg-gray-700 text-gray-300 hover:bg-gray-600"
                 onClick={saveDraft}
               >
                 Save Draft

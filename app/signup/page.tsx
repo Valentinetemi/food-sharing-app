@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { supabase } from "@/lib/supabase";
+import { getInitialAvatar } from "@/lib/utils";
+import { useNotifications } from "@/context/NotificationsContext";
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { addMVPBadgeNotification, addWelcomeNotification } = useNotifications();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +24,6 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkUser = async () => {
       const {
         data: { user },
@@ -64,38 +66,84 @@ export default function SignupPage() {
     if (!validateForm()) return;
     setIsLoading(true);
     setError("");
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: name } },
-      });
-      if (error) throw error;
-      const user = data.user;
-      if (!user) throw new Error("No user returned from signup");
-      else {
-        console.log("Check your email for a confirmation link!");
-      }
     
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+      
+      if (error) throw error;
 
-      // upsert into profiles, not users
+      if (!user) {
+        console.log("Check your email for a confirmation link.");
+        return;
+      }
+
+      // Create profile with avatar
       const { error: profileError } = await supabase.from("profiles").upsert(
         {
           id: user.id,
-          name: name || user.email?.split("@")[0],
+          name: name,
           username: user.email?.split("@")[0],
-          avatar: user.user_metadata?.avatar_url || null,
+          avatar: getInitialAvatar(name),
         },
         { onConflict: "id" }
       );
+      
       if (profileError)
         console.warn("profiles upsert warning:", profileError.message);
 
+      // Add welcome notification to notifications center
+      addWelcomeNotification(name);
+      
+      // Add MVP badge notification
+      addMVPBadgeNotification();
+
+      // Show beautiful welcome toast
       toast({
-        title: "Account created 💕",
-        description: `Welcome ${name || email}`,
+        title: "🎉 Welcome to FoodShare!",
+        description: (
+          <div className="space-y-3 mt-2">
+            <p className="text-base font-medium">Hey {name}! We're thrilled to have you here.</p>
+            <div className="space-y-1.5 text-sm bg-white/10 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <span>✨</span>
+                <span>Share your first delicious meal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🍽️</span>
+                <span>Explore food communities</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🏆</span>
+                <span>You've earned the MVP badge!</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>💬</span>
+                <span>Connect with food lovers</span>
+              </div>
+            </div>
+            <p className="text-sm italic">Let's make every meal an adventure!</p>
+          </div>
+        ),
+        duration: 10000,
+        className: "bg-gradient-to-br from-orange-600 via-pink-600 to-purple-600 border-none text-white shadow-2xl",
       });
-      router.push("/");
+
+      // Navigate to home after a short delay
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+      
     } catch (err) {
       const e = err as Error;
       console.error(e);
@@ -110,7 +158,6 @@ export default function SignupPage() {
       {/* Left side - Image (hidden on mobile) */}
       <div className="hidden md:flex md:w-1/2 bg-gray-950 items-center justify-center p-8">
         <div className="flex items-center justify-center gap- w-full max-w-2xl">
-          {/* First phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image2.png"
@@ -120,7 +167,6 @@ export default function SignupPage() {
               priority
             />
           </div>
-          {/* 2nd phone mockup */}
           <div className="relative w-[220px] md:w-[280px] lg:w-[360px] xl:w-[400px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border border-gray-950">
             <Image
               src="/Image4.png"
@@ -136,7 +182,6 @@ export default function SignupPage() {
       {/* Right side - Signup form */}
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 p-6 md:p-12">
         <div className="w-full max-w-md">
-          {/* Logo and heading */}
           <div className="text-center mb-6">
             <div className="inline-block mb-3">
               <Image
@@ -156,14 +201,12 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6">
               {error}
             </div>
           )}
 
-          {/* Signup form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -277,7 +320,6 @@ export default function SignupPage() {
             </div>
           </form>
 
-          {/* Sign in link */}
           <div className="mt-6 text-center">
             <p className="text-gray-400">
               Already have an account?{" "}

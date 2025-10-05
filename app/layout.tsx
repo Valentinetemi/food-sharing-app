@@ -7,7 +7,7 @@ import { Navigation } from "@/components/navigation";
 import ClientWrapper from "@/components/ClientWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import { PostsProvider } from "@/context/PostsContext";
-import { NotificationsProvider } from "@/context/NotificationsContext";
+import {NotificationsProvider} from "@/context/NotificationsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import NavWrapper from "@/components/NavWrapper";
 

@@ -17,14 +17,15 @@ export type Post = {
     username: string;
     avatar: string;
   };
-  image: string;
+  image_url: string;
   title: string;
-  description: string;
+  caption: string;
   calories: number;
   tags: string[];
   likes: number;
   comments: number;
   timeAgo: string;
+  mealtype: string;
 };
 
 // Define the context type
@@ -90,7 +91,8 @@ export function PostsProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase
           .from("posts")
-          .select(`
+          .select(
+            `
             id,
             title,
             caption,
@@ -99,47 +101,43 @@ export function PostsProvider({ children }: { children: ReactNode }) {
             tags,
             created_at,
             user_id,
-            users (id, email, name)
-          `)
+            profiles!posts_user_id_fkey(id, name, username, avatar, created_at)
+          `
+          )
           .order("created_at", { ascending: false });
+
+          console.log("Response", { data, error })
 
         if (error) {
           console.error("Failed to fetch posts from Supabase:", error);
           throw error;
         }
 
-        const mapped: Post[] = (data || []).map((dbPost: any) => {
-          const userName = dbPost.users?.name || dbPost.users?.email?.split("@")[0] || "Anonymous";
-          return {
-            id: dbPost.id,
-            user: {
-              name: userName,
-              username: dbPost.users?.email?.split("@")[0] || "user",
-              avatar: getInitialAvatar(userName),
-            },
-            image: dbPost.image_url || "/placeholder-food.jpg",
-            title: dbPost.title,
-            description: dbPost.caption,
-            calories: dbPost.calories ?? 0,
-            tags: dbPost.tags ? String(dbPost.tags).split(",").filter(Boolean) : [],
-            likes: 0, // Placeholder: implement likes fetching if needed
-            comments: 0, // Placeholder: implement comments fetching if needed
-            timeAgo: calculateTimeAgo(dbPost.created_at),
-          };
-        });
-
-        if (isMounted) {
-          setPosts(mapped);
-        }
+        const formatted = (data || []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          caption: p.caption,
+          image_url: p.image_url,
+          tags: p.tags ? p.tags.split(",") : [],
+          calories: p.calories,
+          mealtype: p.mealtype,
+          created_at: p.created_at,
+          user: p.profiles ? {
+            id: p.profiles.id,
+            name: p.profiles.name || "Anonymous",
+            username: p.profiles.username || `user_${p.profiles.id.slice(0, 8)}`,
+            avatar: p.profiles.avatar || "/default-avatar.png",
+            created_at: p.profiles.created_at,
+          } : null,
+        }));
+    
+        setPosts(formatted);
       } catch (error) {
-        console.error("Error loading posts:", error);
+        console.error("Failed to load posts:", error);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
-
     loadPosts();
 
     return () => {
@@ -151,11 +149,15 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const calculateTimeAgo = (createdAt: string) => {
     const now = new Date();
     const postDate = new Date(createdAt);
-    const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+    const diffInSeconds = Math.floor(
+      (now.getTime() - postDate.getTime()) / 1000
+    );
 
     if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
