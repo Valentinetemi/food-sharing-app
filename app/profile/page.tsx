@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ProfileEditDialog } from "@/components/ProfileEditDialog";
 import {
@@ -18,6 +19,7 @@ import {
   UserGroupIcon,
   PlusIcon,
   SparklesIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import {
   HeartIcon as HeartSolidIcon,
@@ -79,6 +81,7 @@ const getMealTypeIcon = (mealtype: string) => {
 };
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<LocalUserProfile | null>(null);
@@ -87,6 +90,16 @@ export default function ProfilePage() {
   const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
 
   // Check auth state and set user
   useEffect(() => {
@@ -404,17 +417,25 @@ export default function ProfilePage() {
                       <div className="flex flex-col sm:flex-row gap-3 pt-4">
                         <Button
                           variant="outline"
-                          className="border-gray-600 text-gray-300 hover:bg-white/5 hover:border-orange-500/50 transition-all duration-300"
+                          className="border-gray-600 text-gray-800 hover:bg-white/500 hover:border-orange-500/50 transition-all duration-300"
                           onClick={() => setShowEditDialog(true)}
                         >
                           Edit Profile
                         </Button>
                         <Link href="/create">
-                          <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 group">
+                          <Button className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 group">
                             <PlusIcon className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
                             New Post
                           </Button>
                         </Link>
+                        <Button
+                          onClick={handleLogout}
+                          variant="outline"
+                          className="w-full sm:w-auto border-red-600/50 text-red-400 hover:bg-red-400/20 hover:border-red-600 transition-all duration-300 group"
+                        >
+                          <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform duration-300" />
+                          Logout
+                        </Button>
                       </div>
                     </div>
                   </motion.div>

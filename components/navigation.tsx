@@ -435,57 +435,7 @@ export function Navigation({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* Account sheet for mobile */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex flex-col items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-zinc-800 hover:text-orange-500"
-                >
-                  <UserIcon className="h-6 w-6" />
-                  <span className="text-xs">Account</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="bg-gray-950 text-white border-l border-gray-800"
-              >
-                <div className="mt-6 space-y-4">
-                  {user ? (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <div className="w-20 h-20  rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">
-                            {user.name}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {user.email}
-                          </span>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={handleLogout}
-                        variant="ghost"
-                        className="w-full justify-start text-gray-300 hover:text-red-400"
-                      >
-                        <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
-                        Logout
-                      </Button>
-                    </>
-                  ) : (
-                    <Link href="/login" className="block">
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                        Sign in
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+            
           </div>
         </div>
       </div>
