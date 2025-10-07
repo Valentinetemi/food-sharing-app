@@ -88,7 +88,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
   const [authChecking, setAuthChecking] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Logout handler
@@ -101,24 +100,25 @@ export default function ProfilePage() {
     }
   };
 
-  // Check auth state and set user
+  // Check auth state and redirect if not logged in
   useEffect(() => {
     const checkAuth = async () => {
       setAuthChecking(true);
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUser({
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata.full_name || "User",
-        });
-        setError(null);
-      } else {
-        setCurrentUser(null);
-        setError("User not logged in");
+      
+      if (!user) {
+        // Redirect to login if no user
+        router.replace("/login");
+        return;
       }
+      
+      setCurrentUser({
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata.full_name || "User",
+      });
       setAuthChecking(false);
       setProfileLoading(false);
     };
@@ -135,9 +135,7 @@ export default function ProfilePage() {
           });
           setProfileLoading(false);
         } else if (event === "SIGNED_OUT") {
-          setCurrentUser(null);
-          setError("User not logged in");
-          setProfileLoading(false);
+          router.replace("/login");
         }
       }
     );
@@ -145,16 +143,12 @@ export default function ProfilePage() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   // Load user profile from profiles table
   useEffect(() => {
     async function fetchProfile() {
-      if (!currentUser) {
-        setError("User not logged in");
-        setProfileLoading(false);
-        return;
-      }
+      if (!currentUser) return;
 
       try {
         setProfileLoading(true);
@@ -194,7 +188,6 @@ export default function ProfilePage() {
         }
       } catch (err: any) {
         console.error("Error loading profile:", err.message);
-        setError("Failed to load profile");
       } finally {
         setProfileLoading(false);
       }
@@ -206,10 +199,7 @@ export default function ProfilePage() {
   // Load user posts with likes and comments count
   useEffect(() => {
     async function fetchPosts() {
-      if (!currentUser) {
-        setError("User not logged in");
-        return;
-      }
+      if (!currentUser) return;
 
       try {
         setLoading(true);
@@ -279,7 +269,6 @@ export default function ProfilePage() {
         setPosts(postsWithCounts);
       } catch (err: any) {
         console.error("Error fetching posts:", err.message);
-        setError(err.message || "Failed to fetch posts");
       } finally {
         setLoading(false);
       }
@@ -314,6 +303,18 @@ export default function ProfilePage() {
       });
     }
   };
+
+  // Show loading while checking auth
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
+          <p className="text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -417,7 +418,7 @@ export default function ProfilePage() {
                       <div className="flex flex-col sm:flex-row gap-3 pt-4">
                         <Button
                           variant="outline"
-                          className="border-gray-600 text-gray-800 hover:bg-white/500 hover:border-orange-500/50 transition-all duration-300"
+                          className="border-gray-600 text-gray-300 hover:bg-white/5 hover:border-orange-500/50 transition-all duration-300"
                           onClick={() => setShowEditDialog(true)}
                         >
                           Edit Profile
@@ -431,7 +432,7 @@ export default function ProfilePage() {
                         <Button
                           onClick={handleLogout}
                           variant="outline"
-                          className="w-full sm:w-auto border-red-600/50 text-red-400 hover:bg-red-400/20 hover:border-red-600 transition-all duration-300 group"
+                          className="w-full sm:w-auto border-red-600/50 text-red-400 hover:bg-red-900/20 hover:border-red-500 transition-all duration-300 group"
                         >
                           <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform duration-300" />
                           Logout
@@ -458,19 +459,6 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
                 <p className="text-gray-400">Loading your delicious posts...</p>
-              </div>
-            </motion.div>
-          ) : error ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-20"
-            >
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-8 max-w-md mx-auto">
-                <p className="text-red-400 text-lg font-medium">{error}</p>
-                <p className="text-gray-400 mt-2">
-                  Please try again later or contact support.
-                </p>
               </div>
             </motion.div>
           ) : posts.length === 0 ? (

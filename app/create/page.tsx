@@ -104,36 +104,48 @@ export default function CreatePostPage() {
     loadCommunities();
   }, []);
 
-  // Save draft to localStorage
+  // Save draft to localStorage - FIXED
   const saveDraft = () => {
     const draft = {
       foodName,
       description,
       mealType,
-      calories,
+      calories: Number(calories), // Ensure it's a number
       tags,
       communityId,
       imageDataUrl: selectedImage,
+      savedAt: new Date().toISOString(), // Add timestamp for debugging
     };
     localStorage.setItem("foodShareDraft", JSON.stringify(draft));
+    console.log("Draft saved:", draft); // Debug log
     alert("Draft saved successfully!");
   };
 
-  // Load draft from localStorage on component mount
+  // Load draft from localStorage on component mount - FIXED
   useEffect(() => {
     const savedDraft = localStorage.getItem("foodShareDraft");
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
+        console.log("Loading draft:", draft); // Debug log
+        
         setFoodName(draft.foodName || "");
         setDescription(draft.description || "");
         setMealType(draft.mealType || "");
-        setCalories(draft.calories || 0);
-        setTags(draft.tags || []);
+        
+        // Fix: Properly handle calories - check for undefined/null, not falsy
+        if (draft.calories !== undefined && draft.calories !== null) {
+          setCalories(Number(draft.calories));
+        }
+        
+        setTags(Array.isArray(draft.tags) ? draft.tags : []);
         setCommunityId(draft.communityId || "");
         setSelectedImage(draft.imageDataUrl || null);
+        
+        console.log("Draft loaded successfully. Calories:", draft.calories); // Debug log
       } catch (error) {
         console.error("Error loading draft:", error);
+        localStorage.removeItem("foodShareDraft"); // Clear corrupted draft
       }
     }
   }, []);
@@ -347,7 +359,7 @@ export default function CreatePostPage() {
         title: foodName,
         caption: description,
         image_url: imageUrl,
-        calories: calories,
+        calories: Number(calories), // Ensure calories is a number
         tags: tags.join(","),
         mealtype: mealType,
         community_id: parseInt(communityId),
