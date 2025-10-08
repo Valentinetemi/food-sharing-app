@@ -27,6 +27,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePosts } from "@/components/ui/PostsContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import VisualMealBuilder from '@/components/ui/VisualMealBuilder';
+
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -619,7 +621,8 @@ export default function CreatePostPage() {
             </motion.div>
 
             <motion.div variants={fadeInUp}>
-              <CalorieDropdown onCalorieChange={setCalories} />
+            <VisualMealBuilder onCalorieChange={setCalories} />
+
               {errors.calories && (
                 <p className="text-red-500 text-sm mt-1">{errors.calories}</p>
               )}
